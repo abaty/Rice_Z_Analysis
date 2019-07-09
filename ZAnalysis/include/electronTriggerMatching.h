@@ -44,11 +44,12 @@ bool ElectronTriggerMatcher::isL1Matched(float eleEta, float elePhi, ElecTrigObj
 }
 
 bool ElectronTriggerMatcher::isHLTMatched(float eleEta, float elePhi, ElecTrigObject trig, float Et){
-  for(auto i = 0; i < 2; i++){
-    //dR matching
-    bool isMatched = ( dR( elePhi, eleEta, trig.HLTPhi->at(i), trig.HLTEta->at(i) ) ) < 0.1;
+  for(unsigned int i = 0; i < trig.HLTPhi->size(); i++){
     //energy matching
     bool passesEt = (trig.HLTPt->at(i) >= Et);
+    if( !passesEt ) continue;
+    //dR matching
+    bool isMatched = ( dR( elePhi, eleEta, trig.HLTPhi->at(i), trig.HLTEta->at(i) ) ) < 0.1;
     if( isMatched && passesEt ) return true;
   }
   return false;

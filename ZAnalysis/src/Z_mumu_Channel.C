@@ -39,8 +39,11 @@ void doZ2mumu(std::vector< std::string > files){
   TProfile * v2Q1MidVsCent;
   TProfile * v2Q2Mid[nBins];
   TProfile * v2Q2MidVsCent;
+  TProfile * v2AvgEff[nBins];
+  TProfile * v2AvgEffVsCent;
   
   TH1D * candPt[nBins];
+  TH1D * candPt_unnormalized[nBins];
   TH1D * candEta[nBins];
   TH1D * candY[nBins];
   TH1D * candPhi[nBins];
@@ -62,14 +65,16 @@ void doZ2mumu(std::vector< std::string > files){
     massPeakOS_withEff[i] = new TH1D(Form("massPeakOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakSS_withEff[i] = new TH1D(Form("massPeakSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{#pm}#mu^{#pm}}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     candPt[i] = new TH1D(Form("candPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
-    candEta[i] = new TH1D(Form("candEta_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-2.4,2.4);
-    candY[i] = new TH1D(Form("candY_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",24,-2.4,2.4);
+    candPt_unnormalized[i] = new TH1D(Form("candPt_unnormalized_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    candEta[i] = new TH1D(Form("candEta_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-s.maxZRap,s.maxZRap);
+    candY[i] = new TH1D(Form("candY_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",24,-s.maxZRap,s.maxZRap);
     candPhi[i] = new TH1D(Form("candPhi_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-TMath::Pi(),TMath::Pi());
     
     v2Num[i] = new TProfile(Form("v2Num_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Denom[i] = new TProfile(Form("v2Denom_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Q1Mid[i] = new TProfile(Form("v2Q1Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Q2Mid[i] = new TProfile(Form("v2Q2Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
+    v2AvgEff[i] = new TProfile(Form("v2AvgEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
  
     v2MuNum[i] = new TProfile(Form("v2MuNum_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2MuDenom[i] = new TProfile(Form("v2MuDenom_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
@@ -81,6 +86,7 @@ void doZ2mumu(std::vector< std::string > files){
   v2DenomVsCent = new TProfile("v2DenomVsCent","",nBins,0,nBins);
   v2Q1MidVsCent = new TProfile("v2Q1MidVsCent","",nBins,0,nBins); 
   v2Q2MidVsCent = new TProfile("v2Q2MidVsCent","",nBins,0,nBins); 
+  v2AvgEffVsCent = new TProfile("v2AvgEffVsCent","",nBins,0,nBins);
  
   v2MuNumVsCent = new TProfile("v2MuNumVsCent","",nBins,0,nBins);
   v2MuDenomVsCent = new TProfile("v2MuDenomVsCent","",nBins,0,nBins);
@@ -126,6 +132,7 @@ void doZ2mumu(std::vector< std::string > files){
               massPeakOS[k]->Fill( v.mass()[j] );
               massPeakOS_withEff[k]->Fill( v.mass()[j], 1.0/efficiency );
               candPt[k]->Fill(v.pT()[j]);
+              candPt_unnormalized[k]->Fill(v.pT()[j]);
               candEta[k]->Fill(v.eta()[j]);
               candY[k]->Fill(v.y()[j]);
               candPhi[k]->Fill(v.phi()[j]);
@@ -162,15 +169,17 @@ void doZ2mumu(std::vector< std::string > files){
               float denom = (Q1*TComplex::Conjugate(Q2)).Re();
               float q1AndMid = (Q1*TComplex::Conjugate(Qmid)).Re();
               float q2AndMid = (Q2*TComplex::Conjugate(Qmid)).Re();
-              v2Num[k]->Fill(0.5,num);
+              v2Num[k]->Fill(0.5,num/efficiency);
               v2Denom[k]->Fill(0.5,denom);
               v2Q1Mid[k]->Fill(0.5,q1AndMid);
               v2Q2Mid[k]->Fill(0.5,q2AndMid);
+              v2AvgEff[k]->Fill(0.5,1.0/efficiency);
 
-              v2NumVsCent->Fill(k,num);
+              v2NumVsCent->Fill(k,num/efficiency);
               v2DenomVsCent->Fill(k,denom);
               v2Q1MidVsCent->Fill(k,q1AndMid);
               v2Q2MidVsCent->Fill(k,q2AndMid);
+              v2AvgEffVsCent->Fill(k,1.0/efficiency);
 
               //muons
               Q1 = Qp;
@@ -218,13 +227,27 @@ void doZ2mumu(std::vector< std::string > files){
     }
   }
 
-
   for(int i = 0; i<nBins; i++){
+    //make differential quantities
+    for(int j = 1; j<candPt[i]->GetNbinsX()+1; j++){
+      candPt[i]->SetBinContent(j,candPt[i]->GetBinContent(j)/candPt[i]->GetBinWidth(j));
+      candPt[i]->SetBinError(j,candPt[i]->GetBinError(j)/candPt[i]->GetBinWidth(j));
+    }
+    for(int j = 1; j<candEta[i]->GetNbinsX()+1; j++){
+      candEta[i]->SetBinContent(j,candEta[i]->GetBinContent(j)/candEta[i]->GetBinWidth(j));
+      candEta[i]->SetBinError(j,candEta[i]->GetBinError(j)/candEta[i]->GetBinWidth(j));
+    }
+    for(int j = 1; j<candY[i]->GetNbinsX()+1; j++){
+      candY[i]->SetBinContent(j,candY[i]->GetBinContent(j)/candY[i]->GetBinWidth(j));
+      candY[i]->SetBinError(j,candY[i]->GetBinError(j)/candY[i]->GetBinWidth(j));
+    }
+
     massPeakOS[i]->SetDirectory(0);
     massPeakSS[i]->SetDirectory(0);
     massPeakOS_withEff[i]->SetDirectory(0);
     massPeakSS_withEff[i]->SetDirectory(0);
     candPt[i]->SetDirectory(0);
+    candPt_unnormalized[i]->SetDirectory(0);
     candEta[i]->SetDirectory(0);
     candY[i]->SetDirectory(0);
     candPhi[i]->SetDirectory(0);
@@ -232,6 +255,7 @@ void doZ2mumu(std::vector< std::string > files){
     v2Denom[i]->SetDirectory(0);
     v2Q1Mid[i]->SetDirectory(0);
     v2Q2Mid[i]->SetDirectory(0);
+    v2AvgEff[i]->SetDirectory(0);
     v2MuNum[i]->SetDirectory(0);
     v2MuDenom[i]->SetDirectory(0);
     v2MuQ1Mid[i]->SetDirectory(0);
@@ -242,7 +266,8 @@ void doZ2mumu(std::vector< std::string > files){
   v2NumVsCent->SetDirectory(0);
   v2Q1MidVsCent->SetDirectory(0);
   v2Q2MidVsCent->SetDirectory(0);
-  
+  v2AvgEffVsCent->SetDirectory(0); 
+ 
   v2MuDenomVsCent->SetDirectory(0);
   v2MuNumVsCent->SetDirectory(0);
   v2MuQ1MidVsCent->SetDirectory(0);
@@ -255,6 +280,7 @@ void doZ2mumu(std::vector< std::string > files){
     massPeakOS_withEff[i]->Write();
     massPeakSS_withEff[i]->Write();
     candPt[i]->Write();
+    candPt_unnormalized[i]->Write();
     candEta[i]->Write();
     candY[i]->Write();
     candPhi[i]->Write();   
@@ -262,6 +288,7 @@ void doZ2mumu(std::vector< std::string > files){
     v2Denom[i]->Write();
     v2Q1Mid[i]->Write();
     v2Q2Mid[i]->Write();
+    v2AvgEff[i]->Write();
     v2MuNum[i]->Write();
     v2MuDenom[i]->Write();
     v2MuQ1Mid[i]->Write();
@@ -271,6 +298,7 @@ void doZ2mumu(std::vector< std::string > files){
   v2DenomVsCent->Write();
   v2Q1MidVsCent->Write();
   v2Q2MidVsCent->Write();
+  v2AvgEffVsCent->Write();
   v2MuNumVsCent->Write();
   v2MuDenomVsCent->Write();
   v2MuQ1MidVsCent->Write();

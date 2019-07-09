@@ -63,8 +63,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     massPeakSS[i] = new TH1D(Form("massPeakSS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{e^{#pm}e^{#pm}}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massVsPt[i] = new TH2D(Form("massVsPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{e^{#pm}e^{#pm}};p_{T}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1],s.nZPtBins-1,s.zPtBins);
     candPt[i] = new TH1D(Form("candPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
-    candEta[i] = new TH1D(Form("candEta_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-2.4,2.4);
-    candY[i] = new TH1D(Form("candY_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-2.0,2.0);
+    candEta[i] = new TH1D(Form("candEta_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-s.maxZRapEle,s.maxZRapEle);
+    candY[i] = new TH1D(Form("candY_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-s.maxZRapEle,s.maxZRapEle);
     candPhi[i] = new TH1D(Form("candPhi_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-TMath::Pi(),TMath::Pi());
 
     v2Num[i] = new TProfile(Form("v2Num_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
@@ -84,8 +84,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   
   v2EleNumVsCent = new TProfile("v2EleNumVsCent","",nBins,0,nBins);
   v2EleDenomVsCent = new TProfile("v2EleDenomVsCent","",nBins,0,nBins);
-  v2EleQ1MidVsCent = new TProfile("v2Q1MidVsCent","",nBins,0,nBins);
-  v2EleQ2MidVsCent = new TProfile("v2Q2MidVsCent","",nBins,0,nBins);
+  v2EleQ1MidVsCent = new TProfile("v2EleQ1MidVsCent","",nBins,0,nBins);
+  v2EleQ2MidVsCent = new TProfile("v2EleQ2MidVsCent","",nBins,0,nBins);
 
   int nEle;
   int hiBin;
@@ -209,7 +209,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
       std::vector< int > goodElectrons; 
       for(unsigned int j = 0; j < (unsigned int) nEle; j++){
         if(elePt->at(j)< s.minElectronPt) continue;
-        if(TMath::Abs(eleSCEta->at(j)) > 2.1) continue;
+        if(TMath::Abs(eleSCEta->at(j)) > s.maxZRapEle) continue;
         //veto on dead endcap region
         if(eleSCEta->at(j) < -1.39 && eleSCPhi->at(j) < -0.9 && eleSCPhi->at(j) > -1.6) continue;
 

@@ -22,7 +22,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu){
   TH1D * massPeakOS_MuMu[nBins]; 
   TH1D * massPeakSS_MuMu[nBins]; 
   TH1D * massPeakOS_MuMu_withEff[nBins]; 
-  //TH1D * massPeakSS_MuMu_withEff[nBins]; 
+  TH1D * massPeakSS_MuMu_withEff[nBins]; 
   
   TFile * ZeeFile = TFile::Open(Zee.c_str(),"read");
   TFile * ZmumuFile = TFile::Open(Zmumu.c_str(),"read");
@@ -33,7 +33,10 @@ void plotMassPeaks(std::string Zee, std::string Zmumu){
     massPeakOS_MuMu[i] = (TH1D*)ZmumuFile->Get(Form("massPeakOS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     massPeakSS_MuMu[i] = (TH1D*)ZmumuFile->Get(Form("massPeakSS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     massPeakOS_MuMu_withEff[i] = (TH1D*)ZmumuFile->Get(Form("massPeakOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    //massPeakSS_MuMu_withEff[i] = (TH1D*)ZmumuFile->Get(Form("massPeakSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakSS_MuMu_withEff[i] = (TH1D*)ZmumuFile->Get(Form("massPeakSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    //subtract the 2
+    massPeakOS_MuMu_withEff[i]->Add(massPeakSS_MuMu_withEff[i],-1);
+
 
     gStyle->SetPadTickX(1);
     gStyle->SetPadTickY(1);

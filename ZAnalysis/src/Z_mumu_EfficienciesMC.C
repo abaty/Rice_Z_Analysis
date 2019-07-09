@@ -3,6 +3,7 @@
 #include "include/centralityTool.h"
 #include "include/Settings.h"
 #include "include/MCReweight.h"
+#include "include/MuonTnP.h"
 
 //ROOT stuff
 #include "TLorentzVector.h"
@@ -14,7 +15,6 @@
 #include "TProfile.h"
 #include "TMath.h"
 #include "TComplex.h"
-#include "TRandom3.h"
 #include "TEfficiency.h"
 
 //C++ stuff
@@ -28,12 +28,11 @@ void doZ2mumuMC(std::vector< std::string > files){
   TH1::SetDefaultSumw2();
   Settings s = Settings();
 
+  MuonTnP tnp = MuonTnP();
   MCReweight vzRW = MCReweight("resources/vzReweight.root");
 
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
-
-  TRandom3 r = TRandom3();
 
   TH2D * recoEff_pass[nBins];
   TH2D * recoEff_net[nBins];
@@ -49,11 +48,11 @@ void doZ2mumuMC(std::vector< std::string > files){
   for(unsigned int f = 0; f<files.size(); f++){
     VertexCompositeNtuple v = VertexCompositeNtuple();
     v.GetTree(files.at(f),"dimucontana_mc"); 
-    //for(unsigned int i = 0; i<v.GetEntries(); i++){
-    for(unsigned int i = 0; i<100000; i++){
+    for(unsigned int i = 0; i<v.GetEntries(); i++){
+    //for(unsigned int i = 0; i<100000; i++){
       v.GetEntry(i);
       
-      if(i%1000==0) std::cout << i << std::endl;
+      if(i%1000==0) std::cout << i << "/" << v.GetEntries() << std::endl;
       
       //event selection
       if( !(v.evtSel()[ PbPb::R5TeV::Y2018::hfCoincFilter2Th4 ])) continue;
@@ -73,13 +72,20 @@ void doZ2mumuMC(std::vector< std::string > files){
         if( TMath::Abs( v.EtaD2_gen()[j] ) > 2.4 ) continue;
 
         //require both muons to be > 20 GeV
-        if( v.pTD1_gen()[j] < 20 ) continue;
-        if( v.pTD2_gen()[j] < 20 ) continue;
+        if( v.pTD1_gen()[j] < s.minMuonPt ) continue;
+        if( v.pTD2_gen()[j] < s.minMuonPt ) continue;
 
         //Fill denominator 
         for(int k = 0; k<nBins; k++){ 
           if(c.isInsideBin(v.centrality(),k)){
             recoEff_net[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight );
+
+            //for the last few pt bins, halve the y binning so we have better stats
+            if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins - s.nPtBinsToRebinRapEff]){
+              int bin = recoEff_net[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
+              if( bin%2 ==1) recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight );
+              else           recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight );
+            }
           }
         }
 
@@ -103,20 +109,29 @@ void doZ2mumuMC(std::vector< std::string > files){
         if( !isOppositeSign ) continue;
 
         //Looks like this is a good candidate match! Let's get the scale factor
-        double scaleFactor = 1.0; //FIXME getScaleFactor();
+        float scaleFactor = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], 0);
 
         //Fill numerator (and apply the scale factor here!)
         for(int k = 0; k<nBins; k++){ 
           if(c.isInsideBin(v.centrality(),k)){
-            recoEff_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
+            //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
+            if( v.pT_gen()[j] < s.zPtBins[ s.nZPtBins-1 ] && TMath::Abs( v.y_gen()[j] ) < s.maxZRap ){
+              recoEff_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
+          
+              //for the last few pt bins, halve the y binning so we have better stats
+              if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                int bin = recoEff_pass[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
+                if( bin%2 ==1) recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactor );
+                else           recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactor );
+              }
+            }
           }
         }
-        
-
       }
     }
   }
 
+  std::vector< bool > isConsistent;
   for(int i = 0; i<nBins; i++){
     recoEff[i] = (TH2D*)recoEff_pass[i]->Clone(Form("recoEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     recoEff[i]->Divide(recoEff_net[i]);
@@ -127,6 +142,11 @@ void doZ2mumuMC(std::vector< std::string > files){
       eff[i]->SetStatisticOption(TEfficiency::kBJeffrey);
       eff[i]->SetName(Form("eff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
       eff[i]->SetDirectory(0);
+      isConsistent.push_back(true);
+    }
+    else{
+      isConsistent.push_back(false);
+      std::cout << "Warning, these histograms are not consistent!" << std::endl;
     }
 
     recoEff_pass[i]->SetDirectory(0);
@@ -138,7 +158,7 @@ void doZ2mumuMC(std::vector< std::string > files){
     recoEff[i]->Write();
     recoEff_pass[i]->Write();
     recoEff_net[i]->Write();
-    eff[i]->Write();
+    if(isConsistent.at(i)) eff[i]->Write();
   }
 
   output->Close();
