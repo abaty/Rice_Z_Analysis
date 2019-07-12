@@ -19,9 +19,8 @@
 #include <fstream>
 #include <string>
 
-void doZ2mumu(std::vector< std::string > files){
+void doZ2mumu(std::vector< std::string > files, float etaCut, Settings s){
   TH1::SetDefaultSumw2();
-  Settings s = Settings();
   ZEfficiency zEff = ZEfficiency("resources/Z2mumu_Efficiencies.root");
 
   CentralityTool c = CentralityTool();
@@ -31,6 +30,7 @@ void doZ2mumu(std::vector< std::string > files){
   TH1D * massPeakSS[nBins]; 
   TH1D * massPeakOS_withEff[nBins]; 
   TH1D * massPeakSS_withEff[nBins]; 
+  TH1D * yields;
   TProfile * v2Num[nBins];
   TProfile * v2NumVsCent;
   TProfile * v2Denom[nBins];
@@ -69,7 +69,7 @@ void doZ2mumu(std::vector< std::string > files){
     candEta[i] = new TH1D(Form("candEta_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-s.maxZRap,s.maxZRap);
     candY[i] = new TH1D(Form("candY_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",24,-s.maxZRap,s.maxZRap);
     candPhi[i] = new TH1D(Form("candPhi_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-TMath::Pi(),TMath::Pi());
-    
+ 
     v2Num[i] = new TProfile(Form("v2Num_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Denom[i] = new TProfile(Form("v2Denom_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Q1Mid[i] = new TProfile(Form("v2Q1Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
@@ -87,6 +87,7 @@ void doZ2mumu(std::vector< std::string > files){
   v2Q1MidVsCent = new TProfile("v2Q1MidVsCent","",nBins,0,nBins); 
   v2Q2MidVsCent = new TProfile("v2Q2MidVsCent","",nBins,0,nBins); 
   v2AvgEffVsCent = new TProfile("v2AvgEffVsCent","",nBins,0,nBins);
+  yields = new TH1D("yields","yields",nBins,0,nBins);   
  
   v2MuNumVsCent = new TProfile("v2MuNumVsCent","",nBins,0,nBins);
   v2MuDenomVsCent = new TProfile("v2MuDenomVsCent","",nBins,0,nBins);
@@ -115,6 +116,8 @@ void doZ2mumu(std::vector< std::string > files){
         if( v.mass()[j] < s.zMassRange[0] || v.mass()[j] > s.zMassRange[1]) continue; 
         if( !(v.pTD1()[j] > s.minMuonPt )) continue;
         if( !(v.pTD2()[j] > s.minMuonPt )) continue;
+        if( TMath::Abs(v.EtaD1()[j]) > etaCut ) continue;
+        if( TMath::Abs(v.EtaD2()[j]) > etaCut ) continue;
         if( !(v.tightCand(j,"POG"))) continue;//tight Muon 1 && tight Muon 2      
         if( !(v.VtxProb()[j] >0.001)) continue; 
  
@@ -131,6 +134,7 @@ void doZ2mumu(std::vector< std::string > files){
             if(c.isInsideBin(v.centrality(),k)){
               massPeakOS[k]->Fill( v.mass()[j] );
               massPeakOS_withEff[k]->Fill( v.mass()[j], 1.0/efficiency );
+              yields->Fill(k,1.0/efficiency);
               candPt[k]->Fill(v.pT()[j]);
               candPt_unnormalized[k]->Fill(v.pT()[j]);
               candEta[k]->Fill(v.eta()[j]);
@@ -143,6 +147,7 @@ void doZ2mumu(std::vector< std::string > files){
             if(c.isInsideBin(v.centrality(),k)){
               massPeakSS[k]->Fill( v.mass()[j] );
               massPeakSS_withEff[k]->Fill( v.mass()[j] , 1.0/efficiency);
+              yields->Fill(k,-1.0/efficiency);
             }
           }
         }
@@ -260,6 +265,7 @@ void doZ2mumu(std::vector< std::string > files){
     v2MuDenom[i]->SetDirectory(0);
     v2MuQ1Mid[i]->SetDirectory(0);
     v2MuQ2Mid[i]->SetDirectory(0);
+    yields->SetDirectory(0);
   }
 
   v2DenomVsCent->SetDirectory(0);
@@ -273,7 +279,7 @@ void doZ2mumu(std::vector< std::string > files){
   v2MuQ1MidVsCent->SetDirectory(0);
   v2MuQ2MidVsCent->SetDirectory(0);
 
-  TFile * output = new TFile("Z2mumu.root","recreate");
+  TFile * output = new TFile(Form("Z2mumu_%d.root",(int)(etaCut*10)),"recreate");
   for(int i = 0; i<nBins; i++){
     massPeakOS[i]->Write();
     massPeakSS[i]->Write();
@@ -303,6 +309,8 @@ void doZ2mumu(std::vector< std::string > files){
   v2MuDenomVsCent->Write();
   v2MuQ1MidVsCent->Write();
   v2MuQ2MidVsCent->Write();
+
+  yields->Write();
 
   output->Close();
 
@@ -339,7 +347,10 @@ int main(int argc, const char* argv[])
       line++;
     }
   }
+
+  Settings s = Settings();
    
-  doZ2mumu(listOfFiles);
+  doZ2mumu(listOfFiles, s.maxZRap, s);
+  doZ2mumu(listOfFiles, s.maxZRapEle,s);
   return 0; 
 }

@@ -3,6 +3,7 @@
 #include "include/centralityTool.h"
 #include "include/Settings.h"
 #include "include/Timer.h"
+#include "include/ZEfficiency.h"
 #include "TLorentzVector.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -27,6 +28,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   ElectronSelector eSel = ElectronSelector();
   ElectronTriggerMatcher matcher = ElectronTriggerMatcher();
   ElecTrigObject eTrig = ElecTrigObject();
+  ZEfficiency zEff = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root");
   Settings s = Settings();
 
   CentralityTool c = CentralityTool();
@@ -34,11 +36,14 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
 
   TH1D * massPeakOS[nBins]; 
   TH1D * massPeakSS[nBins]; 
+  TH1D * massPeakOS_withEff[nBins]; 
+  TH1D * massPeakSS_withEff[nBins]; 
   TH2D * massVsPt[nBins];
   TH1D * candPt[nBins];
   TH1D * candEta[nBins];
   TH1D * candY[nBins];
   TH1D * candPhi[nBins];
+  TH1D * yields;
   
   TProfile * v2Num[nBins];
   TProfile * v2NumVsCent;
@@ -61,6 +66,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   for(int i = 0; i<nBins; i++){
     massPeakOS[i] = new TH1D(Form("massPeakOS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakSS[i] = new TH1D(Form("massPeakSS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{e^{#pm}e^{#pm}}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
+    massPeakOS_withEff[i] = new TH1D(Form("massPeakOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
+    massPeakSS_withEff[i] = new TH1D(Form("massPeakSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{e^{#pm}e^{#pm}}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massVsPt[i] = new TH2D(Form("massVsPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{e^{#pm}e^{#pm}};p_{T}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1],s.nZPtBins-1,s.zPtBins);
     candPt[i] = new TH1D(Form("candPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     candEta[i] = new TH1D(Form("candEta_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",20,-s.maxZRapEle,s.maxZRapEle);
@@ -77,11 +84,12 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     v2EleQ1Mid[i] = new TProfile(Form("v2EleQ1Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2EleQ2Mid[i] = new TProfile(Form("v2EleQ2Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
   }  
+  yields = new TH1D("yields","yields",nBins,0,nBins);  
   v2NumVsCent = new TProfile("v2NumVsCent","",nBins,0,nBins);
   v2DenomVsCent = new TProfile("v2DenomVsCent","",nBins,0,nBins);
   v2Q1MidVsCent = new TProfile("v2Q1MidVsCent","",nBins,0,nBins);
   v2Q2MidVsCent = new TProfile("v2Q2MidVsCent","",nBins,0,nBins);
-  
+
   v2EleNumVsCent = new TProfile("v2EleNumVsCent","",nBins,0,nBins);
   v2EleDenomVsCent = new TProfile("v2EleDenomVsCent","",nBins,0,nBins);
   v2EleQ1MidVsCent = new TProfile("v2EleQ1MidVsCent","",nBins,0,nBins);
@@ -210,6 +218,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
       for(unsigned int j = 0; j < (unsigned int) nEle; j++){
         if(elePt->at(j)< s.minElectronPt) continue;
         if(TMath::Abs(eleSCEta->at(j)) > s.maxZRapEle) continue;
+        //veto on transition region
+        if(TMath::Abs(eleSCEta->at(j)) > 1.442 && TMath::Abs(eleSCEta->at(j)) < 1.556 ) continue;
         //veto on dead endcap region
         if(eleSCEta->at(j) < -1.39 && eleSCPhi->at(j) < -0.9 && eleSCPhi->at(j) > -1.6) continue;
 
@@ -259,11 +269,15 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
           }
    
           bool isOppositeSign =  eleCharge->at(goodElectrons.at(j)) != eleCharge->at(goodElectrons.at(j2));
+          double efficiency = zEff.getEfficiency( Zcand.Rapidity(), Zcand.Pt() , hiBin );
+        
           if(moreThan2) std::cout << j << " " << j2 << " " << Zcand.M() <<" " << Zcand.Pt() << " isOS? " << (int)isOppositeSign << std::endl;
           if( isOppositeSign){
             for(int k = 0; k<nBins; k++){
               if(c.isInsideBin(hiBin,k)){
                 massPeakOS[k]->Fill( Zcand.M() );
+                massPeakOS_withEff[k]->Fill( Zcand.M(), 1.0/efficiency );
+                yields->Fill(k,1.0/efficiency);
                 massVsPt[k]->Fill(Zcand.M(), Zcand.Pt()); 
                 candPt[k]->Fill(Zcand.Pt());
                 candEta[k]->Fill(Zcand.Eta());
@@ -273,7 +287,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
             }
           }else{
             for(int k = 0; k<nBins; k++){
-              if(c.isInsideBin(hiBin,k)) massPeakSS[k]->Fill( Zcand.M() );
+              if(c.isInsideBin(hiBin,k)){
+                massPeakSS[k]->Fill( Zcand.M() );
+                massPeakSS_withEff[k]->Fill( Zcand.M(), 1.0/efficiency );
+                yields->Fill(k,-1.0/efficiency);
+              }
             }
           }
 
@@ -304,7 +322,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
                 float denom = (Q1*TComplex::Conjugate(Q2)).Re();
                 float q1AndMid = (Q1*TComplex::Conjugate(Qmid)).Re();
                 float q2AndMid = (Q2*TComplex::Conjugate(Qmid)).Re();
-                v2Num[k]->Fill(0.5,num);
+                v2Num[k]->Fill(0.5,num/efficiency);
                 v2Denom[k]->Fill(0.5,denom);
                 v2Q1Mid[k]->Fill(0.5,q1AndMid);
                 v2Q2Mid[k]->Fill(0.5,q2AndMid);
@@ -370,6 +388,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   for(int i = 0; i<nBins; i++){
     massPeakOS[i]->SetDirectory(0);
     massPeakSS[i]->SetDirectory(0);
+    massPeakOS_withEff[i]->SetDirectory(0);
+    massPeakSS_withEff[i]->SetDirectory(0);
     massVsPt[i]->SetDirectory(0);
     candPt[i]->SetDirectory(0);
     candEta[i]->SetDirectory(0);
@@ -386,7 +406,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     v2EleQ2Mid[i]->SetDirectory(0);
   }
 
-  
+  yields->SetDirectory(0);
   v2NumVsCent->SetDirectory(0);
   v2DenomVsCent->SetDirectory(0);
   v2Q1MidVsCent->SetDirectory(0);
@@ -401,6 +421,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   for(int i = 0; i<nBins; i++){
     massPeakOS[i]->Write();
     massPeakSS[i]->Write();
+    massPeakOS_withEff[i]->Write();
+    massPeakSS_withEff[i]->Write();
     massVsPt[i]->Write();
     candPt[i]->Write();
     candEta[i]->Write();
@@ -416,6 +438,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     v2EleQ1Mid[i]->Write();
     v2EleQ2Mid[i]->Write();
   }
+  yields->Write();
   v2NumVsCent->Write();
   v2DenomVsCent->Write();
   v2Q1MidVsCent->Write();

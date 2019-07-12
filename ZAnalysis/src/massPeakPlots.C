@@ -23,10 +23,15 @@ void plotMassPeaks(std::string Zee, std::string Zmumu){
   TH1D * massPeakSS_MuMu[nBins]; 
   TH1D * massPeakOS_MuMu_withEff[nBins]; 
   TH1D * massPeakSS_MuMu_withEff[nBins]; 
+  TH1D * yields_MuMu;
+  TH1D * yields_EE;
   
   TFile * ZeeFile = TFile::Open(Zee.c_str(),"read");
   TFile * ZmumuFile = TFile::Open(Zmumu.c_str(),"read");
-  
+    
+  yields_MuMu = (TH1D*)ZmumuFile->Get("yields");
+  yields_EE = (TH1D*)ZeeFile->Get("yields");
+
   for(int i = 0; i<nBins; i++){
     massPeakOS_EE[i] = (TH1D*)ZeeFile->Get(Form("massPeakOS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     massPeakSS_EE[i] = (TH1D*)ZeeFile->Get(Form("massPeakSS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
@@ -96,50 +101,131 @@ void plotMassPeaks(std::string Zee, std::string Zmumu){
 
 
   
-  const char * labels[7] = {"0-5%","5-10%","10-30%","30-50%", "50-70%", "70-90%", "0-100%"};
-  float TAA[7] = {26.0, 20.5, 11.5, 3.82, 0.934, 0.152, 5.61};
-  float Nmb = 7700 * 1606.05 * 1000.0;//glauber xsection is 7700 mb, second number is lumi, third converts from ub to mb
-  float scaleFactor[7];
-  for(int i = 0; i<7; i++){
-    scaleFactor[i] = 1.0/TAA[i]/Nmb;
-    if(i ==0 || i==1) scaleFactor[i] = scaleFactor[i] * 20.0;
-    if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor[i] = scaleFactor[i] * 5.0;
+  const char * labels[9] = {"0-5%","5-10%","10-20%","20-30%","30-40%","40-50%", "50-70%", "70-90%", "0-100%"};
+  float TAA[9] = {26.0, 20.5, 14.35, 8.663, 4.976, 2.66, 0.934, 0.152, 5.61};
+  float Nmb_mumu = 7700 * 1606.05 * 1000.0;//glauber xsection is 7700 mb, second number is lumi, third converts from ub to mb
+  float scaleFactor_mumu[9];
+  for(int i = 0; i<9; i++){
+    scaleFactor_mumu[i] = 1.0/TAA[i]/Nmb_mumu;
+    if(i ==0 || i==1) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 20.0;
+    if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 10.0;
+    if(i == 6 || i==7) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 5.0;
+  }
+  float Nmb_ee = 7700 * 1603.392 * 1000.0;//glauber xsection is 7700 mb, second number is lumi, third converts from ub to mb
+  float scaleFactor_ee[9];
+  for(int i = 0; i<9; i++){
+    scaleFactor_ee[i] = 1.0/TAA[i]/Nmb_ee;
+    if(i ==0 || i==1) scaleFactor_ee[i] = scaleFactor_ee[i] * 20.0;
+    if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_ee[i] = scaleFactor_ee[i] * 10.0;
+    if(i == 6 || i==7) scaleFactor_ee[i] = scaleFactor_ee[i] * 5.0;
   }
 
   gStyle->SetErrorX(0);
 
-  TH1D * yieldPlot = new TH1D("yieldPlot","",7,0,7);
+  TH1D * yieldPlot_mumu = new TH1D("yieldPlot_mumu","",9,0,9);
+  yieldPlot_mumu->SetBinContent(1,yields_MuMu->GetBinContent(0+1)*scaleFactor_mumu[0]);
+  yieldPlot_mumu->SetBinError(1,yields_MuMu->GetBinError(0+1)*scaleFactor_mumu[0]);
+  yieldPlot_mumu->SetBinContent(2,yields_MuMu->GetBinContent(1+1)*scaleFactor_mumu[1]);
+  yieldPlot_mumu->SetBinError(2,yields_MuMu->GetBinError(1+1)*scaleFactor_mumu[1]);
+  yieldPlot_mumu->SetBinContent(3,yields_MuMu->GetBinContent(2+1)*scaleFactor_mumu[2]);
+  yieldPlot_mumu->SetBinError(3,yields_MuMu->GetBinError(2+1)*scaleFactor_mumu[2]);
+  yieldPlot_mumu->SetBinContent(4,yields_MuMu->GetBinContent(3+1)*scaleFactor_mumu[3]);
+  yieldPlot_mumu->SetBinError(4,yields_MuMu->GetBinError(3+1)*scaleFactor_mumu[3]);
+  yieldPlot_mumu->SetBinContent(5,yields_MuMu->GetBinContent(4+1)*scaleFactor_mumu[4]);
+  yieldPlot_mumu->SetBinError(5,yields_MuMu->GetBinError(4+1)*scaleFactor_mumu[4]);
+  yieldPlot_mumu->SetBinContent(6,yields_MuMu->GetBinContent(5+1)*scaleFactor_mumu[5]);
+  yieldPlot_mumu->SetBinError(6,yields_MuMu->GetBinError(5+1)*scaleFactor_mumu[5]);
+  yieldPlot_mumu->SetBinContent(7,yields_MuMu->GetBinContent(15+1)*scaleFactor_mumu[6]);
+  yieldPlot_mumu->SetBinError(7,yields_MuMu->GetBinError(15+1)*scaleFactor_mumu[6]);
+  yieldPlot_mumu->SetBinContent(8,yields_MuMu->GetBinContent(16+1)*scaleFactor_mumu[7]);
+  yieldPlot_mumu->SetBinError(8,yields_MuMu->GetBinError(16+1)*scaleFactor_mumu[7]);
+  yieldPlot_mumu->SetBinContent(9,yields_MuMu->GetBinContent(11+1)*scaleFactor_mumu[8]);
+  yieldPlot_mumu->SetBinError(9,yields_MuMu->GetBinError(11+1)*scaleFactor_mumu[8]);
+  
+  TH1D * yieldPlot_ee = new TH1D("yieldPlot_ee","",9,-0.25,8.75);
+  yieldPlot_ee->SetBinContent(1,yields_EE->GetBinContent(0+1)*scaleFactor_ee[0]);
+  yieldPlot_ee->SetBinError(1,yields_EE->GetBinError(0+1)*scaleFactor_ee[0]);
+  yieldPlot_ee->SetBinContent(2,yields_EE->GetBinContent(1+1)*scaleFactor_ee[1]);
+  yieldPlot_ee->SetBinError(2,yields_EE->GetBinError(1+1)*scaleFactor_ee[1]);
+  yieldPlot_ee->SetBinContent(3,yields_EE->GetBinContent(2+1)*scaleFactor_ee[2]);
+  yieldPlot_ee->SetBinError(3,yields_EE->GetBinError(2+1)*scaleFactor_ee[2]);
+  yieldPlot_ee->SetBinContent(4,yields_EE->GetBinContent(3+1)*scaleFactor_ee[3]);
+  yieldPlot_ee->SetBinError(4,yields_EE->GetBinError(3+1)*scaleFactor_ee[3]);
+  yieldPlot_ee->SetBinContent(5,yields_EE->GetBinContent(4+1)*scaleFactor_ee[4]);
+  yieldPlot_ee->SetBinError(5,yields_EE->GetBinError(4+1)*scaleFactor_ee[4]);
+  yieldPlot_ee->SetBinContent(6,yields_EE->GetBinContent(5+1)*scaleFactor_ee[5]);
+  yieldPlot_ee->SetBinError(6,yields_EE->GetBinError(5+1)*scaleFactor_ee[5]);
+  yieldPlot_ee->SetBinContent(7,yields_EE->GetBinContent(15+1)*scaleFactor_ee[6]);
+  yieldPlot_ee->SetBinError(7,yields_EE->GetBinError(15+1)*scaleFactor_ee[6]);
+  yieldPlot_ee->SetBinContent(8,yields_EE->GetBinContent(16+1)*scaleFactor_ee[7]);
+  yieldPlot_ee->SetBinError(8,yields_EE->GetBinError(16+1)*scaleFactor_ee[7]);
+  yieldPlot_ee->SetBinContent(9,yields_EE->GetBinContent(11+1)*scaleFactor_ee[8]);
+  yieldPlot_ee->SetBinError(9,yields_EE->GetBinError(11+1)*scaleFactor_ee[8]);
 
-  yieldPlot->SetBinContent(1,massPeakOS_MuMu_withEff[0]->Integral()*scaleFactor[0]);
-  yieldPlot->SetBinError(1,TMath::Sqrt(massPeakOS_MuMu_withEff[0]->Integral())*scaleFactor[0]);
-  yieldPlot->SetBinContent(2,massPeakOS_MuMu_withEff[1]->Integral()*scaleFactor[1]);
-  yieldPlot->SetBinError(2,TMath::Sqrt(massPeakOS_MuMu_withEff[1]->Integral())*scaleFactor[1]);
-  yieldPlot->SetBinContent(3,massPeakOS_MuMu_withEff[13]->Integral()*scaleFactor[2]);
-  yieldPlot->SetBinError(3,TMath::Sqrt(massPeakOS_MuMu_withEff[13]->Integral())*scaleFactor[2]);
-  yieldPlot->SetBinContent(4,massPeakOS_MuMu_withEff[14]->Integral()*scaleFactor[3]);
-  yieldPlot->SetBinError(4,TMath::Sqrt(massPeakOS_MuMu_withEff[14]->Integral())*scaleFactor[3]);
-  yieldPlot->SetBinContent(5,massPeakOS_MuMu_withEff[15]->Integral()*scaleFactor[4]);
-  yieldPlot->SetBinError(5,TMath::Sqrt(massPeakOS_MuMu_withEff[15]->Integral())*scaleFactor[4]);
-  yieldPlot->SetBinContent(6,massPeakOS_MuMu_withEff[16]->Integral()*scaleFactor[5]);
-  yieldPlot->SetBinError(6,TMath::Sqrt(massPeakOS_MuMu_withEff[16]->Integral())*scaleFactor[5]);
-  yieldPlot->SetBinContent(7,massPeakOS_MuMu_withEff[11]->Integral()*scaleFactor[6]);
-  yieldPlot->SetBinError(7,TMath::Sqrt(massPeakOS_MuMu_withEff[11]->Integral())*scaleFactor[6]);
-  for(int i = 1; i<8; i++){
-    yieldPlot->GetXaxis()->SetBinLabel(i, labels[i-1]);
-    yieldPlot->GetXaxis()->ChangeLabel(i,45);
+  TH1D * yieldCombo = new TH1D("yieldCombo","",9,0.25,9.25);
+  for(int i = 0; i<yieldCombo->GetXaxis()->GetNbins()+2; i++){
+    float mu = yieldPlot_mumu->GetBinContent(i);
+    float muErr = yieldPlot_mumu->GetBinError(i);
+    float e = yieldPlot_ee->GetBinContent(i);
+    float eErr = yieldPlot_ee->GetBinError(i);
+
+    //calculate a weighted mean
+    float point = mu/(muErr*muErr)+e/(eErr*eErr);
+    float norm = 1.0/(muErr*muErr) + 1.0/(eErr*eErr);
+
+    yieldCombo->SetBinContent(i, point/norm ); 
+    yieldCombo->SetBinError(i, TMath::Sqrt(1.0/norm));
+  }
+
+
+  for(int i = 1; i<10; i++){
+    yieldPlot_mumu->GetXaxis()->SetBinLabel(i, labels[i-1]);
+    yieldPlot_mumu->GetXaxis()->ChangeLabel(i,45);
   }
   
-  yieldPlot->SetMarkerStyle(8);
-  yieldPlot->SetMarkerColor(kBlack);
-  yieldPlot->GetYaxis()->SetTitle("#frac{1}{N_{evt}} #frac{1}{T_{AA}} N_{Z}");
-  yieldPlot->GetYaxis()->SetRangeUser(0,yieldPlot->GetMaximum()*1.3);
+  yieldPlot_mumu->SetMarkerStyle(8);
+  yieldPlot_mumu->SetMarkerColor(kBlue);
+  yieldPlot_mumu->SetMarkerSize(1.3);
+  yieldPlot_mumu->SetLineColor(kBlue);
+  yieldPlot_mumu->SetLineWidth(2);
+  yieldPlot_mumu->GetYaxis()->SetTitle("#frac{1}{N_{evt}} #frac{1}{T_{AA}} N_{Z}");
+  yieldPlot_mumu->GetYaxis()->SetRangeUser(yieldPlot_mumu->GetMinimum()*0.5,yieldPlot_mumu->GetMaximum()*1.15);
+
+  yieldPlot_ee->SetMarkerStyle(21);
+  yieldPlot_ee->SetMarkerSize(1.5);
+  yieldPlot_ee->SetMarkerColor(kRed+1);
+  yieldPlot_ee->SetLineColor(kRed+1);
+  yieldPlot_ee->SetLineWidth(2);
+  
+  yieldCombo->SetMarkerStyle(34);
+  yieldCombo->SetMarkerSize(1.8);
+  yieldCombo->SetMarkerColor(kBlack);
+  yieldCombo->SetLineColor(kBlack);
+  yieldCombo->SetLineWidth(2);
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
   c1->SetLeftMargin(0.2);
   c1->SetBottomMargin(0.2);
 
-  yieldPlot->SetStats(0);
-  yieldPlot->Draw();
+  yieldPlot_mumu->SetStats(0);
+  yieldPlot_mumu->Draw();
+  yieldPlot_ee->Draw("same");
+  yieldCombo->Draw("same");
+  
+  yieldPlot_mumu->Print("All");
+  yieldPlot_ee->Print("All");
+  yieldCombo->Print("All");  
+
+  TLegend * leg = new TLegend(0.21,0.22,0.81,0.43);
+  leg->SetBorderSize(0);
+  leg->AddEntry((TObject*)0,"2018 PbPb, p_{T}^{l} > 20 GeV","");
+  leg->AddEntry((TObject*)0,"|#eta^{l}| < 2.1","");
+  leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-} channel","p");
+  leg->AddEntry(yieldPlot_ee,"e^{+}e^{-} channel","p");
+  leg->AddEntry(yieldCombo,"combined result","p");
+
+  leg->Draw("same");
+
   c1->SaveAs("plots/yields/yields.png");
   c1->SaveAs("plots/yields/yields.pdf");
   c1->SaveAs("plots/yields/yields.C");

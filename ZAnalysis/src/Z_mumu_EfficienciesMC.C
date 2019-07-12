@@ -1,3 +1,4 @@
+#include "include/forceConsistency.h"
 #include "include/VertexCompositeNtuple.h"
 #include "include/PbPb_5TeV_2018_eventUtils.h"
 #include "include/centralityTool.h"
@@ -49,7 +50,7 @@ void doZ2mumuMC(std::vector< std::string > files){
     VertexCompositeNtuple v = VertexCompositeNtuple();
     v.GetTree(files.at(f),"dimucontana_mc"); 
     for(unsigned int i = 0; i<v.GetEntries(); i++){
-    //for(unsigned int i = 0; i<100000; i++){
+    //for(unsigned int i = 0; i<1000000; i++){
       v.GetEntry(i);
       
       if(i%1000==0) std::cout << i << "/" << v.GetEntries() << std::endl;
@@ -68,8 +69,8 @@ void doZ2mumuMC(std::vector< std::string > files){
         if(v.PID_gen()[j] != 23) continue;
 
         //require both legs to be in acceptance
-        if( TMath::Abs( v.EtaD1_gen()[j] ) > 2.4 ) continue;
-        if( TMath::Abs( v.EtaD2_gen()[j] ) > 2.4 ) continue;
+        if( TMath::Abs( v.EtaD1_gen()[j] ) > s.maxZRap ) continue;
+        if( TMath::Abs( v.EtaD2_gen()[j] ) > s.maxZRap ) continue;
 
         //require both muons to be > 20 GeV
         if( v.pTD1_gen()[j] < s.minMuonPt ) continue;
@@ -97,6 +98,8 @@ void doZ2mumuMC(std::vector< std::string > files){
         if( v.mass()[indx] < s.zMassRange[0] || v.mass()[indx] > s.zMassRange[1]) continue; 
         if( !(v.pTD1()[indx] > s.minMuonPt )) continue;
         if( !(v.pTD2()[indx] > s.minMuonPt )) continue;
+        if( TMath::Abs(v.EtaD1()[indx]) > s.maxZRap ) continue;
+        if( TMath::Abs(v.EtaD2()[indx]) > s.maxZRap ) continue;
         if( !(v.tightCand(indx,"POG"))) continue;//tight Muon 1 && tight Muon 2      
         if( !(v.VtxProb()[indx] >0.001)) continue; 
  
@@ -133,6 +136,7 @@ void doZ2mumuMC(std::vector< std::string > files){
 
   std::vector< bool > isConsistent;
   for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_pass[i], recoEff_net[i]);
     recoEff[i] = (TH2D*)recoEff_pass[i]->Clone(Form("recoEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     recoEff[i]->Divide(recoEff_net[i]);
     recoEff[i]->SetDirectory(0);

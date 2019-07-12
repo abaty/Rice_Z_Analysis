@@ -1,9 +1,11 @@
+#include "include/forceConsistency.h"
 #include "include/electronSelector.h"
 #include "include/electronTriggerMatching.h"
 #include "include/centralityTool.h"
 #include "include/Settings.h"
 #include "include/Timer.h"
 #include "include/MCReweight.h"
+#include "include/ElectronTnP.h"
 #include "TLorentzVector.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -27,7 +29,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   ElectronSelector eSel = ElectronSelector();
   ElectronTriggerMatcher matcher = ElectronTriggerMatcher();
   ElecTrigObject eTrig = ElecTrigObject();
-  
+  ElectronTnP eTnP = ElectronTnP();  
+
   MCReweight vzRW = MCReweight("resources/vzReweight.root");
   
   Settings s = Settings();
@@ -223,6 +226,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
       for(unsigned int j = 0; j < (unsigned int) nEle; j++){
         if(elePt->at(j)< s.minElectronPt) continue;
         if(TMath::Abs(eleSCEta->at(j)) > s.maxZRapEle) continue;
+        //veto on transition region
+        if(TMath::Abs(eleSCEta->at(j)) > 1.442 && TMath::Abs(eleSCEta->at(j)) < 1.556 ) continue;
         //veto on dead endcap region
         if(eleSCEta->at(j) < -1.39 && eleSCPhi->at(j) < -0.9 && eleSCPhi->at(j) > -1.6) continue;
 
@@ -270,7 +275,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
           if(!isOppositeSign) continue;
           if(moreThan2 && TMath::ACos(TMath::Cos(Zcand.Phi() - mom.Phi())) > 0.1 ) continue;
           //Looks like this is a good candidate match! Let's get the scale factor
-          float scaleFactor = 1.0;
+          float scaleFactor = eTnP.getZSF(hiBin, elePt->at(goodElectrons.at(j)), eleSCEta->at(goodElectrons.at(j)), elePt->at(goodElectrons.at(j2)), eleSCEta->at(goodElectrons.at(j2)), 0) ;
 
           //Fill numerator (and apply the scale factor here!)
           for(int k = 0; k<nBins; k++){ 
@@ -301,6 +306,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   timer.StartSplit("End of analysis");
   std::vector< bool > isConsistent;
   for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_pass[i], recoEff_net[i]);
     recoEff[i] = (TH2D*)recoEff_pass[i]->Clone(Form("recoEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     recoEff[i]->Divide(recoEff_net[i]);
     recoEff[i]->SetDirectory(0);
