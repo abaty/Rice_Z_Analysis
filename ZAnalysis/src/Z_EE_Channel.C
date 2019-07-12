@@ -119,8 +119,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   std::vector< float > * eleSCEta = 0;
   std::vector< float > * eleSCPhi = 0;
   std::vector< float > * eleHoverEBc = 0;
-  std::vector< float > * eleD0 = 0;
-  std::vector< float > * eleDz = 0;
+  //std::vector< float > * eleD0 = 0;
+  //std::vector< float > * eleDz = 0;
   std::vector< float > * eleIP3D = 0;
   std::vector< float > * eleEoverPInv = 0;
 
