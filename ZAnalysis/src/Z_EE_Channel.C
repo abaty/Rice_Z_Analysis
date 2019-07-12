@@ -1,3 +1,4 @@
+#include "include/electronEnergyScale.h"
 #include "include/electronSelector.h"
 #include "include/electronTriggerMatching.h"
 #include "include/centralityTool.h"
@@ -28,6 +29,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   ElectronSelector eSel = ElectronSelector();
   ElectronTriggerMatcher matcher = ElectronTriggerMatcher();
   ElecTrigObject eTrig = ElecTrigObject();
+  ElectronEnergyScale energyScale = ElectronEnergyScale("data");
   ZEfficiency zEff = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root");
   Settings s = Settings();
 
@@ -116,9 +118,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   std::vector< float > * eledPhiAtVtx = 0;
   std::vector< float > * eleSCEta = 0;
   std::vector< float > * eleSCPhi = 0;
-  std::vector< float > * eleHoverE = 0;
+  std::vector< float > * eleHoverEBc = 0;
   std::vector< float > * eleD0 = 0;
   std::vector< float > * eleDz = 0;
+  std::vector< float > * eleIP3D = 0;
   std::vector< float > * eleEoverPInv = 0;
 
   int hiNevtPlane;
@@ -147,9 +150,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     eTree->SetBranchAddress("eledPhiAtVtx",&eledPhiAtVtx);
     eTree->SetBranchAddress("eleSCEta",&eleSCEta);
     eTree->SetBranchAddress("eleSCPhi",&eleSCPhi);
-    eTree->SetBranchAddress("eleHoverE",&eleHoverE);
-    eTree->SetBranchAddress("eleD0",&eleD0);
-    eTree->SetBranchAddress("eleDz",&eleDz);
+    eTree->SetBranchAddress("eleHoverEBc",&eleHoverEBc);
+    //eTree->SetBranchAddress("eleD0",&eleD0);
+    //eTree->SetBranchAddress("eleDz",&eleDz);
+    eTree->SetBranchAddress("eleIP3D",&eleIP3D);
     eTree->SetBranchAddress("eleEoverPInv",&eleEoverPInv);
 
     TTree * evtTree = (TTree*)in->Get("hiEvtAnalyzer/HiTree");
@@ -210,14 +214,19 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
       timer.StartSplit("Loading electron stuff");
       areAllEleBranchesOn = true;
       eTree->SetBranchStatus("*",1);
-      eTree->GetEntry(i);
-      
+      eTree->GetEntry(i);     
+ 
       timer.StartSplit("Electron Cuts");
       //make a list of electrons passing our cuts
       std::vector< int > goodElectrons; 
       for(unsigned int j = 0; j < (unsigned int) nEle; j++){
-        if(elePt->at(j)< s.minElectronPt) continue;
+        //correct Pt
+        elePt->at(j) = energyScale.correctPt( elePt->at(j), eleSCEta->at(j), hiBin);
+        
+        //kinematic cuts
+        if(elePt->at(j)< s.minElectronPt) continue;        
         if(TMath::Abs(eleSCEta->at(j)) > s.maxZRapEle) continue;
+      
         //veto on transition region
         if(TMath::Abs(eleSCEta->at(j)) > 1.442 && TMath::Abs(eleSCEta->at(j)) < 1.556 ) continue;
         //veto on dead endcap region
@@ -226,7 +235,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
         //check electron qualty variables
         float dEta = TMath::Abs( eledEtaAtVtx->at(j) );
         float dPhi = TMath::Abs( eledPhiAtVtx->at(j) );
-        if(!eSel.isGoodElectron(ElectronSelector::WorkingPoint::loose, hiBin, eleSCEta->at(j), eleSigmaIEtaIEta->at(j), dEta, dPhi, eleMissHits->at(j), eleHoverE->at(j), eleEoverPInv->at(j), eleD0->at(j), eleDz->at(j))) continue;
+        if(!eSel.isGoodElectron(ElectronSelector::WorkingPoint::loose, hiBin, eleSCEta->at(j), eleSigmaIEtaIEta->at(j), dEta, dPhi, eleMissHits->at(j), eleHoverEBc->at(j), eleEoverPInv->at(j), eleIP3D->at(j))) continue;
 
         goodElectrons.push_back(j);
       }
