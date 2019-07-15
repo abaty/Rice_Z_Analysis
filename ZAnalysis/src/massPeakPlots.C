@@ -104,20 +104,28 @@ void plotMassPeaks(std::string Zee, std::string Zmumu){
   const char * labels[9] = {"0-5%","5-10%","10-20%","20-30%","30-40%","40-50%", "50-70%", "70-90%", "0-100%"};
   float TAA[9] = {26.0, 20.5, 14.35, 8.663, 4.976, 2.66, 0.934, 0.152, 5.61};
   float Nmb_mumu = 7700 * 1606.05 * 1000.0;//glauber xsection is 7700 mb, second number is lumi, third converts from ub to mb
+  //float Nmb_mumu = 9.62460e+09;//0--90%
   float scaleFactor_mumu[9];
   for(int i = 0; i<9; i++){
     scaleFactor_mumu[i] = 1.0/TAA[i]/Nmb_mumu;
     if(i ==0 || i==1) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 20.0;
     if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 10.0;
     if(i == 6 || i==7) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 5.0;
+    //if(i ==0 || i==1) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 18.0;
+    //if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 9.0;
+    //if(i == 6 || i==7) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 4.5;
   }
   float Nmb_ee = 7700 * 1603.392 * 1000.0;//glauber xsection is 7700 mb, second number is lumi, third converts from ub to mb
+  //float Nmb_ee = 9.62460e+09;//0-90%
   float scaleFactor_ee[9];
   for(int i = 0; i<9; i++){
     scaleFactor_ee[i] = 1.0/TAA[i]/Nmb_ee;
     if(i ==0 || i==1) scaleFactor_ee[i] = scaleFactor_ee[i] * 20.0;
     if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_ee[i] = scaleFactor_ee[i] * 10.0;
     if(i == 6 || i==7) scaleFactor_ee[i] = scaleFactor_ee[i] * 5.0;
+    //if(i ==0 || i==1) scaleFactor_ee[i] = scaleFactor_ee[i] * 18.0;
+    //if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_ee[i] = scaleFactor_ee[i] * 9.0;
+    //if(i == 6 || i==7) scaleFactor_ee[i] = scaleFactor_ee[i] * 4.5;
   }
 
   gStyle->SetErrorX(0);
