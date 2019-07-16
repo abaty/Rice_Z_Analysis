@@ -1,3 +1,4 @@
+#include "include/centralityBin.h"
 #include "include/electronEnergyScale.h"
 #include "include/forceConsistency.h"
 #include "include/electronSelector.h"
@@ -37,21 +38,60 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   
   Settings s = Settings();
 
+  CentralityBin cb = CentralityBin();
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
+  
+  TH1D * recoEff_pt_pass[nBins];
+  TH1D * recoEff_pt_net[nBins];
+  TH1D * recoEff_pt[nBins];  
+  TEfficiency * eff_pt[nBins];
+  
+  TH1D * recoEff_y_pass[nBins];
+  TH1D * recoEff_y_net[nBins];
+  TH1D * recoEff_y[nBins];  
+  TEfficiency * eff_y[nBins];
+  
+  TH1D * recoEff_phi_pass[nBins];
+  TH1D * recoEff_phi_net[nBins];
+  TH1D * recoEff_phi[nBins];  
+  TEfficiency * eff_phi[nBins];
+  
+  TH1D * recoEff_cent_pass[nBins];
+  TH1D * recoEff_cent_net[nBins];
+  TH1D * recoEff_cent[nBins];  
+  TEfficiency * eff_cent[nBins];
 
   TH2D * recoEff_pass[nBins];
   TH2D * recoEff_net[nBins];
   TH2D * recoEff[nBins];
   TEfficiency * eff[nBins];
+  
+  TH2D * recoEff_noSF_pass[nBins];
+  TH2D * recoEff_noSF_net[nBins];
+  TH2D * recoEff_noSF[nBins];
+  TEfficiency * eff_noSF[nBins];
 
   for(int k = 0; k<nBins; k++){
     recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
     recoEff_net[k] = new TH2D(Form("recoEff_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
+    
+    recoEff_noSF_pass[k] = new TH2D(Form("recoEff_noSF_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
+    recoEff_noSF_net[k] = new TH2D(Form("recoEff_noSF_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
+    
+    recoEff_pt_pass[k] = new TH1D(Form("recoEff_pt_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_pt_net[k] = new TH1D(Form("recoEff_pt_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_y_pass[k] = new TH1D(Form("recoEff_y_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    recoEff_y_net[k] = new TH1D(Form("recoEff_y_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    recoEff_phi_pass[k] = new TH1D(Form("recoEff_phi_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",30,-TMath::Pi(),TMath::Pi());
+    recoEff_phi_net[k] = new TH1D(Form("recoEff_phi_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",30,-TMath::Pi(),TMath::Pi());
+    recoEff_cent_pass[k] = new TH1D(Form("recoEff_cent_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",20,0,100);
+    recoEff_cent_net[k] = new TH1D(Form("recoEff_cent_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",20,0,100);
   }
 
   int nEle;
   int hiBin;
+  float hiHF;
   float vz;
 
   int pprimaryVertexFilter;
@@ -134,7 +174,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     eTree->SetBranchAddress("eleEoverPInv",&eleEoverPInv);
 
     TTree * evtTree = (TTree*)in->Get("hiEvtAnalyzer/HiTree");
-    evtTree->SetBranchAddress("hiBin",&hiBin);
+    //evtTree->SetBranchAddress("hiBin",&hiBin);
+    evtTree->SetBranchAddress("hiHF",&hiHF);
     evtTree->SetBranchAddress("vz",&vz);
   
     TTree * skimTree = (TTree*)in->Get("skimanalysis/HltTree");
@@ -160,6 +201,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
       //event selections
       evtTree->GetEntry(i);
       if(TMath::Abs(vz)>15) continue;
+      hiBin = cb.getHiBinFromhiHF(hiHF,3);
+
       skimTree->GetEntry(i);
       if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
       
@@ -199,12 +242,22 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
           for(int k = 0; k<nBins; k++){ 
             if(c.isInsideBin(hiBin,k)){
               recoEff_net[k]->Fill( mom.Rapidity(), mcMomPt->at(j), eventWeight );
+              recoEff_noSF_net[k]->Fill( mom.Rapidity(), mcMomPt->at(j), eventWeight );
+              recoEff_pt_net[k]->Fill( mom.Pt(), eventWeight);
+              recoEff_y_net[k]->Fill( mom.Rapidity(), eventWeight);
+              recoEff_cent_net[k]->Fill( hiBin/2.0, eventWeight);
+              recoEff_phi_net[k]->Fill( mom.Phi(), eventWeight);
 
               //for the last few pt bins, halve the y binning so we have better stats
               if(mcMomPt->at(j) > s.zPtBins[s.nZPtBins - s.nPtBinsToRebinRapEff]){
                 int bin = recoEff_net[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
-                if( bin%2 ==1) recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin+1), mcMomPt->at(j), eventWeight );
-                else           recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin-1), mcMomPt->at(j), eventWeight );
+                if( bin%2 ==1){
+                  recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin+1), mcMomPt->at(j), eventWeight );
+                  recoEff_noSF_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin+1), mcMomPt->at(j), eventWeight );
+                } else {
+                  recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin-1), mcMomPt->at(j), eventWeight );
+                  recoEff_noSF_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin-1), mcMomPt->at(j), eventWeight );
+                }
               }
             }
           }
@@ -290,12 +343,21 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
               //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
               if( mom.Pt() < s.zPtBins[ s.nZPtBins-1 ] && TMath::Abs( mom.Rapidity() ) < s.maxZRap ){
                 recoEff_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
+                recoEff_pt_pass[k]->Fill( mom.Pt(), eventWeight * scaleFactor);
+                recoEff_y_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
+                recoEff_cent_pass[k]->Fill( hiBin/2.0, eventWeight * scaleFactor);
+                recoEff_phi_pass[k]->Fill( mom.Phi(), eventWeight * scaleFactor);
           
                 //for the last few pt bins, halve the y binning so we have better stats
                 if(mom.Pt()> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
                   int bin = recoEff_pass[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
-                  if( bin%2 ==1) recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
-                  else           recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactor );
+                  if( bin%2 ==1){
+                    recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
+                    recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight );
+                  } else { 
+                    recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactor );
+                    recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight );
+                  }
                 }
               }
             }
@@ -332,6 +394,97 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     recoEff_net[i]->SetDirectory(0);
     recoEff_pass[i]->SetDirectory(0);
   }
+  for(int i = 0; i<nBins; i++){
+    recoEff_noSF[i] = (TH2D*)recoEff_noSF_pass[i]->Clone(Form("recoEff_noSF_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_noSF[i]->Divide(recoEff_noSF_net[i]);
+    recoEff_noSF[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_noSF_pass[i]), *(recoEff_noSF_net[i]),"w") ){
+      eff_noSF[i] = new TEfficiency(*(recoEff_noSF_pass[i]), *(recoEff_noSF_net[i]));
+      eff_noSF[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_noSF[i]->SetName(Form("eff_noSF_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_noSF[i]->SetDirectory(0);
+    }
+    recoEff_noSF_net[i]->SetDirectory(0);
+    recoEff_noSF_pass[i]->SetDirectory(0);
+  }
+  
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_pt_pass[i], recoEff_pt_net[i]);
+    recoEff_pt[i] = (TH1D*)recoEff_pt_pass[i]->Clone(Form("recoEff_pt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt[i]->Divide(recoEff_pt_net[i]);
+    recoEff_pt[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_pt_pass[i]), *(recoEff_pt_net[i]),"w") ){
+      eff_pt[i] = new TEfficiency(*(recoEff_pt_pass[i]), *(recoEff_pt_net[i]));
+      eff_pt[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_pt[i]->SetName(Form("eff_pt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_pt[i]->SetDirectory(0);
+    }
+    else{
+      std::cout << "Warning, these histograms are not consistent!" << std::endl;
+    }
+
+    recoEff_pt_pass[i]->SetDirectory(0);
+    recoEff_pt_net[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_y_pass[i], recoEff_y_net[i]);
+    recoEff_y[i] = (TH1D*)recoEff_y_pass[i]->Clone(Form("recoEff_y_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_y[i]->Divide(recoEff_y_net[i]);
+    recoEff_y[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_y_pass[i]), *(recoEff_y_net[i]),"w") ){
+      eff_y[i] = new TEfficiency(*(recoEff_y_pass[i]), *(recoEff_y_net[i]));
+      eff_y[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_y[i]->SetName(Form("eff_y_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_y[i]->SetDirectory(0);
+    }
+    else{
+      std::cout << "Warning, these histograms are not consistent!" << std::endl;
+    }
+
+    recoEff_y_pass[i]->SetDirectory(0);
+    recoEff_y_net[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_phi_pass[i], recoEff_phi_net[i]);
+    recoEff_phi[i] = (TH1D*)recoEff_phi_pass[i]->Clone(Form("recoEff_phi_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_phi[i]->Divide(recoEff_phi_net[i]);
+    recoEff_phi[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_phi_pass[i]), *(recoEff_phi_net[i]),"w") ){
+      eff_phi[i] = new TEfficiency(*(recoEff_phi_pass[i]), *(recoEff_phi_net[i]));
+      eff_phi[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_phi[i]->SetName(Form("eff_phi_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_phi[i]->SetDirectory(0);
+    }
+    else{
+      std::cout << "Warning, these histograms are not consistent!" << std::endl;
+    }
+
+    recoEff_phi_pass[i]->SetDirectory(0);
+    recoEff_phi_net[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_cent_pass[i], recoEff_cent_net[i]);
+    recoEff_cent[i] = (TH1D*)recoEff_cent_pass[i]->Clone(Form("recoEff_cent_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_cent[i]->Divide(recoEff_cent_net[i]);
+    recoEff_cent[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_cent_pass[i]), *(recoEff_cent_net[i]),"w") ){
+      eff_cent[i] = new TEfficiency(*(recoEff_cent_pass[i]), *(recoEff_cent_net[i]));
+      eff_cent[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_cent[i]->SetName(Form("eff_cent_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_cent[i]->SetDirectory(0);
+    }
+    else{
+      std::cout << "Warning, these histograms are not consistent!" << std::endl;
+    }
+
+    recoEff_cent_pass[i]->SetDirectory(0);
+    recoEff_cent_net[i]->SetDirectory(0);
+  }
 
   TFile * output = new TFile(Form("resources/Z2ee_EfficiencyMC_%d.root",jobNumber),"recreate");
   for(int i = 0; i<nBins; i++){
@@ -339,6 +492,31 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     recoEff_pass[i]->Write();
     recoEff[i]->Write();
     eff[i]->Write();
+    
+    recoEff_noSF_net[i]->Write();
+    recoEff_noSF_pass[i]->Write();
+    recoEff_noSF[i]->Write();
+    eff_noSF[i]->Write();
+    
+    recoEff_pt[i]->Write();
+    recoEff_pt_pass[i]->Write();
+    recoEff_pt_net[i]->Write();
+    eff_pt[i]->Write();
+    
+    recoEff_y[i]->Write();
+    recoEff_y_pass[i]->Write();
+    recoEff_y_net[i]->Write();
+    eff_y[i]->Write();
+    
+    recoEff_phi[i]->Write();
+    recoEff_phi_pass[i]->Write();
+    recoEff_phi_net[i]->Write();
+    eff_phi[i]->Write();
+    
+    recoEff_cent[i]->Write();
+    recoEff_cent_pass[i]->Write();
+    recoEff_cent_net[i]->Write();
+    eff_cent[i]->Write();
   }
     
   output->Close();

@@ -1,6 +1,7 @@
 #include "include/electronEnergyScale.h"
 #include "include/electronSelector.h"
 #include "include/electronTriggerMatching.h"
+#include "include/centralityBin.h"
 #include "include/centralityTool.h"
 #include "include/Settings.h"
 #include "include/Timer.h"
@@ -33,6 +34,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   ZEfficiency zEff = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root");
   Settings s = Settings();
 
+  CentralityBin cb = CentralityBin();
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
 
@@ -99,6 +101,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
 
   int nEle;
   int hiBin;
+  float hiHF;
   float vz;
 
   int pprimaryVertexFilter;
@@ -157,7 +160,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     eTree->SetBranchAddress("eleEoverPInv",&eleEoverPInv);
 
     TTree * evtTree = (TTree*)in->Get("hiEvtAnalyzer/HiTree");
-    evtTree->SetBranchAddress("hiBin",&hiBin);
+    //evtTree->SetBranchAddress("hiBin",&hiBin);
+    evtTree->SetBranchAddress("hiHF",&hiHF);
     evtTree->SetBranchAddress("vz",&vz);
     evtTree->SetBranchAddress("hiNevtPlane",&hiNevtPlane);  
     evtTree->SetBranchAddress("hiQVecMag",hiQVecMag);  
@@ -207,6 +211,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
       //event selections
       evtTree->GetEntry(i);
       if(TMath::Abs(vz)>15) continue;
+      hiBin = cb.getHiBinFromhiHF(hiHF,0);
+
       skimTree->GetEntry(i);
       if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
 

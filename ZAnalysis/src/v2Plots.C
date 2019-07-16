@@ -131,8 +131,8 @@ void v2Plots(std::string Zmumu, std::string Zee){
   TH1D * ATLAS = new TH1D("ATLAS","",7,0,7);
   v2ComboPlot->SetBinContent(2,v2Combo->GetBinContent(v2Combo->FindBin(21)));
   v2ComboPlot->SetBinError(2,v2Combo->GetBinError(v2Combo->FindBin(21)));
-  v2ComboPlot->SetBinContent(3,v2Combo->GetBinContent(v2Combo->FindBin(11)));
-  v2ComboPlot->SetBinError(3,v2Combo->GetBinError(v2Combo->FindBin(11)));
+  v2ComboPlot->SetBinContent(3,v2Combo->GetBinContent(v2Combo->FindBin(25)));
+  v2ComboPlot->SetBinError(3,v2Combo->GetBinError(v2Combo->FindBin(25)));
   v2ComboPlot->SetBinContent(4,v2Combo->GetBinContent(v2Combo->FindBin(12)));
   v2ComboPlot->SetBinError(4,v2Combo->GetBinError(v2Combo->FindBin(12)));
   v2ComboPlot->SetBinContent(5,v2Combo->GetBinContent(v2Combo->FindBin(13)));
@@ -144,8 +144,8 @@ void v2Plots(std::string Zmumu, std::string Zee){
   
   v2Plot->SetBinContent(2,v2->GetBinContent(v2->FindBin(21)));
   v2Plot->SetBinError(2,v2->GetBinError(v2->FindBin(21)));
-  v2Plot->SetBinContent(3,v2->GetBinContent(v2->FindBin(11)));
-  v2Plot->SetBinError(3,v2->GetBinError(v2->FindBin(11)));
+  v2Plot->SetBinContent(3,v2->GetBinContent(v2->FindBin(25)));
+  v2Plot->SetBinError(3,v2->GetBinError(v2->FindBin(25)));
   v2Plot->SetBinContent(4,v2->GetBinContent(v2->FindBin(12)));
   v2Plot->SetBinError(4,v2->GetBinError(v2->FindBin(12)));
   v2Plot->SetBinContent(5,v2->GetBinContent(v2->FindBin(13)));
@@ -157,8 +157,8 @@ void v2Plots(std::string Zmumu, std::string Zee){
 
   v2EEPlot->SetBinContent(2,v2EE->GetBinContent(v2EE->FindBin(21)));
   v2EEPlot->SetBinError(2,v2EE->GetBinError(v2EE->FindBin(21)));
-  v2EEPlot->SetBinContent(3,v2EE->GetBinContent(v2EE->FindBin(11)));
-  v2EEPlot->SetBinError(3,v2EE->GetBinError(v2EE->FindBin(11)));
+  v2EEPlot->SetBinContent(3,v2EE->GetBinContent(v2EE->FindBin(25)));
+  v2EEPlot->SetBinError(3,v2EE->GetBinError(v2EE->FindBin(25)));
   v2EEPlot->SetBinContent(4,v2EE->GetBinContent(v2EE->FindBin(12)));
   v2EEPlot->SetBinError(4,v2EE->GetBinError(v2EE->FindBin(12)));
   v2EEPlot->SetBinContent(5,v2EE->GetBinContent(v2EE->FindBin(13)));
@@ -171,7 +171,7 @@ void v2Plots(std::string Zmumu, std::string Zee){
   ATLAS->SetBinContent(1,-0.015);
   ATLAS->SetBinError(1,-0.018);
 
-  const char * labels[7] = {"0-80%","0-80%","0-100%","0-10%", "10-30%", "30-50%", "50-100%"};
+  const char * labels[7] = {"0-80%","0-80%","0-90%","0-10%", "10-30%", "30-50%", "50-100%"};
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
   c1->SetLeftMargin(0.2);

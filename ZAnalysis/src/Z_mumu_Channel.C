@@ -1,3 +1,4 @@
+#include "include/centralityBin.h"
 #include "include/VertexCompositeNtuple.h"
 #include "include/PbPb_5TeV_2018_eventUtils.h"
 #include "include/centralityTool.h"
@@ -19,10 +20,11 @@
 #include <fstream>
 #include <string>
 
-void doZ2mumu(std::vector< std::string > files, float etaCut, Settings s){
+void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Settings s){
   TH1::SetDefaultSumw2();
   ZEfficiency zEff = ZEfficiency("resources/Z2mumu_Efficiencies.root");
 
+  CentralityBin cb = CentralityBin();
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
 
@@ -58,6 +60,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, Settings s){
   TProfile * v2MuQ2Mid[nBins];
   TProfile * v2MuQ2MidVsCent;
 
+  int hiBin;
 
   for(int i = 0; i<nBins; i++){
     massPeakOS[i] = new TH1D(Form("massPeakOS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
@@ -110,6 +113,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, Settings s){
       if( !(v.evtSel()[ PbPb::R5TeV::Y2018::clusterCompatibilityFilter ])) continue;
       if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
 
+      hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus(), v.HFsumETMinus(),0);
+
       if(i%1000==0) std::cout << i << std::endl;
 
       for(unsigned int j = 0; j<v.candSize(); j++){
@@ -127,11 +132,11 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, Settings s){
         if( !(isDaughter1Trigger || isDaughter2Trigger) ) continue;
  
         bool isOppositeSign =  v.chargeD1()[j] != v.chargeD2()[j];
-        double efficiency = zEff.getEfficiency( v.y()[j], v.pT()[j] , v.centrality() );
+        double efficiency = zEff.getEfficiency( v.y()[j], v.pT()[j] , hiBin );
 
         if( isOppositeSign){
           for(int k = 0; k<nBins; k++){
-            if(c.isInsideBin(v.centrality(),k)){
+            if(c.isInsideBin( hiBin ,k)){
               massPeakOS[k]->Fill( v.mass()[j] );
               massPeakOS_withEff[k]->Fill( v.mass()[j], 1.0/efficiency );
               yields->Fill(k,1.0/efficiency);
@@ -144,13 +149,15 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, Settings s){
           }
         }else{
           for(int k = 0; k<nBins; k++){
-            if(c.isInsideBin(v.centrality(),k)){
+            if(c.isInsideBin( hiBin ,k)){
               massPeakSS[k]->Fill( v.mass()[j] );
               massPeakSS_withEff[k]->Fill( v.mass()[j] , 1.0/efficiency);
               yields->Fill(k,-1.0/efficiency);
             }
           }
         }
+
+        if(isMC) continue;
 
         //v2 calcuation
         TComplex Qp = TComplex(v.ephfpQ()[1], v.ephfpAngle()[1], true);
@@ -162,7 +169,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, Settings s){
         TComplex mu2Q = TComplex(1, 2*v.PhiD2()[j], true);
         if( isOppositeSign){
           for(int k = 0; k<nBins; k++){
-            if(c.isInsideBin(v.centrality(),k)){
+            if(c.isInsideBin( hiBin ,k)){
               TComplex Q1 = Qp;
               TComplex Q2 = Qn;
               if(v.eta()[j]>0){
@@ -279,7 +286,9 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, Settings s){
   v2MuQ1MidVsCent->SetDirectory(0);
   v2MuQ2MidVsCent->SetDirectory(0);
 
-  TFile * output = new TFile(Form("Z2mumu_%d.root",(int)(etaCut*10)),"recreate");
+  TFile * output;
+  if(!isMC) output = new TFile(Form("Z2mumu_%d.root",(int)(etaCut*10)),"recreate");
+  if(isMC) output = new TFile(Form("Z2mumu_MC_%d.root",(int)(etaCut*10)),"recreate");
   for(int i = 0; i<nBins; i++){
     massPeakOS[i]->Write();
     massPeakSS[i]->Write();
@@ -320,9 +329,9 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, Settings s){
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 2)
+  if(argc != 3)
   {
-    std::cout << "Usage: Z_mumu_Channel <fileList>" << std::endl;
+    std::cout << "Usage: Z_mumu_Channel <fileList> <isMC>" << std::endl;
     return 1;
   }  
 
@@ -330,6 +339,8 @@ int main(int argc, const char* argv[])
   std::string buffer;
   std::vector<std::string> listOfFiles;
   std::ifstream inFile(fList.data());
+ 
+  bool isMC = (bool)std::atoi(argv[2]);
 
   if(!inFile.is_open())
   {
@@ -350,7 +361,7 @@ int main(int argc, const char* argv[])
 
   Settings s = Settings();
    
-  doZ2mumu(listOfFiles, s.maxZRap, s);
-  doZ2mumu(listOfFiles, s.maxZRapEle,s);
+  doZ2mumu(listOfFiles, s.maxZRap, isMC, s);
+  doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s);
   return 0; 
 }

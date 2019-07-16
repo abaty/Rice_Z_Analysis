@@ -101,31 +101,31 @@ void plotMassPeaks(std::string Zee, std::string Zmumu){
 
 
   
-  const char * labels[9] = {"0-5%","5-10%","10-20%","20-30%","30-40%","40-50%", "50-70%", "70-90%", "0-100%"};
-  float TAA[9] = {26.0, 20.5, 14.35, 8.663, 4.976, 2.66, 0.934, 0.152, 5.61};
-  float Nmb_mumu = 7700 * 1606.05 * 1000.0;//glauber xsection is 7700 mb, second number is lumi, third converts from ub to mb
-  //float Nmb_mumu = 9.62460e+09;//0--90%
+  const char * labels[9] = {"0-5%","5-10%","10-20%","20-30%","30-40%","40-50%", "50-70%", "70-90%", "0-90%"};
+  float TAA[9] = {26.0, 20.5, 14.35, 8.663, 4.976, 2.66, 0.934, 0.152, 6.2287};
+  //float Nmb_mumu = 7700 * 1606.05 * 1000.0;//glauber xsection is 7700 mb, second number is lumi, third converts from ub to mb
+  float Nmb_mumu = 1606.05/1618.466*9.62460e+09;//0--90%
   float scaleFactor_mumu[9];
   for(int i = 0; i<9; i++){
     scaleFactor_mumu[i] = 1.0/TAA[i]/Nmb_mumu;
-    if(i ==0 || i==1) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 20.0;
-    if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 10.0;
-    if(i == 6 || i==7) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 5.0;
-    //if(i ==0 || i==1) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 18.0;
-    //if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 9.0;
-    //if(i == 6 || i==7) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 4.5;
+    //if(i ==0 || i==1) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 20.0;
+    //if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 10.0;
+    //if(i == 6 || i==7) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 5.0;
+    if(i ==0 || i==1) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 18.0;
+    if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 9.0;
+    if(i == 6 || i==7) scaleFactor_mumu[i] = scaleFactor_mumu[i] * 4.5;
   }
-  float Nmb_ee = 7700 * 1603.392 * 1000.0;//glauber xsection is 7700 mb, second number is lumi, third converts from ub to mb
-  //float Nmb_ee = 9.62460e+09;//0-90%
+  //float Nmb_ee = 7700 * 1603.392 * 1000.0;//glauber xsection is 7700 mb, second number is lumi, third converts from ub to mb
+  float Nmb_ee = 1603.392/1618.466*9.62460e+09;//0-90%
   float scaleFactor_ee[9];
   for(int i = 0; i<9; i++){
     scaleFactor_ee[i] = 1.0/TAA[i]/Nmb_ee;
-    if(i ==0 || i==1) scaleFactor_ee[i] = scaleFactor_ee[i] * 20.0;
-    if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_ee[i] = scaleFactor_ee[i] * 10.0;
-    if(i == 6 || i==7) scaleFactor_ee[i] = scaleFactor_ee[i] * 5.0;
-    //if(i ==0 || i==1) scaleFactor_ee[i] = scaleFactor_ee[i] * 18.0;
-    //if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_ee[i] = scaleFactor_ee[i] * 9.0;
-    //if(i == 6 || i==7) scaleFactor_ee[i] = scaleFactor_ee[i] * 4.5;
+    //if(i ==0 || i==1) scaleFactor_ee[i] = scaleFactor_ee[i] * 20.0;
+    //if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_ee[i] = scaleFactor_ee[i] * 10.0;
+    //if(i == 6 || i==7) scaleFactor_ee[i] = scaleFactor_ee[i] * 5.0;
+    if(i ==0 || i==1) scaleFactor_ee[i] = scaleFactor_ee[i] * 18.0;
+    if(i == 2 || i==3 || i==4 || i==5 ) scaleFactor_ee[i] = scaleFactor_ee[i] * 9.0;
+    if(i == 6 || i==7) scaleFactor_ee[i] = scaleFactor_ee[i] * 4.5;
   }
 
   gStyle->SetErrorX(0);
@@ -147,8 +147,8 @@ void plotMassPeaks(std::string Zee, std::string Zmumu){
   yieldPlot_mumu->SetBinError(7,yields_MuMu->GetBinError(15+1)*scaleFactor_mumu[6]);
   yieldPlot_mumu->SetBinContent(8,yields_MuMu->GetBinContent(16+1)*scaleFactor_mumu[7]);
   yieldPlot_mumu->SetBinError(8,yields_MuMu->GetBinError(16+1)*scaleFactor_mumu[7]);
-  yieldPlot_mumu->SetBinContent(9,yields_MuMu->GetBinContent(11+1)*scaleFactor_mumu[8]);
-  yieldPlot_mumu->SetBinError(9,yields_MuMu->GetBinError(11+1)*scaleFactor_mumu[8]);
+  yieldPlot_mumu->SetBinContent(9,yields_MuMu->GetBinContent(25+1)*scaleFactor_mumu[8]);
+  yieldPlot_mumu->SetBinError(9,yields_MuMu->GetBinError(25+1)*scaleFactor_mumu[8]);
   
   TH1D * yieldPlot_ee = new TH1D("yieldPlot_ee","",9,-0.25,8.75);
   yieldPlot_ee->SetBinContent(1,yields_EE->GetBinContent(0+1)*scaleFactor_ee[0]);
@@ -167,8 +167,8 @@ void plotMassPeaks(std::string Zee, std::string Zmumu){
   yieldPlot_ee->SetBinError(7,yields_EE->GetBinError(15+1)*scaleFactor_ee[6]);
   yieldPlot_ee->SetBinContent(8,yields_EE->GetBinContent(16+1)*scaleFactor_ee[7]);
   yieldPlot_ee->SetBinError(8,yields_EE->GetBinError(16+1)*scaleFactor_ee[7]);
-  yieldPlot_ee->SetBinContent(9,yields_EE->GetBinContent(11+1)*scaleFactor_ee[8]);
-  yieldPlot_ee->SetBinError(9,yields_EE->GetBinError(11+1)*scaleFactor_ee[8]);
+  yieldPlot_ee->SetBinContent(9,yields_EE->GetBinContent(25+1)*scaleFactor_ee[8]);
+  yieldPlot_ee->SetBinError(9,yields_EE->GetBinError(25+1)*scaleFactor_ee[8]);
 
   TH1D * yieldCombo = new TH1D("yieldCombo","",9,0.25,9.25);
   for(int i = 0; i<yieldCombo->GetXaxis()->GetNbins()+2; i++){
