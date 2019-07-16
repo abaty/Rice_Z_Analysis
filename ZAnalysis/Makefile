@@ -18,7 +18,7 @@ bin/Z_EE_Channel.exe: src/Z_EE_Channel.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/Z_EE_Channel.exe src/Z_EE_Channel.C
 
 bin/Z_mumu_Channel.exe: src/Z_mumu_Channel.C
-	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/Z_mumu_Channel.exe src/Z_mumu_Channel.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/Z_mumu_Channel.exe src/Z_mumu_Channel.C
 
 bin/Z_mumu_EfficienciesMC.exe: src/Z_mumu_EfficienciesMC.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/Z_mumu_EfficienciesMC.exe src/Z_mumu_EfficienciesMC.C

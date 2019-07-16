@@ -1,3 +1,4 @@
+#include "include/MCReweight.h"
 #include "include/centralityBin.h"
 #include "include/VertexCompositeNtuple.h"
 #include "include/PbPb_5TeV_2018_eventUtils.h"
@@ -22,11 +23,15 @@
 
 void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Settings s){
   TH1::SetDefaultSumw2();
-  ZEfficiency zEff = ZEfficiency("resources/Z2mumu_Efficiencies.root");
+  ZEfficiency zEff = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC);
+  MCReweight * vzRW;
+  if(isMC) vzRW = new MCReweight("resources/vzReweight.root");
 
   CentralityBin cb = CentralityBin();
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
+
+  TH1D * nEvents = new TH1D("nEvents","nEvents",1,0,1);
 
   TH1D * massPeakOS[nBins]; 
   TH1D * massPeakSS[nBins]; 
@@ -99,11 +104,13 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
 
   //starting looping over the file
   for(unsigned int f = 0; f<files.size(); f++){
+    std::string tree = ""; 
+    if(isMC) tree = "dimucontana_mc";
     VertexCompositeNtuple v = VertexCompositeNtuple();
-    v.GetTree(files.at(f),""); 
-    for(unsigned int i = 0; i<v.GetEntries(); i++){
+    v.GetTree(files.at(f),tree); 
+    //for(unsigned int i = 0; i<v.GetEntries(); i++){
+    for(unsigned int i = 0; i<100000; i++){
       v.GetEntry(i);
-
       //check out trigger 
       if( !(v.trigHLT()[PbPb::R5TeV::Y2018::HLT_HIL3Mu12]) ) continue;
 
@@ -113,7 +120,10 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       if( !(v.evtSel()[ PbPb::R5TeV::Y2018::clusterCompatibilityFilter ])) continue;
       if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
 
-      hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus(), v.HFsumETMinus(),0);
+      hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus(), v.HFsumETMinus(), (isMC ? 3 : 0));
+      float eventWeight = 1.0;
+      if(isMC) eventWeight = vzRW->reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin );
+      nEvents->Fill(0.5,eventWeight);
 
       if(i%1000==0) std::cout << i << std::endl;
 
@@ -138,8 +148,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
           for(int k = 0; k<nBins; k++){
             if(c.isInsideBin( hiBin ,k)){
               massPeakOS[k]->Fill( v.mass()[j] );
-              massPeakOS_withEff[k]->Fill( v.mass()[j], 1.0/efficiency );
-              yields->Fill(k,1.0/efficiency);
+              massPeakOS_withEff[k]->Fill( v.mass()[j], 1.0/efficiency * eventWeight );
+              yields->Fill(k,1.0/efficiency * eventWeight);
               candPt[k]->Fill(v.pT()[j]);
               candPt_unnormalized[k]->Fill(v.pT()[j]);
               candEta[k]->Fill(v.eta()[j]);
@@ -151,12 +161,11 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
           for(int k = 0; k<nBins; k++){
             if(c.isInsideBin( hiBin ,k)){
               massPeakSS[k]->Fill( v.mass()[j] );
-              massPeakSS_withEff[k]->Fill( v.mass()[j] , 1.0/efficiency);
-              yields->Fill(k,-1.0/efficiency);
+              massPeakSS_withEff[k]->Fill( v.mass()[j] , 1.0/efficiency * eventWeight);
+              yields->Fill(k,-1.0/efficiency * eventWeight);
             }
           }
         }
-
         if(isMC) continue;
 
         //v2 calcuation
@@ -320,8 +329,11 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   v2MuQ2MidVsCent->Write();
 
   yields->Write();
+  nEvents->Write();
 
   output->Close();
+
+  if(isMC) delete vzRW;
 
   return;
 }

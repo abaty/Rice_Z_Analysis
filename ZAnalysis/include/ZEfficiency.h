@@ -10,12 +10,13 @@ class ZEfficiency{
 
   public:
 
-  ZEfficiency(std::string inputFile);
+  ZEfficiency(std::string inputFile, bool isMC_ = false);
   ~ZEfficiency();
   double getEfficiency( double y, double pt, double hiBin);
 
   private:
 
+  bool isMC;
   TFile * f;
   TEfficiency * e[11];
 
@@ -44,12 +45,17 @@ double ZEfficiency::getEfficiency(double y, double pt, double hiBin){
   }
 }
 
-ZEfficiency::ZEfficiency(std::string inputFile){
+ZEfficiency::ZEfficiency(std::string inputFile, bool isMC_){
+  isMC = isMC_;
+
+  std::string suffix = "";
+  if(isMC) suffix = "_noSF";
+
   f = TFile::Open(inputFile.c_str(),"read");
-  e[0] = (TEfficiency*) f->Get("eff_0_5");
-  e[1] = (TEfficiency*) f->Get("eff_5_10");
+  e[0] = (TEfficiency*) f->Get(Form("eff%s_0_5",suffix.c_str()));
+  e[1] = (TEfficiency*) f->Get(Form("eff%s_5_10",suffix.c_str()));
   for(int i = 2; i<11; i++){
-    e[i] = (TEfficiency*) f->Get(Form("eff_%d_%d",10*(i-1),10*i));
+    e[i] = (TEfficiency*) f->Get(Form("eff%s_%d_%d",suffix.c_str(),10*(i-1),10*i));
   }
 }
 
