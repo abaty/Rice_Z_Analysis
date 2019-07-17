@@ -179,6 +179,7 @@ public :
   Float_t*  y_gen()                       { SetBranch("y_gen");                       return y_gen_;                      }
   Short_t*  status_gen()                  { SetBranch("status_gen");                  return status_gen_;                 }
   Int_t*    PID_gen()                     { SetBranch("PID_gen");                     return PID_gen_;                    }
+  Short_t*    DecayID_gen()                 { SetBranch("DecayID_gen");                 return DecayID_gen_;                    }
   Int_t*    MotherID_gen()                { SetBranch("MotherID_gen");                return MotherID_gen_;               }
   Short_t*  RecIdx_gen()                  { SetBranch("RecIdx_gen");                  return RecIdx_gen_;                 }
   Int_t*    PIDD1_gen()                   { SetBranch("PIDD1_gen");                   return PIDD1_gen_;                  }
@@ -367,6 +368,7 @@ public :
   Float_t           y_gen_[NGEN]={0};   //[candSize_gen]
   Short_t           status_gen_[NGEN]={0};   //[candSize_gen]
   Int_t             PID_gen_[NGEN]={0};   //[candSize_gen]
+  Short_t             DecayID_gen_[NGEN]={0};   //[candSize_gen]
   Int_t             MotherID_gen_[NGEN]={0};   //[candSize_gen]
   Short_t           RecIdx_gen_[NGEN]={0};   //[candSize_gen]
   Int_t             PIDD1_gen_[NGEN]={0};   //[candSize_gen]
@@ -521,6 +523,7 @@ public :
   TBranch          *b_y_gen;   //!
   TBranch          *b_status_gen;   //!
   TBranch          *b_PID_gen;   //!
+  TBranch          *b_DecayID_gen;   //!
   TBranch          *b_MotherID_gen;   //!
   TBranch          *b_RecIdx_gen;   //!
   TBranch          *b_PIDD1_gen;   //!
@@ -774,6 +777,7 @@ void VertexCompositeNtuple::InitTree(void)
     if (fChain->GetBranch("y_gen"))                       fChain->SetBranchAddress("y_gen",                      y_gen_,                      &b_y_gen                     );
     if (fChain->GetBranch("status_gen"))                  fChain->SetBranchAddress("status_gen",                 status_gen_,                 &b_status_gen                );
     if (fChain->GetBranch("PID_gen"))                     fChain->SetBranchAddress("PID_gen",                    PID_gen_,                    &b_PID_gen                   );
+    if (fChain->GetBranch("DecayID_gen"))                     fChain->SetBranchAddress("DecayID_gen",                    DecayID_gen_,                    &b_DecayID_gen                   );
     if (fChain->GetBranch("MotherID_gen"))                fChain->SetBranchAddress("MotherID_gen",               MotherID_gen_,               &b_MotherID_gen              );
     if (fChain->GetBranch("RecIdx_gen"))                  fChain->SetBranchAddress("RecIdx_gen",                 RecIdx_gen_,                 &b_RecIdx_gen                );
     if (fChain->GetBranch("PIDD1_gen"))                   fChain->SetBranchAddress("PIDD1_gen",                  PIDD1_gen_,                  &b_PIDD1_gen                 );
@@ -934,6 +938,7 @@ void VertexCompositeNtuple::Clear(void)
   if (GetBranchStatus("y_gen")==1)        std::fill(y_gen_, y_gen_+nGen, -9.);
   if (GetBranchStatus("status_gen")==1)   std::fill(status_gen_, status_gen_+nGen, -9);
   if (GetBranchStatus("PID_gen")==1)      std::fill(PID_gen_, PID_gen_+nGen, -999);
+  if (GetBranchStatus("DecayID_gen")==1)  std::fill(DecayID_gen_, DecayID_gen_+nGen, -999);
   if (GetBranchStatus("MotherID_gen")==1) std::fill(MotherID_gen_, MotherID_gen_+nGen, -999);
   if (GetBranchStatus("RecIdx_gen")==1)   std::fill(RecIdx_gen_, RecIdx_gen_+nGen, -1);
   if (GetBranchStatus("PIDD1_gen")==1)    std::fill(PIDD1_gen_, PIDD1_gen_+nGen, -999);

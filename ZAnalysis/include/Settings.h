@@ -24,6 +24,9 @@ public:
   static const int nMuEffBinsPt = 11;
   double muEffBinsPt[nMuEffBinsPt+1] = {20,25,30,35,40,45,50,60,80,120,160,200};
 
+  double minPtCutForPhotons = 0.5;
+  double acoCutForPhotons = 0.001;
+
 private:
 
 };

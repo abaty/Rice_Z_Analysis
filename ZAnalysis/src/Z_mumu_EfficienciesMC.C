@@ -34,7 +34,7 @@ float getPhi(float pt1, float eta1, float phi1, float pt2, float eta2, float phi
   return (v1+v2).Phi();
 }
 
-void doZ2mumuMC(std::vector< std::string > files){
+void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   TH1::SetDefaultSumw2();
   Settings s = Settings();
 
@@ -98,8 +98,8 @@ void doZ2mumuMC(std::vector< std::string > files){
   for(unsigned int f = 0; f<files.size(); f++){
     VertexCompositeNtuple v = VertexCompositeNtuple();
     v.GetTree(files.at(f),"dimucontana_mc"); 
-    //for(unsigned int i = 0; i<v.GetEntries(); i++){
-    for(unsigned int i = 0; i<100000; i++){
+    unsigned int maxEvt = isTest ? 100000 : v.GetEntries();
+    for(unsigned int i = 0; i<maxEvt; i++){
       v.GetEntry(i);
       hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus() , v.HFsumETMinus() ,3);   
    
@@ -117,6 +117,7 @@ void doZ2mumuMC(std::vector< std::string > files){
 
         //only look at gen Z's
         if(v.PID_gen()[j] != 23) continue;
+        if(v.DecayID_gen()[j] != 23) continue;
 
         //require both legs to be in acceptance
         if( TMath::Abs( v.EtaD1_gen()[j] ) > s.maxZRap ) continue;
@@ -133,7 +134,7 @@ void doZ2mumuMC(std::vector< std::string > files){
             recoEff_noSF_net[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight );
             recoEff_pt_net[k]->Fill( v.pT_gen()[j], eventWeight);
             recoEff_y_net[k]->Fill( v.y_gen()[j], eventWeight);
-            recoEff_cent_net[k]->Fill( hiBin , eventWeight);
+            recoEff_cent_net[k]->Fill( hiBin/2.0 , eventWeight);
             recoEff_phi_net[k]->Fill( getPhi( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.PhiD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], v.PhiD2_gen()[j] ), eventWeight);
 
             //for the last few pt bins, halve the y binning so we have better stats
@@ -319,7 +320,9 @@ void doZ2mumuMC(std::vector< std::string > files){
     recoEff_cent_net[i]->SetDirectory(0);
   }
 
-  TFile * output = new TFile("resources/Z2mumu_Efficiencies.root","recreate");
+  TFile * output;
+  if(isTest) output = new TFile("resources/Z2mumu_Efficiencies_TEST.root","recreate");
+  else       output = new TFile("resources/Z2mumu_Efficiencies.root","recreate");
   for(int i = 0; i<nBins; i++){
     recoEff[i]->Write();
     recoEff_pass[i]->Write();
@@ -360,13 +363,14 @@ void doZ2mumuMC(std::vector< std::string > files){
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 2)
+  if(argc != 3)
   {
-    std::cout << "Usage: Z_mumu_EfficienciesMC <fileList>" << std::endl;
+    std::cout << "Usage: Z_mumu_EfficienciesMC <fileList> <isTest>" << std::endl;
     return 1;
   }  
 
   std::string fList = argv[1];
+  bool isTest = (bool)std::atoi(argv[2]);
   std::string buffer;
   std::vector<std::string> listOfFiles;
   std::ifstream inFile(fList.data());
@@ -388,6 +392,6 @@ int main(int argc, const char* argv[])
     }
   }
    
-  doZ2mumuMC(listOfFiles);
+  doZ2mumuMC(listOfFiles, isTest);
   return 0; 
 }
