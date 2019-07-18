@@ -194,6 +194,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
         if( isOppositeSign){
           for(int k = 0; k<nBins; k++){
             if(c.isInsideBin( hiBin ,k)){
+    
               if((isMC && !isTau) || !isMC){
                 massPeakOS[k]->Fill( v.mass()[j] );
                 massPeakOS_withEff[k]->Fill( v.mass()[j], 1.0/efficiency * eventWeight );

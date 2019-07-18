@@ -8,7 +8,7 @@ endif
 MKDIR_BIN=mkdir -p $(PWD)/bin
 
 
-all: mkdirBin bin/Z_EE_Channel.exe bin/Z_mumu_Channel.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe
+all: mkdirBin bin/Z_EE_Channel.exe bin/Z_mumu_Channel.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe
 
 mkdirBin:
 	$(MKDIR_BIN)
@@ -28,6 +28,9 @@ bin/Z_EE_EfficienciesMC.exe: src/Z_EE_EfficienciesMC.C
 
 bin/massPeakPlots.exe: src/massPeakPlots.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/massPeakPlots.exe src/massPeakPlots.C
+
+bin/massPeakPlots_BkgSub.exe: src/massPeakPlots_BkgSub.C
+	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/massPeakPlots_BkgSub.exe src/massPeakPlots_BkgSub.C
 
 bin/v2Plots.exe: src/v2Plots.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/v2Plots.exe src/v2Plots.C

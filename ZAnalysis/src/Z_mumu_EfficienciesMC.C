@@ -101,7 +101,6 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     unsigned int maxEvt = isTest ? 100000 : v.GetEntries();
     for(unsigned int i = 0; i<maxEvt; i++){
       v.GetEntry(i);
-      hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus() , v.HFsumETMinus() ,3);   
    
       if(i%1000==0) std::cout << i << "/" << v.GetEntries() << std::endl;
       
@@ -110,6 +109,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
       if( !(v.evtSel()[ PbPb::R5TeV::Y2018::primaryVertexFilter ])) continue;
       if( !(v.evtSel()[ PbPb::R5TeV::Y2018::clusterCompatibilityFilter ])) continue;
       if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
+      hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus() , v.HFsumETMinus() ,3);   
 
       double eventWeight = vzRW.reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin );
 
@@ -163,6 +163,9 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         if( TMath::Abs(v.EtaD2()[indx]) > s.maxZRap ) continue;
         if( !(v.tightCand(indx,"POG"))) continue;//tight Muon 1 && tight Muon 2      
         if( !(v.VtxProb()[indx] >0.001)) continue; 
+
+        float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( v.PhiD1()[indx] - v.PhiD2()[indx] )))/TMath::Pi(); 
+        if(v.pT()[indx] < s.minPtCutForPhotons && acoplanarity < s.acoCutForPhotons) continue;
  
         //make sure that one of the daughters was the trigger muon
         bool isDaughter1Trigger = v.trigMuon1()[PbPb::R5TeV::Y2018::HLT_HIL3Mu12][indx];
