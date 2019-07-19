@@ -1,3 +1,4 @@
+#include "include/HistNameHelper.h"
 #include "include/centralityTool.h"
 #include "include/Settings.h"
 #include "TStyle.h"
@@ -15,35 +16,36 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   TH1::SetDefaultSumw2();
   Settings s = Settings();
 
+  HistNameHelper h = HistNameHelper();
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
 
-  TH1D * massPeakOS[nBins]; 
-  TH1D * massPeakSS[nBins]; 
-  TH1D * massPeakOS_photons[nBins]; 
-  TH1D * massPeakOS_minusSSAndPhoton[nBins];
-  TH1D * massPeakOS_minusAll[nBins];
+  TH1D * massPeakOS[nBins][4]; 
+  TH1D * massPeakSS[nBins][4]; 
+  TH1D * massPeakOS_photons[nBins][4]; 
+  TH1D * massPeakOS_minusSSAndPhoton[nBins][4];
+  TH1D * massPeakOS_minusAll[nBins][4];
 
-  TH1D * massPeakOS_DYsignal[nBins]; 
-  TH1D * massPeakOS_DYphoton[nBins]; 
-  TH1D * massPeakOS_DYtautau[nBins]; 
-  TH1D * massPeakOS_DYsignalMinusPhoton[nBins];
-  TH1D * massPeakOS_DYsignalMinusPhotonPlusBkg[nBins];
+  TH1D * massPeakOS_DYsignal[nBins][4]; 
+  TH1D * massPeakOS_DYphoton[nBins][4]; 
+  TH1D * massPeakOS_DYtautau[nBins][4]; 
+  TH1D * massPeakOS_DYsignalMinusPhoton[nBins][4];
+  TH1D * massPeakOS_DYsignalMinusPhotonPlusBkg[nBins][4];
 
-  TH1D * massPeakOS_Wjet[nBins]; 
-  TH1D * massPeakOS_ttbar[nBins]; 
+  TH1D * massPeakOS_Wjet[nBins][4]; 
+  TH1D * massPeakOS_ttbar[nBins][4]; 
  
   TH1D * MC_nEvents_DY;
   TH1D * MC_nEvents_Wjet;
   TH1D * MC_nEvents_ttbar;
 
-  TH1D * fraction_tau[nBins];
-  TH1D * fraction_Wjet[nBins];
-  TH1D * fraction_ttbar[nBins];
+  TH1D * fraction_tau[nBins][4];
+  TH1D * fraction_Wjet[nBins][4];
+  TH1D * fraction_ttbar[nBins][4];
 
-  TH1D * bkg_tau[nBins];
-  TH1D * bkg_Wjet[nBins];
-  TH1D * bkg_ttbar[nBins];
+  TH1D * bkg_tau[nBins][4];
+  TH1D * bkg_Wjet[nBins][4];
+  TH1D * bkg_ttbar[nBins][4];
  
   TFile * data = TFile::Open(data_.c_str(),"read");
   TFile * DY = TFile::Open(DY_.c_str(),"read");
@@ -57,100 +59,101 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   TFile * out = TFile::Open(Form("backgroundSubtraction_isMu%d.root",(int)isMu),"recreate");
   
   for(int i = 0; i<nBins; i++){
-    massPeakOS[i] = (TH1D*)data->Get(Form("massPeakOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakSS[i] = (TH1D*)data->Get(Form("massPeakSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_photons[i] = (TH1D*)data->Get(Form("massPeakOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+  for(int j = 0; j<4; j++){
+    massPeakOS[i][j] = (TH1D*)data->Get(Form("%sOS_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakSS[i][j] = (TH1D*)data->Get(Form("%sSS_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_photons[i][j] = (TH1D*)data->Get(Form("%sOS_ptLT0p5acoLT0p001_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
 
-    massPeakOS_DYsignal[i] = (TH1D*)DY->Get(Form("massPeakOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_DYsignal[i]->SetName(Form("massPeakOS_DYsignal_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_DYphoton[i] = (TH1D*)DY->Get(Form("massPeakOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_DYphoton[i]->SetName(Form("massPeakOS_DY_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_DYtautau[i] = (TH1D*)DY->Get(Form("massPeakOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_DYsignal[i][j] = (TH1D*)DY->Get(Form("%sOS_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_DYsignal[i][j]->SetName(Form("%sOS_DYsignal_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_DYphoton[i][j] = (TH1D*)DY->Get(Form("%sOS_ptLT0p5acoLT0p001_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_DYphoton[i][j]->SetName(Form("%sOS_DY_ptLT0p5acoLT0p001_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_DYtautau[i][j] = (TH1D*)DY->Get(Form("%sOS_TauTau_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
 
-    massPeakOS_Wjet[i] = (TH1D*)Wjet->Get(Form("massPeakOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_ttbar[i] = (TH1D*)ttbar->Get(Form("massPeakOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_Wjet[i][j] = (TH1D*)Wjet->Get(Form("%sOS_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_ttbar[i][j] = (TH1D*)ttbar->Get(Form("%sOS_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
     
-    massPeakOS_Wjet[i]->SetName(Form("massPeakOS_Wjet_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_ttbar[i]->SetName(Form("massPeakOS_ttbar_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_Wjet[i][j]->SetName(Form("%sOS_Wjet_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_ttbar[i][j]->SetName(Form("%sOS_ttbar_withEff_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
  
     //do normalizations for MC
     float DY_norm = MC_nEvents_DY->Integral();
-    massPeakOS_DYsignal[i]->Scale(s.DY_XS/DY_norm);
-    massPeakOS_DYphoton[i]->Scale(s.DY_XS/DY_norm);
-    massPeakOS_DYtautau[i]->Scale(s.DY_XS/DY_norm);
+    massPeakOS_DYsignal[i][j]->Scale(s.DY_XS/DY_norm);
+    massPeakOS_DYphoton[i][j]->Scale(s.DY_XS/DY_norm);
+    massPeakOS_DYtautau[i][j]->Scale(s.DY_XS/DY_norm);
 
     float Wjet_norm = MC_nEvents_Wjet->Integral();
-    massPeakOS_Wjet[i]->Scale(s.Wjet_XS/Wjet_norm);
+    massPeakOS_Wjet[i][j]->Scale(s.Wjet_XS/Wjet_norm);
 
     float ttbar_norm = MC_nEvents_ttbar->Integral();
-    massPeakOS_ttbar[i]->Scale(s.ttbar_XS/ttbar_norm);
+    massPeakOS_ttbar[i][j]->Scale(s.ttbar_XS/ttbar_norm);
 
     //remove entries not passing photon selection or SS from signal
     //data
-    massPeakOS_minusSSAndPhoton[i] = (TH1D*)massPeakOS[i]->Clone(Form("massPeakOS_minusSSAndPhoton_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_minusSSAndPhoton[i]->Add( massPeakOS_photons[i] , -1);
-    massPeakOS_minusSSAndPhoton[i]->Add( massPeakSS[i], -1);
+    massPeakOS_minusSSAndPhoton[i][j] = (TH1D*)massPeakOS[i][j]->Clone(Form("%sOS_minusSSAndPhoton_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_minusSSAndPhoton[i][j]->Add( massPeakOS_photons[i][j] , -1);
+    massPeakOS_minusSSAndPhoton[i][j]->Add( massPeakSS[i][j], -1);
     
     //same for DY sample (only photon here)
-    massPeakOS_DYsignalMinusPhoton[i] = (TH1D*)massPeakOS_DYsignal[i]->Clone(Form("massPeakOS_DYsignalMinusPhoton_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_DYsignalMinusPhoton[i]->Add(massPeakOS_DYphoton[i],-1);
+    massPeakOS_DYsignalMinusPhoton[i][j] = (TH1D*)massPeakOS_DYsignal[i][j]->Clone(Form("%sOS_DYsignalMinusPhoton_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_DYsignalMinusPhoton[i][j]->Add(massPeakOS_DYphoton[i][j],-1);
 
     //add the other backgrounds
-    massPeakOS_DYsignalMinusPhotonPlusBkg[i] = (TH1D*)massPeakOS_DYsignalMinusPhoton[i]->Clone(Form("massPeakOS_DYsignalMinusPhotonPlusBkg_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_DYsignalMinusPhotonPlusBkg[i]->Add(massPeakOS_DYtautau[i]);
-    massPeakOS_DYsignalMinusPhotonPlusBkg[i]->Add(massPeakOS_ttbar[i]);
-    massPeakOS_DYsignalMinusPhotonPlusBkg[i]->Add(massPeakOS_Wjet[i]);
+    massPeakOS_DYsignalMinusPhotonPlusBkg[i][j] = (TH1D*)massPeakOS_DYsignalMinusPhoton[i][j]->Clone(Form("%sOS_DYsignalMinusPhotonPlusBkg_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_DYsignalMinusPhotonPlusBkg[i][j]->Add(massPeakOS_DYtautau[i][j]);
+    massPeakOS_DYsignalMinusPhotonPlusBkg[i][j]->Add(massPeakOS_ttbar[i][j]);
+    massPeakOS_DYsignalMinusPhotonPlusBkg[i][j]->Add(massPeakOS_Wjet[i][j]);
 
     //Calculate the fractions for tautau, Wjet, TTbar
     //tautau
-    fraction_tau[i] = (TH1D*)massPeakOS_DYtautau[i]->Clone(Form("fraction_tau_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i))); 
-    fraction_tau[i]->Divide( massPeakOS_DYsignalMinusPhotonPlusBkg[i] );
+    fraction_tau[i][j] = (TH1D*)massPeakOS_DYtautau[i][j]->Clone(Form("%sFraction_tau_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i))); 
+    fraction_tau[i][j]->Divide( massPeakOS_DYsignalMinusPhotonPlusBkg[i][j] );
 
     //ttbar
-    fraction_ttbar[i] = (TH1D*)massPeakOS_ttbar[i]->Clone(Form("fraction_ttbar_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i))); 
-    fraction_ttbar[i]->Divide( massPeakOS_DYsignalMinusPhotonPlusBkg[i] );
+    fraction_ttbar[i][j] = (TH1D*)massPeakOS_ttbar[i][j]->Clone(Form("%sFraction_ttbar_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i))); 
+    fraction_ttbar[i][j]->Divide( massPeakOS_DYsignalMinusPhotonPlusBkg[i][j] );
     
     //Wjet
-    fraction_Wjet[i] = (TH1D*)massPeakOS_Wjet[i]->Clone(Form("fraction_Wjet_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i))); 
-    fraction_Wjet[i]->Divide( massPeakOS_DYsignalMinusPhotonPlusBkg[i] );
+    fraction_Wjet[i][j] = (TH1D*)massPeakOS_Wjet[i][j]->Clone(Form("%sFraction_Wjet_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i))); 
+    fraction_Wjet[i][j]->Divide( massPeakOS_DYsignalMinusPhotonPlusBkg[i][j] );
     
 
     //normalize MC fractions to data with a ratio of counts between subtracted MC data
     //tau
-    bkg_tau[i] = (TH1D*) fraction_tau[i]->Clone(Form("bkg_tau_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    bkg_tau[i]->Multiply(massPeakOS_minusSSAndPhoton[i]);
+    bkg_tau[i][j] = (TH1D*) fraction_tau[i][j]->Clone(Form("%sBkg_tau_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    bkg_tau[i][j]->Multiply(massPeakOS_minusSSAndPhoton[i][j]);
     
     //ttbar
-    bkg_ttbar[i] = (TH1D*) fraction_ttbar[i]->Clone(Form("bkg_ttbar_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    bkg_ttbar[i]->Multiply(massPeakOS_minusSSAndPhoton[i]);
+    bkg_ttbar[i][j] = (TH1D*) fraction_ttbar[i][j]->Clone(Form("%sBkg_ttbar_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    bkg_ttbar[i][j]->Multiply(massPeakOS_minusSSAndPhoton[i][j]);
 
     //Wjet
-    bkg_Wjet[i] = (TH1D*) fraction_Wjet[i]->Clone(Form("bkg_Wjet_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    bkg_Wjet[i]->Multiply(massPeakOS_minusSSAndPhoton[i]);
+    bkg_Wjet[i][j] = (TH1D*) fraction_Wjet[i][j]->Clone(Form("%sBkg_Wjet_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    bkg_Wjet[i][j]->Multiply(massPeakOS_minusSSAndPhoton[i][j]);
 
     //remove these backgrounds
-    massPeakOS_minusAll[i] = (TH1D*) massPeakOS_minusSSAndPhoton[i]->Clone(Form("massPeakOS_minusAll_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_minusAll[i]->Add( bkg_tau[i], -1);
-    massPeakOS_minusAll[i]->Add( bkg_ttbar[i], -1);
-    massPeakOS_minusAll[i]->Add( bkg_Wjet[i], -1);
+    massPeakOS_minusAll[i][j] = (TH1D*) massPeakOS_minusSSAndPhoton[i][j]->Clone(Form("%sOS_minusAll_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_minusAll[i][j]->Add( bkg_tau[i][j], -1);
+    massPeakOS_minusAll[i][j]->Add( bkg_ttbar[i][j], -1);
+    massPeakOS_minusAll[i][j]->Add( bkg_Wjet[i][j], -1);
 
-    massPeakOS[i]->Write();
-    massPeakSS[i]->Write();
-    massPeakOS_photons[i]->Write();
-    massPeakOS_DYsignalMinusPhoton[i]->Write();
-    massPeakOS_minusSSAndPhoton[i]->Write();
-    massPeakOS_minusAll[i]->Write();
-    fraction_Wjet[i]->Write(); 
-    fraction_ttbar[i]->Write(); 
-    fraction_tau[i]->Write(); 
-    bkg_Wjet[i]->Write(); 
-    bkg_ttbar[i]->Write(); 
-    bkg_tau[i]->Write(); 
-    massPeakOS_DYsignal[i]->Write();
-    massPeakOS_DYphoton[i]->Write();
-    massPeakOS_DYtautau[i]->Write();
-    massPeakOS_Wjet[i]->Write();
-    massPeakOS_ttbar[i]->Write();
+    massPeakOS[i][j]->Write();
+    massPeakSS[i][j]->Write();
+    massPeakOS_photons[i][j]->Write();
+    massPeakOS_DYsignalMinusPhoton[i][j]->Write();
+    massPeakOS_minusSSAndPhoton[i][j]->Write();
+    massPeakOS_minusAll[i][j]->Write();
+    fraction_Wjet[i][j]->Write(); 
+    fraction_ttbar[i][j]->Write(); 
+    fraction_tau[i][j]->Write(); 
+    bkg_Wjet[i][j]->Write(); 
+    bkg_ttbar[i][j]->Write(); 
+    bkg_tau[i][j]->Write(); 
+    massPeakOS_DYsignal[i][j]->Write();
+    massPeakOS_DYphoton[i][j]->Write();
+    massPeakOS_DYtautau[i][j]->Write();
+    massPeakOS_Wjet[i][j]->Write();
+    massPeakOS_ttbar[i][j]->Write();
 
     //Draw the histogram Stack
     gStyle->SetPadTickX(1);
@@ -160,69 +163,97 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     c1->SetLeftMargin(0.2);
     c1->SetBottomMargin(0.2);
     
-    massPeakOS[i]->GetXaxis()->SetTitle("m_{#mu#mu} (GeV)");
-    massPeakOS[i]->GetYaxis()->SetTitle("Entries");
-    massPeakOS[i]->GetXaxis()->CenterTitle();
-    massPeakOS[i]->GetYaxis()->CenterTitle();
-    massPeakOS[i]->SetFillColor(kOrange+1);
-    massPeakOS[i]->SetMarkerStyle(8);
-    massPeakOS[i]->SetMarkerColor(kBlack);
-    massPeakOS[i]->SetLineColor(kBlack);
-    massPeakOS[i]->SetStats(0);
-    massPeakOS[i]->Draw("HIST");
-
-    bkg_ttbar[i]->SetFillColor(kGray);
-    bkg_ttbar[i]->SetLineColor(kBlack);
-
-    bkg_Wjet[i]->Add(bkg_ttbar[i]);
-    bkg_Wjet[i]->SetFillColor(kViolet+1);
-    bkg_Wjet[i]->SetLineColor(kBlack);
+    if(j==0) massPeakOS[i][j]->GetXaxis()->SetTitle("m_{#mu#mu} (GeV)");
+    if(j==1) massPeakOS[i][j]->GetXaxis()->SetTitle("p_{T} (GeV)");
+    if(j==2) massPeakOS[i][j]->GetXaxis()->SetTitle("y");
+    if(j==3) massPeakOS[i][j]->GetXaxis()->SetTitle("yield");
     
-    bkg_tau[i]->Add(bkg_Wjet[i]);
-    bkg_tau[i]->SetFillColor(kGreen+1);
-    bkg_tau[i]->SetLineColor(kBlack);
-    
-    massPeakOS_photons[i]->Add(bkg_tau[i]);
-    massPeakOS_photons[i]->SetFillColor(kRed+1);
-    massPeakOS_photons[i]->SetLineColor(kBlack);
-    
-    massPeakSS[i]->Add(massPeakOS_photons[i]);
-    massPeakSS[i]->SetFillColor(kBlue);
-    massPeakSS[i]->SetLineColor(kBlack); 
+    if(j==0 || j==3) massPeakOS[i][j]->GetYaxis()->SetTitle("Entries");
+    if(j==1) massPeakOS[i][j]->GetYaxis()->SetTitle("#frac{dN_{Z}}{dp_{T}} (GeV^{-1})");
+    if(j==2) massPeakOS[i][j]->GetYaxis()->SetTitle("#frac{dN_{Z}}{dy}");
+    massPeakOS[i][j]->GetXaxis()->CenterTitle();
+    massPeakOS[i][j]->GetYaxis()->CenterTitle();
+    massPeakOS[i][j]->SetFillColor(kOrange+1);
+    massPeakOS[i][j]->SetMarkerStyle(8);
+    massPeakOS[i][j]->SetMarkerColor(kBlack);
+    massPeakOS[i][j]->SetLineColor(kBlack);
+    massPeakOS[i][j]->SetStats(0);
 
-    massPeakSS[i]->Draw("HIST same");
-    massPeakOS_photons[i]->Draw("HIST same");
-    bkg_tau[i]->Draw("HIST same");
-    bkg_Wjet[i]->Draw("HIST same");
-    bkg_ttbar[i]->Draw("HIST same");
-    massPeakOS[i]->Draw("p same");
+    TH1D * dummy;
+    if(j==1){
+      dummy = new TH1D("dummy",";p_{T} (GeV); #frac{dN_{Z}}{dp_{T}} (GeV^{-1})",2,0.1,200);
+      dummy->SetBinContent(1,massPeakOS[i][j]->GetMaximum());
+      dummy->SetBinContent(2,massPeakOS[i][j]->GetMinimum());
+      dummy->SetLineColor(kWhite);
+      dummy->SetMarkerColor(kWhite);
+      dummy->SetStats(0);
+      dummy->Draw();
+    }
 
-    TLegend *leg = new TLegend(0.625,0.7,0.875,0.875);
-    leg->AddEntry(massPeakOS[i],Form("Data (%d-%d%%)",c.getCentBinLow(i),c.getCentBinHigh(i)),"p");
-    if(isMu) leg->AddEntry(massPeakOS[i],"Z #rightarrow #mu^{+}#mu^{-}","f");
-    if(!isMu) leg->AddEntry(massPeakOS[i],"Z #rightarrow e^{+}e^{-}","f");
-    leg->AddEntry(massPeakSS[i],"Same Sign (QCD)","f");
-    leg->AddEntry(massPeakOS_photons[i],"EM background","f");
-    leg->AddEntry(bkg_tau[i],"Z #rightarrow #tau^{+}#tau^{-}","f");
-    leg->AddEntry(bkg_Wjet[i],"W^{#pm} + X","f");
-    leg->AddEntry(bkg_ttbar[i],"t#bar{t}","f");
+    massPeakOS[i][j]->Draw("HIST same");
+
+    bkg_ttbar[i][j]->SetFillColor(kGray);
+    bkg_ttbar[i][j]->SetLineColor(kBlack);
+
+    bkg_Wjet[i][j]->Add(bkg_ttbar[i][j]);
+    bkg_Wjet[i][j]->SetFillColor(kViolet+1);
+    bkg_Wjet[i][j]->SetLineColor(kBlack);
+    
+    bkg_tau[i][j]->Add(bkg_Wjet[i][j]);
+    bkg_tau[i][j]->SetFillColor(kGreen+1);
+    bkg_tau[i][j]->SetLineColor(kBlack);
+    
+    massPeakOS_photons[i][j]->Add(bkg_tau[i][j]);
+    massPeakOS_photons[i][j]->SetFillColor(kRed+1);
+    massPeakOS_photons[i][j]->SetLineColor(kBlack);
+    
+    massPeakSS[i][j]->Add(massPeakOS_photons[i][j]);
+    massPeakSS[i][j]->SetFillColor(kBlue);
+    massPeakSS[i][j]->SetLineColor(kBlack); 
+
+    massPeakSS[i][j]->Draw("HIST same");
+    massPeakOS_photons[i][j]->Draw("HIST same");
+    bkg_tau[i][j]->Draw("HIST same");
+    bkg_Wjet[i][j]->Draw("HIST same");
+    bkg_ttbar[i][j]->Draw("HIST same");
+    massPeakOS[i][j]->Draw("p same");
+
+    TLegend *leg = new TLegend(0.65,0.7,0.9,0.875);
+    leg->AddEntry(massPeakOS[i][j],Form("Data (%d-%d%%)",c.getCentBinLow(i),c.getCentBinHigh(i)),"p");
+    if(isMu) leg->AddEntry(massPeakOS[i][j],"Z #rightarrow #mu^{+}#mu^{-}","f");
+    if(!isMu) leg->AddEntry(massPeakOS[i][j],"Z #rightarrow e^{+}e^{-}","f");
+    leg->AddEntry(massPeakSS[i][j],"Same Sign (QCD)","f");
+    leg->AddEntry(massPeakOS_photons[i][j],"EM background","f");
+    leg->AddEntry(bkg_tau[i][j],"Z #rightarrow #tau^{+}#tau^{-}","f");
+    leg->AddEntry(bkg_Wjet[i][j],"W^{#pm} + X","f");
+    leg->AddEntry(bkg_ttbar[i][j],"t#bar{t}","f");
     leg->SetBorderSize(0);
     leg->SetFillStyle(0);
     leg->Draw("same");
 
+    if(j==1){
+      c1->SetLogx();
+      c1->SetLogy();
+      dummy->GetXaxis()->SetRangeUser(0.1,199);
+      dummy->GetYaxis()->SetRangeUser(0.01,200000);
+    }
+
     c1->RedrawAxis();
-    c1->SaveAs(Form("plots/massPeaks_withBkgSub/massPeak_withSub_isMu%d_%d_%d.png",(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
-    c1->SaveAs(Form("plots/massPeaks_withBkgSub/massPeak_withSub_isMu%d_%d_%d.pdf",(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
-    c1->SaveAs(Form("plots/massPeaks_withBkgSub/massPeak_withSub_isMu%d_%d_%d.C",(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
+    c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d.png",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
+    c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d.pdf",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
+    c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d.C",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
 
-    massPeakOS[i]->GetYaxis()->SetRangeUser(0.01, massPeakOS[i]->GetMaximum()*50);
+    if(j==0) massPeakOS[i][j]->GetYaxis()->SetRangeUser(0.01, massPeakOS[i][j]->GetMaximum()*50);
+    if(j==2) massPeakOS[i][j]->GetYaxis()->SetRangeUser(0.3, massPeakOS[i][j]->GetMaximum()*300);
     c1->SetLogy();
-    c1->SaveAs(Form("plots/massPeaks_withBkgSub/massPeak_withSub_isMu%d_%d_%d_log.png",(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
-    c1->SaveAs(Form("plots/massPeaks_withBkgSub/massPeak_withSub_isMu%d_%d_%d_log.pdf",(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
-    c1->SaveAs(Form("plots/massPeaks_withBkgSub/massPeak_withSub_isMu%d_%d_%d_log.C",(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
-    
-
-
+    c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log.png",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
+    c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log.pdf",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
+    c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log.C",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
+   
+    if(j==1) delete dummy; 
+    delete c1;
+    delete leg;
+  }
   }
 
   if(isMu)

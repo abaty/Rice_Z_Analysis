@@ -30,7 +30,7 @@ bin/massPeakPlots.exe: src/massPeakPlots.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/massPeakPlots.exe src/massPeakPlots.C
 
 bin/massPeakPlots_BkgSub.exe: src/massPeakPlots_BkgSub.C
-	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/massPeakPlots_BkgSub.exe src/massPeakPlots_BkgSub.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/massPeakPlots_BkgSub.exe src/massPeakPlots_BkgSub.C
 
 bin/v2Plots.exe: src/v2Plots.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/v2Plots.exe src/v2Plots.C

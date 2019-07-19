@@ -1,3 +1,4 @@
+#include "include/HistNameHelper.h"
 #include "include/MCReweight.h"
 #include "include/centralityBin.h"
 #include "include/VertexCompositeNtuple.h"
@@ -5,6 +6,7 @@
 #include "include/centralityTool.h"
 #include "include/Settings.h"
 #include "include/ZEfficiency.h"
+#include "include/HistNameHelper.h"
 
 //ROOT stuff
 #include "TLorentzVector.h"
@@ -28,6 +30,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   MCReweight * vzRW;
   if(isMC) vzRW = new MCReweight("resources/vzReweight.root");
 
+  HistNameHelper h = HistNameHelper();
   CentralityBin cb = CentralityBin();
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
@@ -44,6 +47,21 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   TH1D * massPeakOS_ptLT0p5_withEff[nBins]; 
   TH1D * massPeakSS_ptLT0p5_withEff[nBins]; 
   TH1D * massPeakOS_TauTau_withEff[nBins]; 
+  
+  TH1D * pTOS_withEff[nBins]; 
+  TH1D * pTSS_withEff[nBins]; 
+  TH1D * pTOS_ptLT0p5acoLT0p001_withEff[nBins]; 
+  TH1D * pTOS_TauTau_withEff[nBins]; 
+  
+  TH1D * yOS_withEff[nBins]; 
+  TH1D * ySS_withEff[nBins]; 
+  TH1D * yOS_ptLT0p5acoLT0p001_withEff[nBins]; 
+  TH1D * yOS_TauTau_withEff[nBins]; 
+  
+  TH1D * yieldOS_withEff[nBins]; 
+  TH1D * yieldSS_withEff[nBins]; 
+  TH1D * yieldOS_ptLT0p5acoLT0p001_withEff[nBins]; 
+  TH1D * yieldOS_TauTau_withEff[nBins]; 
 
   TH1D * yields;
   TH1D * yieldsSS;
@@ -95,6 +113,21 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     massPeakOS_ptLT0p5_withEff[i] = new TH1D(Form("massPeakOS_ptLT0p5_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakSS_ptLT0p5_withEff[i] = new TH1D(Form("massPeakSS_ptLT0p5_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakOS_TauTau_withEff[i] = new TH1D(Form("massPeakOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
+    
+    pTOS_withEff[i] = new TH1D(Form("pTOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    pTSS_withEff[i] = new TH1D(Form("pTSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    pTOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("pTOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    pTOS_TauTau_withEff[i] = new TH1D(Form("pTOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+
+    yOS_withEff[i] = new TH1D(Form("yOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",24,-s.maxZRap,s.maxZRap);
+    ySS_withEff[i] = new TH1D(Form("ySS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",24,-s.maxZRap,s.maxZRap);
+    yOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("yOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",24,-s.maxZRap,s.maxZRap);
+    yOS_TauTau_withEff[i] = new TH1D(Form("yOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",24,-s.maxZRap,s.maxZRap);
+    
+    yieldOS_withEff[i] = new TH1D(Form("yieldOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    yieldSS_withEff[i] = new TH1D(Form("yieldSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{#pm}#mu^{#pm}}",1,0,1);
+    yieldOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("yieldOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    yieldOS_TauTau_withEff[i] = new TH1D(Form("yieldOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
     
     candPt[i] = new TH1D(Form("candPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     candPtFine[i] = new TH1D(Form("candPtFine_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",400,0,200);
@@ -198,6 +231,10 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
               if((isMC && !isTau) || !isMC){
                 massPeakOS[k]->Fill( v.mass()[j] );
                 massPeakOS_withEff[k]->Fill( v.mass()[j], 1.0/efficiency * eventWeight );
+                pTOS_withEff[k]->Fill( v.pT()[j], 1.0/efficiency * eventWeight );
+                yOS_withEff[k]->Fill( v.y()[j], 1.0/efficiency * eventWeight );
+                yieldOS_withEff[k]->Fill( 0.5, 1.0/efficiency * eventWeight );
+                
                 yields->Fill(k,1.0/efficiency * eventWeight);
                 candPt[k]->Fill(v.pT()[j]);
                 candPtFine[k]->Fill(v.pT()[j]);
@@ -214,11 +251,19 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
                 
                 if(v.pT()[j] < s.minPtCutForPhotons){
                   massPeakOS_ptLT0p5_withEff[k]->Fill( v.mass()[j], 1.0/efficiency * eventWeight );
-                  if( acoplanarity < s.acoCutForPhotons) massPeakOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.mass()[j], 1.0/efficiency*eventWeight);
+                  if( acoplanarity < s.acoCutForPhotons){
+                    massPeakOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.mass()[j], 1.0/efficiency*eventWeight);
+                    pTOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.pT()[j], 1.0/efficiency*eventWeight);
+                    yOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.y()[j], 1.0/efficiency*eventWeight);
+                    yieldOS_ptLT0p5acoLT0p001_withEff[k]->Fill( 0.5, 1.0/efficiency*eventWeight);
+                  }
                 }
               }
               if( isMC && isTau ){
                 massPeakOS_TauTau_withEff[k]->Fill( v.mass()[j], 1.0/efficiency * eventWeight );
+                pTOS_TauTau_withEff[k]->Fill( v.pT()[j], 1.0/efficiency * eventWeight );
+                yOS_TauTau_withEff[k]->Fill( v.y()[j], 1.0/efficiency * eventWeight );
+                yieldOS_TauTau_withEff[k]->Fill( 0.5, 1.0/efficiency * eventWeight );
                 yields_TauTau->Fill(k,1.0/efficiency * eventWeight);
               }
             }
@@ -231,6 +276,9 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
                 candPtFiner[k]->Fill(v.pT()[j],-1);
                 massPeakSS[k]->Fill( v.mass()[j] );
                 massPeakSS_withEff[k]->Fill( v.mass()[j] , 1.0/efficiency * eventWeight);
+                pTSS_withEff[k]->Fill( v.pT()[j] , 1.0/efficiency * eventWeight);
+                ySS_withEff[k]->Fill( v.y()[j] , 1.0/efficiency * eventWeight);
+                yieldSS_withEff[k]->Fill( 0.5 , 1.0/efficiency * eventWeight);
                 yieldsSS->Fill(k,1.0/efficiency * eventWeight);
                 
                 float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( v.PhiD1()[j] - v.PhiD2()[j] )))/TMath::Pi(); 
@@ -325,7 +373,22 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   }
 
   for(int i = 0; i<nBins; i++){
+    h.makeDifferential( candPt[i]);
+    h.makeDifferential( candEta[i]);
+    h.makeDifferential( candY[i]);
+
+    h.makeDifferential( pTOS_withEff[i]);
+    h.makeDifferential( pTSS_withEff[i]);
+    h.makeDifferential( pTOS_ptLT0p5acoLT0p001_withEff[i]);
+    h.makeDifferential( pTOS_TauTau_withEff[i]);
+
+    h.makeDifferential( yOS_withEff[i]);
+    h.makeDifferential( ySS_withEff[i]);
+    h.makeDifferential( yOS_ptLT0p5acoLT0p001_withEff[i]);
+    h.makeDifferential( yOS_TauTau_withEff[i]);
+
     //make differential quantities
+    /*
     for(int j = 1; j<candPt[i]->GetNbinsX()+1; j++){
       candPt[i]->SetBinContent(j,candPt[i]->GetBinContent(j)/candPt[i]->GetBinWidth(j));
       candPt[i]->SetBinError(j,candPt[i]->GetBinError(j)/candPt[i]->GetBinWidth(j));
@@ -337,53 +400,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     for(int j = 1; j<candY[i]->GetNbinsX()+1; j++){
       candY[i]->SetBinContent(j,candY[i]->GetBinContent(j)/candY[i]->GetBinWidth(j));
       candY[i]->SetBinError(j,candY[i]->GetBinError(j)/candY[i]->GetBinWidth(j));
-    }
-
-    massPeakOS[i]->SetDirectory(0);
-    massPeakSS[i]->SetDirectory(0);
-    massPeakOS_withEff[i]->SetDirectory(0);
-    massPeakSS_withEff[i]->SetDirectory(0);
-    massPeakOS_ptLT0p5_withEff[i]->SetDirectory(0);
-    massPeakSS_ptLT0p5_withEff[i]->SetDirectory(0);
-    massPeakOS_ptLT0p5acoLT0p001_withEff[i]->SetDirectory(0);
-    massPeakSS_ptLT0p5acoLT0p001_withEff[i]->SetDirectory(0);
-    massPeakOS_TauTau_withEff[i]->SetDirectory(0);
-    candPt[i]->SetDirectory(0);
-    candPtFine[i]->SetDirectory(0);
-    candPtFiner[i]->SetDirectory(0);
-    candPt_unnormalized[i]->SetDirectory(0);
-    candEta[i]->SetDirectory(0);
-    candY[i]->SetDirectory(0);
-    candPhi[i]->SetDirectory(0);
-    candPtVsM[i]->SetDirectory(0);
-    v2Num[i]->SetDirectory(0);
-    v2Denom[i]->SetDirectory(0);
-    v2Q1Mid[i]->SetDirectory(0);
-    v2Q2Mid[i]->SetDirectory(0);
-    v2AvgEff[i]->SetDirectory(0);
-    v2MuNum[i]->SetDirectory(0);
-    v2MuDenom[i]->SetDirectory(0);
-    v2MuQ1Mid[i]->SetDirectory(0);
-    v2MuQ2Mid[i]->SetDirectory(0);
-    candAcoVsM[i]->SetDirectory(0);
-    candAcoVsPt[i]->SetDirectory(0);
-
-    avgMassVsPt[i]->SetDirectory(0);
+    }*/
   }
-  yields->SetDirectory(0);
-  yieldsSS->SetDirectory(0);
-  yields_TauTau->SetDirectory(0);
-
-  v2DenomVsCent->SetDirectory(0);
-  v2NumVsCent->SetDirectory(0);
-  v2Q1MidVsCent->SetDirectory(0);
-  v2Q2MidVsCent->SetDirectory(0);
-  v2AvgEffVsCent->SetDirectory(0); 
- 
-  v2MuDenomVsCent->SetDirectory(0);
-  v2MuNumVsCent->SetDirectory(0);
-  v2MuQ1MidVsCent->SetDirectory(0);
-  v2MuQ2MidVsCent->SetDirectory(0);
 
   TFile * output;
   if(!isTest){
@@ -408,6 +426,22 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     massPeakOS_ptLT0p5acoLT0p001_withEff[i]->Write(0);
     massPeakSS_ptLT0p5acoLT0p001_withEff[i]->Write(0);
     massPeakOS_TauTau_withEff[i]->Write();
+
+    pTOS_withEff[i]->Write();
+    pTSS_withEff[i]->Write();
+    pTOS_ptLT0p5acoLT0p001_withEff[i]->Write(0);
+    pTOS_TauTau_withEff[i]->Write();
+    
+    yOS_withEff[i]->Write();
+    ySS_withEff[i]->Write();
+    yOS_ptLT0p5acoLT0p001_withEff[i]->Write(0);
+    yOS_TauTau_withEff[i]->Write();
+    
+    yieldOS_withEff[i]->Write();
+    yieldSS_withEff[i]->Write();
+    yieldOS_ptLT0p5acoLT0p001_withEff[i]->Write(0);
+    yieldOS_TauTau_withEff[i]->Write();
+
     candPt[i]->Write();
     candPtFine[i]->Write();
     candPtFiner[i]->Write();
