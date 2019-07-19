@@ -28,6 +28,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   TH1D * massPeakOS_DYphoton[nBins]; 
   TH1D * massPeakOS_DYtautau[nBins]; 
   TH1D * massPeakOS_DYsignalMinusPhoton[nBins];
+  TH1D * massPeakOS_DYsignalMinusPhotonPlusBkg[nBins];
 
   TH1D * massPeakOS_Wjet[nBins]; 
   TH1D * massPeakOS_ttbar[nBins]; 
@@ -94,18 +95,24 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     massPeakOS_DYsignalMinusPhoton[i] = (TH1D*)massPeakOS_DYsignal[i]->Clone(Form("massPeakOS_DYsignalMinusPhoton_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     massPeakOS_DYsignalMinusPhoton[i]->Add(massPeakOS_DYphoton[i],-1);
 
+    //add the other backgrounds
+    massPeakOS_DYsignalMinusPhotonPlusBkg[i] = (TH1D*)massPeakOS_DYsignalMinusPhoton[i]->Clone(Form("massPeakOS_DYsignalMinusPhotonPlusBkg_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    massPeakOS_DYsignalMinusPhotonPlusBkg[i]->Add(massPeakOS_DYtautau[i]);
+    massPeakOS_DYsignalMinusPhotonPlusBkg[i]->Add(massPeakOS_ttbar[i]);
+    massPeakOS_DYsignalMinusPhotonPlusBkg[i]->Add(massPeakOS_Wjet[i]);
+
     //Calculate the fractions for tautau, Wjet, TTbar
     //tautau
     fraction_tau[i] = (TH1D*)massPeakOS_DYtautau[i]->Clone(Form("fraction_tau_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i))); 
-    fraction_tau[i]->Divide( massPeakOS_DYsignalMinusPhoton[i] );
+    fraction_tau[i]->Divide( massPeakOS_DYsignalMinusPhotonPlusBkg[i] );
 
     //ttbar
     fraction_ttbar[i] = (TH1D*)massPeakOS_ttbar[i]->Clone(Form("fraction_ttbar_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i))); 
-    fraction_ttbar[i]->Divide( massPeakOS_DYsignalMinusPhoton[i] );
+    fraction_ttbar[i]->Divide( massPeakOS_DYsignalMinusPhotonPlusBkg[i] );
     
     //Wjet
     fraction_Wjet[i] = (TH1D*)massPeakOS_Wjet[i]->Clone(Form("fraction_Wjet_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i))); 
-    fraction_Wjet[i]->Divide( massPeakOS_DYsignalMinusPhoton[i] );
+    fraction_Wjet[i]->Divide( massPeakOS_DYsignalMinusPhotonPlusBkg[i] );
     
 
     //normalize MC fractions to data with a ratio of counts between subtracted MC data
