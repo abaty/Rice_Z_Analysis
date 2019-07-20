@@ -8,7 +8,7 @@ endif
 MKDIR_BIN=mkdir -p $(PWD)/bin
 
 
-all: mkdirBin bin/Z_EE_Channel.exe bin/Z_mumu_Channel.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe
+all: mkdirBin bin/Z_EE_Channel.exe bin/Z_mumu_Channel.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe bin/prettyPlots_pTy.exe bin/prettyPlots_yields.exe
 
 mkdirBin:
 	$(MKDIR_BIN)
@@ -40,6 +40,12 @@ bin/MCReweighting.exe: src/MCReweighting.C
 
 bin/efficiencyPlots.exe: src/efficiencyPlots.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/efficiencyPlots.exe src/efficiencyPlots.C
+
+bin/prettyPlots_pTy.exe: src/prettyPlots_pTy.C
+	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/prettyPlots_pTy.exe src/prettyPlots_pTy.C
+
+bin/prettyPlots_yields.exe: src/prettyPlots_yields.C
+	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/prettyPlots_yields.exe src/prettyPlots_yields.C
 
 clean:
 	rm -f $(PWD)/include/*~

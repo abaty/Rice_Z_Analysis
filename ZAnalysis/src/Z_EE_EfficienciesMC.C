@@ -22,7 +22,7 @@
 #include <fstream>
 #include <string>
 
-void doZ2EE(std::vector< std::string > files, int jobNumber){
+void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   Timer timer = Timer();
   timer.Start();
   timer.StartSplit("Start Up");
@@ -107,7 +107,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   std::vector< float > * eleSigmaIEtaIEta = 0;
   std::vector< int > * eleCharge = 0;
   std::vector< int > * eleMissHits = 0;
-  std::vector< float > * eledEtaAtVtx = 0;
+  //std::vector< float > * eledEtaAtVtx = 0;
+  std::vector< float > * eledEtaSeedAtVtx = 0;
   std::vector< float > * eledPhiAtVtx = 0;
   std::vector< float > * eleSCEta = 0;
   std::vector< float > * eleSCPhi = 0;
@@ -130,7 +131,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
   std::vector< float > * mcMomPhi = 0; 
   std::vector< float > * mcMomMass = 0;
 
-  for(unsigned int f = 0; f<files.size(); f++){
+  unsigned int nFiles = files.size();
+  if(isTest) nFiles = 5;
+  for(unsigned int f = 0; f<nFiles; f++){
     timer.StartSplit("Opening Files");
 
     TFile * in = TFile::Open(files.at(f).c_str(),"read");
@@ -163,7 +166,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     eTree->SetBranchAddress("eleSigmaIEtaIEta_2012",&eleSigmaIEtaIEta);
     eTree->SetBranchAddress("eleMissHits",&eleMissHits);
     eTree->SetBranchAddress("eleCharge",&eleCharge);
-    eTree->SetBranchAddress("eledEtaAtVtx",&eledEtaAtVtx);
+    //eTree->SetBranchAddress("eledEtaAtVtx",&eledEtaAtVtx);
+    eTree->SetBranchAddress("eledEtaSeedAtVtx",&eledEtaSeedAtVtx);
     eTree->SetBranchAddress("eledPhiAtVtx",&eledPhiAtVtx);
     eTree->SetBranchAddress("eleSCEta",&eleSCEta);
     eTree->SetBranchAddress("eleSCPhi",&eleSCPhi);
@@ -201,17 +205,17 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
       //event selections
       evtTree->GetEntry(i);
       if(TMath::Abs(vz)>15) continue;
-      hiBin = cb.getHiBinFromhiHF(hiHF,3);
 
       skimTree->GetEntry(i);
       if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
       
+      hiBin = cb.getHiBinFromhiHF(hiHF,3);
       double eventWeight = vzRW.reweightFactor( vz ) * c.findNcoll( hiBin );
       
       timer.StartSplit("Loading GEN electron tree");
       eTreeMC->GetEntry(i);
 
-      timer.StartSplit("Gen Loop");
+      timer.StartSplit("Gen Loop (PreElectronConfirmation)");
       int nGenElectronsFound = 0;
       
       TLorentzVector mom = TLorentzVector();
@@ -233,6 +237,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
         //if they are not in our acceptance, break out
         if( mcPt->at(j) < s.minElectronPt ) break; 
         if( TMath::Abs(mcEta->at(j)) > s.maxZRapEle ) break; 
+      
+        timer.StartSplit("Gen Loop (PostElectronConfirmation)");
 
         //we found both daughters and they are in our acceptance, lets fill our histogram
         if( nGenElectronsFound == 2 ){
@@ -292,7 +298,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
         if(eleSCEta->at(j) < -1.39 && eleSCPhi->at(j) < -0.9 && eleSCPhi->at(j) > -1.6) continue;
 
         //check electron qualty variables
-        float dEta = TMath::Abs( eledEtaAtVtx->at(j) );
+        float dEta = TMath::Abs( eledEtaSeedAtVtx->at(j) );
         float dPhi = TMath::Abs( eledPhiAtVtx->at(j) );
         if(!eSel.isGoodElectron(ElectronSelector::WorkingPoint::loose, hiBin, eleSCEta->at(j), eleSigmaIEtaIEta->at(j), dEta, dPhi, eleMissHits->at(j), eleHoverEBc->at(j), eleEoverPInv->at(j), eleIP3D->at(j) )) continue;
 
@@ -486,7 +492,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
     recoEff_cent_net[i]->SetDirectory(0);
   }
 
-  TFile * output = new TFile(Form("resources/Z2ee_EfficiencyMC_%d.root",jobNumber),"recreate");
+  TFile * output;
+  if(!isTest) output = new TFile(Form("resources/Z2ee_EfficiencyMC_%d.root",jobNumber),"recreate");
+  else        output = new TFile(Form("resources/Z2ee_EfficiencyMC_%d_TEST.root",jobNumber),"recreate");
+ 
   for(int i = 0; i<nBins; i++){
     recoEff_net[i]->Write();
     recoEff_pass[i]->Write();
@@ -530,9 +539,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber){
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 4)
+  if(argc != 5)
   {
-    std::cout << "Usage: Z_EE_EfficiencyMC <fileList> <job #> <total number of jobs>" << std::endl;
+    std::cout << "Usage: Z_EE_EfficiencyMC <fileList> <isTest> <job #> <total number of jobs>" << std::endl;
     return 1;
   }  
 
@@ -541,8 +550,9 @@ int main(int argc, const char* argv[])
   std::vector<std::string> listOfFiles;
   std::ifstream inFile(fList.data());
 
-  int job = std::atoi(argv[2]);
-  int totalJobs = std::atoi(argv[3]);
+  bool isTest = (bool)std::atoi(argv[2]);
+  int job = std::atoi(argv[3]);
+  int totalJobs = std::atoi(argv[4]);
 
   if(!inFile.is_open())
   {
@@ -561,6 +571,6 @@ int main(int argc, const char* argv[])
     }
   }
    
-  doZ2EE(listOfFiles, job);
+  doZ2EE(listOfFiles, job, isTest);
   return 0; 
 }

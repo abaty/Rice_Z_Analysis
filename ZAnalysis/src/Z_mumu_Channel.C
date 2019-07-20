@@ -119,10 +119,12 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     pTOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("pTOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     pTOS_TauTau_withEff[i] = new TH1D(Form("pTOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
 
-    yOS_withEff[i] = new TH1D(Form("yOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",24,-s.maxZRap,s.maxZRap);
-    ySS_withEff[i] = new TH1D(Form("ySS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",24,-s.maxZRap,s.maxZRap);
-    yOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("yOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",24,-s.maxZRap,s.maxZRap);
-    yOS_TauTau_withEff[i] = new TH1D(Form("yOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",24,-s.maxZRap,s.maxZRap);
+    int nRapBins = 16;
+    if(etaCut < 2.11) nRapBins = 14;
+    yOS_withEff[i] = new TH1D(Form("yOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
+    ySS_withEff[i] = new TH1D(Form("ySS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
+    yOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("yOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
+    yOS_TauTau_withEff[i] = new TH1D(Form("yOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
     
     yieldOS_withEff[i] = new TH1D(Form("yieldOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
     yieldSS_withEff[i] = new TH1D(Form("yieldSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{#pm}#mu^{#pm}}",1,0,1);

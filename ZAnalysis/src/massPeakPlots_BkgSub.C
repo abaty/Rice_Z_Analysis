@@ -12,7 +12,7 @@
 #include <fstream>
 #include <string>
 
-void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_, std::string Wjet_, bool isMu){
+void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_, std::string Wjet_, bool isMu, std::string outTag){
   TH1::SetDefaultSumw2();
   Settings s = Settings();
 
@@ -56,7 +56,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   MC_nEvents_Wjet = (TH1D*)Wjet->Get("nEvents");  
   MC_nEvents_ttbar= (TH1D*)ttbar->Get("nEvents");  
 
-  TFile * out = TFile::Open(Form("backgroundSubtraction_isMu%d.root",(int)isMu),"recreate");
+  TFile * out = TFile::Open(Form("backgroundSubtraction_%s_isMu%d.root",outTag.c_str(),(int)isMu),"recreate");
   
   for(int i = 0; i<nBins; i++){
   for(int j = 0; j<4; j++){
@@ -266,9 +266,9 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 6)
+  if(argc != 7)
   {
-    std::cout << "Usage: massPeakPlots_BkgSub <Data file> <DY File> <TTbar File> <WJet File> <isMu>" << std::endl;
+    std::cout << "Usage: massPeakPlots_BkgSub <Data file> <DY File> <TTbar File> <WJet File> <isMu> <outTag>" << std::endl;
     return 1;
   }  
 
@@ -277,7 +277,8 @@ int main(int argc, const char* argv[])
   std::string ttbar = argv[3];
   std::string Wjet = argv[4];
   bool isMu = (bool)std::atoi(argv[5]);
+  std::string outTag = argv[6];
    
-  plotMassPeaks_BkgSub(data, DY, ttbar, Wjet, isMu);
+  plotMassPeaks_BkgSub(data, DY, ttbar, Wjet, isMu, outTag);
   return 0; 
 }

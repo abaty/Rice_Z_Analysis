@@ -5,6 +5,15 @@
 class Settings{
 public:
 
+  double Nmb = 9.57519e+09;
+  double NmbUp = 9.62460e+09;
+  double NmbDown = 9.47799e+09;
+
+  double muLumi = 1606.06;
+  double eLumi = 1603.392;
+  double netLumi = 1618.466;
+
+
   double minMuonPt = 20;
   double minElectronPt = 20;
 
