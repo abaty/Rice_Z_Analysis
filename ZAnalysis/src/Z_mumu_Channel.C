@@ -388,21 +388,6 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     h.makeDifferential( ySS_withEff[i]);
     h.makeDifferential( yOS_ptLT0p5acoLT0p001_withEff[i]);
     h.makeDifferential( yOS_TauTau_withEff[i]);
-
-    //make differential quantities
-    /*
-    for(int j = 1; j<candPt[i]->GetNbinsX()+1; j++){
-      candPt[i]->SetBinContent(j,candPt[i]->GetBinContent(j)/candPt[i]->GetBinWidth(j));
-      candPt[i]->SetBinError(j,candPt[i]->GetBinError(j)/candPt[i]->GetBinWidth(j));
-    }
-    for(int j = 1; j<candEta[i]->GetNbinsX()+1; j++){
-      candEta[i]->SetBinContent(j,candEta[i]->GetBinContent(j)/candEta[i]->GetBinWidth(j));
-      candEta[i]->SetBinError(j,candEta[i]->GetBinError(j)/candEta[i]->GetBinWidth(j));
-    }
-    for(int j = 1; j<candY[i]->GetNbinsX()+1; j++){
-      candY[i]->SetBinContent(j,candY[i]->GetBinContent(j)/candY[i]->GetBinWidth(j));
-      candY[i]->SetBinError(j,candY[i]->GetBinError(j)/candY[i]->GetBinWidth(j));
-    }*/
   }
 
   TFile * output;

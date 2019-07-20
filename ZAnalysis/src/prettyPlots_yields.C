@@ -17,6 +17,11 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
 
+
+  gStyle->SetErrorX(0);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+
   TH1D * mu24[nBins];
   TH1D * mu21[nBins];
   TH1D * e[nBins];

@@ -336,6 +336,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           TLorentzVector Zcand = *elec1+*elec2;
           if(Zcand.M() < s.zMassRange[0] || Zcand.M() > s.zMassRange[1]) continue;      
 
+          //acoplanarity cut
+          float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( elePhi->at(goodElectrons.at(j2)) - elePhi->at(goodElectrons.at(j)) )))/TMath::Pi(); 
+          if( Zcand.Pt() < s.minPtCutForPhotons && acoplanarity < s.acoCutForPhotons ) continue;
+          
           //L1 trigger matching (1 L1 EG > 15 GeV)
           bool isFirstElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 15.0);
           bool isSecondElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 15.0);
