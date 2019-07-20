@@ -56,7 +56,6 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int idx){
     float idSF2U_2 = quad2(idSF2StatU, idSF2SystU);
    
     idSF_varied = idSF1U_2 + idSF2U_2;//relative uncertainty squared
-    std::cout << idSF_varied << std::endl;
   }
   //downward variation
   if(idx == -1){
@@ -100,7 +99,6 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int idx){
     float RunU = quad2( eff_data_RunU1, eff_data_RunU2); 
 
     trigSF_varied = TnPU + StatU + RunU;//relative uncertainty squared
-    std::cout << trigSF_varied << std::endl;
   }
   //downward
   if(idx == -1){
@@ -121,10 +119,8 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int idx){
   }
 
   float SF = recoSF * idSF * trigSF;
-  std::cout << SF << std::endl;
  
   //check if we are doing a variation
-  std::cout << idSF_varied << " " << trigSF_varied << std::endl;
   if(idx==1) return SF * ( 1 + TMath::Sqrt( idSF_varied + trigSF_varied ));//add relative uncertainties on the quantity, then add 1 and multiply by base value
   if(idx==-1) return SF * ( 1 - TMath::Sqrt( idSF_varied + trigSF_varied ));//add relative uncertainties on the quantity, then add 1 and multiply by base value
 

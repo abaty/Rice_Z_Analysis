@@ -72,6 +72,14 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   TH2D * recoEff[nBins];
   TEfficiency * eff[nBins];
   
+  TH2D * recoEff_U_pass[nBins];
+  TH2D * recoEff_U[nBins];
+  TEfficiency * eff_U[nBins];
+  
+  TH2D * recoEff_D_pass[nBins];
+  TH2D * recoEff_D[nBins];
+  TEfficiency * eff_D[nBins];
+  
   TH2D * recoEff_noSF_pass[nBins];
   TH2D * recoEff_noSF_net[nBins];
   TH2D * recoEff_noSF[nBins];
@@ -80,6 +88,8 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   for(int k = 0; k<nBins; k++){
     recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
     recoEff_net[k] = new TH2D(Form("recoEff_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
+    recoEff_U_pass[k] = new TH2D(Form("recoEff_U_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
+    recoEff_D_pass[k] = new TH2D(Form("recoEff_D_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
     
     recoEff_noSF_pass[k] = new TH2D(Form("recoEff_noSF_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
     recoEff_noSF_net[k] = new TH2D(Form("recoEff_noSF_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
@@ -177,6 +187,8 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
         //Looks like this is a good candidate match! Let's get the scale factor
         float scaleFactor = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], 0);
+        float scaleFactorU = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], 1);
+        float scaleFactorD = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], -1);
 
         //Fill numerator (and apply the scale factor here!)
         for(int k = 0; k<nBins; k++){ 
@@ -184,6 +196,8 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
             //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
             if( v.pT_gen()[j] < s.zPtBins[ s.nZPtBins-1 ] && TMath::Abs( v.y_gen()[j] ) < s.maxZRap ){
               recoEff_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
+              recoEff_U_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactorU );
+              recoEff_D_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactorD );
               recoEff_noSF_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight  );
               recoEff_pt_pass[k]->Fill(v.pT_gen()[j], eventWeight * scaleFactor);         
               recoEff_y_pass[k]->Fill(v.y_gen()[j], eventWeight * scaleFactor);         
@@ -195,9 +209,13 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
                 int bin = recoEff_pass[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
                 if( bin%2 ==1){
                   recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactor );
+                  recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactorU );
+                  recoEff_D_pass[k]->Fill( recoEff_D_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactorD );
                   recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight );
                 }else{
                   recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactor );
+                  recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactorU );
+                  recoEff_D_pass[k]->Fill( recoEff_D_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactorD );
                   recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight  );
                 }
               }
@@ -231,6 +249,37 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_net[i]->SetDirectory(0);
   }
   for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_U_pass[i], recoEff_net[i]);
+    recoEff_U[i] = (TH2D*)recoEff_U_pass[i]->Clone(Form("recoEff_U_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_U[i]->Divide(recoEff_net[i]);
+    recoEff_U[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_U_pass[i]), *(recoEff_net[i]),"w") ){
+      eff_U[i] = new TEfficiency(*(recoEff_U_pass[i]), *(recoEff_net[i]));
+      eff_U[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_U[i]->SetName(Form("eff_U_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_U[i]->SetDirectory(0);
+    }
+
+    recoEff_U_pass[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_U_pass[i], recoEff_net[i]);
+    recoEff_D[i] = (TH2D*)recoEff_D_pass[i]->Clone(Form("recoEff_D_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_D[i]->Divide(recoEff_net[i]);
+    recoEff_D[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_D_pass[i]), *(recoEff_net[i]),"w") ){
+      eff_D[i] = new TEfficiency(*(recoEff_D_pass[i]), *(recoEff_net[i]));
+      eff_D[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_D[i]->SetName(Form("eff_D_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_D[i]->SetDirectory(0);
+    }
+
+    recoEff_D_pass[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_noSF_pass[i], recoEff_noSF_net[i]);
     recoEff_noSF[i] = (TH2D*)recoEff_noSF_pass[i]->Clone(Form("recoEff_noSF_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     recoEff_noSF[i]->Divide(recoEff_noSF_net[i]);
     recoEff_noSF[i]->SetDirectory(0);
@@ -331,6 +380,14 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_pass[i]->Write();
     recoEff_net[i]->Write();
     if(isConsistent.at(i)) eff[i]->Write();
+    
+    recoEff_U[i]->Write();
+    recoEff_U_pass[i]->Write();
+    eff_U[i]->Write();
+    
+    recoEff_D[i]->Write();
+    recoEff_D_pass[i]->Write();
+    eff_D[i]->Write();
     
     recoEff_noSF[i]->Write();
     recoEff_noSF_pass[i]->Write();
