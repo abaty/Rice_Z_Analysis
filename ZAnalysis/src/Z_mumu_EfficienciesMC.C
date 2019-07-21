@@ -8,6 +8,7 @@
 #include "include/MuonTnP.h"
 
 //ROOT stuff
+#include "TRandom3.h"
 #include "TLorentzVector.h"
 #include "TGraphAsymmErrors.h"
 #include "TFile.h"
@@ -45,6 +46,8 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
 
+  TRandom3 * r = new TRandom3();
+
   int hiBin;
 
   TH1D * recoEff_pt_pass[nBins];
@@ -80,16 +83,43 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   TH2D * recoEff_D[nBins];
   TEfficiency * eff_D[nBins];
   
+  TH2D * recoEff_photonU_pass[nBins];
+  TH2D * recoEff_photonU[nBins];
+  TEfficiency * eff_photonU[nBins];
+  
+  TH2D * recoEff_photonD_pass[nBins];
+  TH2D * recoEff_photonD[nBins];
+  TEfficiency * eff_photonD[nBins];
+  
   TH2D * recoEff_noSF_pass[nBins];
   TH2D * recoEff_noSF_net[nBins];
   TH2D * recoEff_noSF[nBins];
   TEfficiency * eff_noSF[nBins];
+
+  TH1D * recoEff_pt_pass_forReso_Reco[nBins];
+  TH1D * recoEff_pt_pass_forReso_RecoSmeared[nBins];
+  TH1D * recoEff_pt_pass_forReso_Gen[nBins];
+  TH1D * recoEff_ptReso[nBins];
+  TH1D * recoEff_pt_pass_forReso_Ratio_Reco[nBins];
+  TH1D * recoEff_pt_pass_forReso_Ratio_RecoSmeared[nBins];
+  TH1D * recoEff_pt_pass_forReso_Ratio_NominalToSmeared[nBins];
+  
+  TH1D * recoEff_pt_pass_forReso_Reco21[nBins];
+  TH1D * recoEff_pt_pass_forReso_RecoSmeared21[nBins];
+  TH1D * recoEff_pt_pass_forReso_Gen21[nBins];
+  TH1D * recoEff_ptReso21[nBins];
+  TH1D * recoEff_pt_pass_forReso_Ratio_Reco21[nBins];
+  TH1D * recoEff_pt_pass_forReso_Ratio_RecoSmeared21[nBins];
+  TH1D * recoEff_pt_pass_forReso_Ratio_NominalToSmeared21[nBins];
+
 
   for(int k = 0; k<nBins; k++){
     recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
     recoEff_net[k] = new TH2D(Form("recoEff_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
     recoEff_U_pass[k] = new TH2D(Form("recoEff_U_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
     recoEff_D_pass[k] = new TH2D(Form("recoEff_D_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
+    recoEff_photonU_pass[k] = new TH2D(Form("recoEff_photonU_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
+    recoEff_photonD_pass[k] = new TH2D(Form("recoEff_photonD_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
     
     recoEff_noSF_pass[k] = new TH2D(Form("recoEff_noSF_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
     recoEff_noSF_net[k] = new TH2D(Form("recoEff_noSF_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
@@ -102,6 +132,16 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_phi_net[k] = new TH1D(Form("recoEff_phi_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",30,-TMath::Pi(),TMath::Pi());
     recoEff_cent_pass[k] = new TH1D(Form("recoEff_cent_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",20,0,100);
     recoEff_cent_net[k] = new TH1D(Form("recoEff_cent_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",20,0,100);
+    
+    recoEff_pt_pass_forReso_Reco[k] = new TH1D(Form("recoEff_pt_pass_forReso_Reco_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_pt_pass_forReso_RecoSmeared[k] = new TH1D(Form("recoEff_pt_pass_forReso_RecoSmeared_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_pt_pass_forReso_Gen[k] = new TH1D(Form("recoEff_pt_pass_forReso_Gen_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_ptReso[k] = new TH1D(Form("recoEff_ptReso_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.2,0.2);
+    
+    recoEff_pt_pass_forReso_Reco21[k] = new TH1D(Form("recoEff_pt_pass_forReso_Reco21_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_pt_pass_forReso_RecoSmeared21[k] = new TH1D(Form("recoEff_pt_pass_forReso_RecoSmeared21_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_pt_pass_forReso_Gen21[k] = new TH1D(Form("recoEff_pt_pass_forReso_Gen21_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_ptReso21[k] = new TH1D(Form("recoEff_ptReso21_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.2,0.2);
   }
 
   //starting looping over the file
@@ -174,8 +214,12 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         if( !(v.tightCand(indx,"POG"))) continue;//tight Muon 1 && tight Muon 2      
         if( !(v.VtxProb()[indx] >0.001)) continue; 
 
+        //we have 3 different aco cuts for variations
+        bool passesAco[3] = {1 , 1, 1};
         float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( v.PhiD1()[indx] - v.PhiD2()[indx] )))/TMath::Pi(); 
-        if(v.pT()[indx] < s.minPtCutForPhotons && acoplanarity < s.acoCutForPhotons) continue;
+        if(v.pT()[indx] < s.minPtCutForPhotons && acoplanarity < s.acoCutForPhotons) passesAco[0] = false;
+        if(v.pT()[indx] < s.minPtCutForPhotonsU && acoplanarity < s.acoCutForPhotonsU) passesAco[1] = false;
+        if(v.pT()[indx] < s.minPtCutForPhotonsD && acoplanarity < s.acoCutForPhotonsD) passesAco[2] = false;
  
         //make sure that one of the daughters was the trigger muon
         bool isDaughter1Trigger = v.trigMuon1()[PbPb::R5TeV::Y2018::HLT_HIL3Mu12][indx];
@@ -195,28 +239,64 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
           if(c.isInsideBin( hiBin ,k)){
             //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
             if( v.pT_gen()[j] < s.zPtBins[ s.nZPtBins-1 ] && TMath::Abs( v.y_gen()[j] ) < s.maxZRap ){
-              recoEff_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
-              recoEff_U_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactorU );
-              recoEff_D_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactorD );
-              recoEff_noSF_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight  );
-              recoEff_pt_pass[k]->Fill(v.pT_gen()[j], eventWeight * scaleFactor);         
-              recoEff_y_pass[k]->Fill(v.y_gen()[j], eventWeight * scaleFactor);         
-              recoEff_cent_pass[k]->Fill( hiBin /2.0, eventWeight * scaleFactor);         
-              recoEff_phi_pass[k]->Fill(getPhi( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.PhiD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], v.PhiD2_gen()[j] ), eventWeight * scaleFactor);         
- 
-              //for the last few pt bins, halve the y binning so we have better stats
-              if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
-                int bin = recoEff_pass[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
-                if( bin%2 ==1){
-                  recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactor );
-                  recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactorU );
-                  recoEff_D_pass[k]->Fill( recoEff_D_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactorD );
-                  recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight );
-                }else{
-                  recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactor );
-                  recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactorU );
-                  recoEff_D_pass[k]->Fill( recoEff_D_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactorD );
-                  recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight  );
+              if(passesAco[0]){
+                recoEff_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
+                recoEff_U_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactorU );
+                recoEff_D_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactorD );
+                recoEff_noSF_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight  );
+                recoEff_pt_pass[k]->Fill(v.pT_gen()[j], eventWeight * scaleFactor);         
+                recoEff_y_pass[k]->Fill(v.y_gen()[j], eventWeight * scaleFactor);         
+                recoEff_cent_pass[k]->Fill( hiBin /2.0, eventWeight * scaleFactor);         
+                recoEff_phi_pass[k]->Fill(getPhi( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.PhiD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], v.PhiD2_gen()[j] ), eventWeight * scaleFactor);         
+                
+                recoEff_pt_pass_forReso_Reco[k]->Fill(v.pT()[indx], eventWeight);         
+                recoEff_pt_pass_forReso_RecoSmeared[k]->Fill(v.pT()[indx] * r->Gaus(1,0.05), eventWeight);         
+                recoEff_pt_pass_forReso_Gen[k]->Fill(v.pT_gen()[j], eventWeight);         
+                recoEff_ptReso[k]->Fill( (v.pT()[indx] - v.pT_gen()[j]) / v.pT_gen()[j], eventWeight);         
+             
+                if(TMath::Abs(v.EtaD1()[indx]) < s.maxZRapEle && TMath::Abs(v.EtaD2()[indx]) < s.maxZRapEle){   
+                  recoEff_pt_pass_forReso_Reco21[k]->Fill(v.pT()[indx], eventWeight);         
+                  recoEff_pt_pass_forReso_RecoSmeared21[k]->Fill(v.pT()[indx] * r->Gaus(1,0.05), eventWeight);         
+                  recoEff_pt_pass_forReso_Gen21[k]->Fill(v.pT_gen()[j], eventWeight);         
+                  recoEff_ptReso21[k]->Fill( (v.pT()[indx] - v.pT_gen()[j]) / v.pT_gen()[j], eventWeight); 
+                }        
+   
+                //for the last few pt bins, halve the y binning so we have better stats
+                if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                  int bin = recoEff_pass[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
+                  if( bin%2 ==1){
+                    recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactor );
+                    recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactorU );
+                    recoEff_D_pass[k]->Fill( recoEff_D_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactorD );
+                    recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight );
+                  }else{
+                    recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactor );
+                    recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactorU );
+                    recoEff_D_pass[k]->Fill( recoEff_D_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactorD );
+                    recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight  );
+                  }
+                }
+              }//passes aco if statement here
+              if(passesAco[1]){
+                recoEff_photonU_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
+                if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                  int bin = recoEff_pass[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
+                  if( bin%2 ==1){
+                    recoEff_photonU_pass[k]->Fill( recoEff_photonU_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactor );
+                  }else{
+                    recoEff_photonU_pass[k]->Fill( recoEff_photonU_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactor );
+                  }
+                }
+              }
+              if(passesAco[2]){
+                recoEff_photonD_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
+                if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                  int bin = recoEff_pass[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
+                  if( bin%2 ==1){
+                    recoEff_photonD_pass[k]->Fill( recoEff_photonD_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactor );
+                  }else{
+                    recoEff_photonD_pass[k]->Fill( recoEff_photonD_pass[k]->GetXaxis()->GetBinCenter(bin-1), v.pT_gen()[j], eventWeight * scaleFactor );
+                  }
                 }
               }
             }
@@ -277,6 +357,36 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     }
 
     recoEff_D_pass[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_photonU_pass[i], recoEff_net[i]);
+    recoEff_photonU[i] = (TH2D*)recoEff_photonU_pass[i]->Clone(Form("recoEff_photonU_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_photonU[i]->Divide(recoEff_net[i]);
+    recoEff_photonU[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_photonU_pass[i]), *(recoEff_net[i]),"w") ){
+      eff_photonU[i] = new TEfficiency(*(recoEff_photonU_pass[i]), *(recoEff_net[i]));
+      eff_photonU[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_photonU[i]->SetName(Form("eff_photonU_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_photonU[i]->SetDirectory(0);
+    }
+
+    recoEff_photonU_pass[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_photonD_pass[i], recoEff_net[i]);
+    recoEff_photonD[i] = (TH2D*)recoEff_photonD_pass[i]->Clone(Form("recoEff_photonD_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_photonD[i]->Divide(recoEff_net[i]);
+    recoEff_photonD[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_photonD_pass[i]), *(recoEff_net[i]),"w") ){
+      eff_photonD[i] = new TEfficiency(*(recoEff_photonD_pass[i]), *(recoEff_net[i]));
+      eff_photonD[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_photonD[i]->SetName(Form("eff_photonD_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_photonD[i]->SetDirectory(0);
+    }
+
+    recoEff_photonD_pass[i]->SetDirectory(0);
   }
   for(int i = 0; i<nBins; i++){
     forceConsistency(recoEff_noSF_pass[i], recoEff_noSF_net[i]);
@@ -389,6 +499,14 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_D_pass[i]->Write();
     eff_D[i]->Write();
     
+    recoEff_photonU[i]->Write();
+    recoEff_photonU_pass[i]->Write();
+    eff_photonU[i]->Write();
+    
+    recoEff_photonD[i]->Write();
+    recoEff_photonD_pass[i]->Write();
+    eff_photonD[i]->Write();
+    
     recoEff_noSF[i]->Write();
     recoEff_noSF_pass[i]->Write();
     recoEff_noSF_net[i]->Write();
@@ -413,6 +531,39 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_cent_pass[i]->Write();
     recoEff_cent_net[i]->Write();
     eff_cent[i]->Write();
+
+    recoEff_pt_pass_forReso_Ratio_Reco[i] = (TH1D*) recoEff_pt_pass_forReso_Reco[i]->Clone(Form("recoEff_pt_pass_forReso_Ratio_Reco_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_pass_forReso_Ratio_Reco[i]->Divide(recoEff_pt_pass_forReso_Gen[i]);
+    recoEff_pt_pass_forReso_Ratio_Reco[i]->Write();
+    recoEff_pt_pass_forReso_Ratio_RecoSmeared[i] = (TH1D*) recoEff_pt_pass_forReso_RecoSmeared[i]->Clone(Form("recoEff_pt_pass_forReso_Ratio_RecoSmeared_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_pass_forReso_Ratio_RecoSmeared[i]->Divide(recoEff_pt_pass_forReso_Gen[i]);
+    recoEff_pt_pass_forReso_Ratio_RecoSmeared[i]->Write();
+
+    recoEff_pt_pass_forReso_Ratio_NominalToSmeared[i] = (TH1D*) recoEff_pt_pass_forReso_Ratio_RecoSmeared[i]->Clone(Form("recoEff_pt_pass_forReso_Ratio_SmearedToNominal_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_pass_forReso_Ratio_NominalToSmeared[i]->Divide(recoEff_pt_pass_forReso_Ratio_Reco[i]);
+    recoEff_pt_pass_forReso_Ratio_NominalToSmeared[i]->Write();
+
+    recoEff_pt_pass_forReso_Reco[i]->Write();
+    recoEff_pt_pass_forReso_RecoSmeared[i]->Write();
+    recoEff_pt_pass_forReso_Gen[i]->Write();
+    recoEff_ptReso[i]->Write();
+    
+    recoEff_pt_pass_forReso_Ratio_Reco21[i] = (TH1D*) recoEff_pt_pass_forReso_Reco21[i]->Clone(Form("recoEff_pt_pass_forReso_Ratio_Reco21_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_pass_forReso_Ratio_Reco21[i]->Divide(recoEff_pt_pass_forReso_Gen21[i]);
+    recoEff_pt_pass_forReso_Ratio_Reco21[i]->Write();
+    recoEff_pt_pass_forReso_Ratio_RecoSmeared21[i] = (TH1D*) recoEff_pt_pass_forReso_RecoSmeared21[i]->Clone(Form("recoEff_pt_pass_forReso_Ratio_RecoSmeared21_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_pass_forReso_Ratio_RecoSmeared21[i]->Divide(recoEff_pt_pass_forReso_Gen21[i]);
+    recoEff_pt_pass_forReso_Ratio_RecoSmeared21[i]->Write();
+
+    recoEff_pt_pass_forReso_Ratio_NominalToSmeared21[i] = (TH1D*) recoEff_pt_pass_forReso_Ratio_RecoSmeared21[i]->Clone(Form("recoEff_pt_pass_forReso_Ratio_SmearedToNominal21_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_pass_forReso_Ratio_NominalToSmeared21[i]->Divide(recoEff_pt_pass_forReso_Ratio_Reco21[i]);
+    recoEff_pt_pass_forReso_Ratio_NominalToSmeared21[i]->Write();
+
+    recoEff_pt_pass_forReso_Reco21[i]->Write();
+    recoEff_pt_pass_forReso_RecoSmeared21[i]->Write();
+    recoEff_pt_pass_forReso_Gen21[i]->Write();
+    recoEff_ptReso21[i]->Write();
+
   }
 
   output->Close();

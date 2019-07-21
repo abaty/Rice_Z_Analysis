@@ -20,8 +20,8 @@ public:
   int nZMassBins = 30;
   double zMassRange[2] = {60,120};
 
-  static const int nZPtBins = 15;
-  double zPtBins[nZPtBins] = {0,0.5,1.0,3.0,5.0,10.0,20.0,30.0,40.0,50.0,70.0,90.0,120.0,150.0,200.0};
+  static const int nZPtBins = 14;
+  double zPtBins[nZPtBins] = {0,1.0,3.0,5.0,10.0,20.0,30.0,40.0,50.0,70.0,90.0,120.0,150.0,200.0};
   int nPtBinsToRebinRapEff = 6;
 
   static const int nZRapBins = 16;
@@ -35,6 +35,12 @@ public:
 
   double minPtCutForPhotons = 0.5;
   double acoCutForPhotons = 0.001;
+  
+  double minPtCutForPhotonsU = 0.75;
+  double acoCutForPhotonsU = 0.0015;
+  
+  double minPtCutForPhotonsD = 0.25;
+  double acoCutForPhotonsD = 0.0005;
 
   //MC xsections (/pb)
   double ttbar_XS = 69.0;

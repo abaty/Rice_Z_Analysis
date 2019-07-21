@@ -1,9 +1,0 @@
-/storage1/users/aab9/DY_NLO_TTbarForest_ZLL/Chunk_0_ext0.root
-/storage1/users/aab9/DY_NLO_TTbarForest_ZLL/Chunk_100_ext0.root
-/storage1/users/aab9/DY_NLO_TTbarForest_ZLL/Chunk_101_ext0.root
-/storage1/users/aab9/DY_NLO_TTbarForest_ZLL/Chunk_102_ext0.root
-/storage1/users/aab9/DY_NLO_TTbarForest_ZLL/Chunk_103_ext0.root
-/storage1/users/aab9/DY_NLO_TTbarForest_ZLL/Chunk_104_ext0.root
-/storage1/users/aab9/DY_NLO_TTbarForest_ZLL/Chunk_105_ext0.root
-/storage1/users/aab9/DY_NLO_TTbarForest_ZLL/Chunk_106_ext0.root
-/storage1/users/aab9/DY_NLO_TTbarForest_ZLL/Chunk_107_ext0.root

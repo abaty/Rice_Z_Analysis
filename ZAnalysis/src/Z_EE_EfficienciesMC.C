@@ -42,6 +42,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
   
+  TRandom3 * r = new TRandom3();
+  
   TH1D * recoEff_pt_pass[nBins];
   TH1D * recoEff_pt_net[nBins];
   TH1D * recoEff_pt[nBins];  
@@ -75,10 +77,27 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH2D * recoEff_D[nBins];
   TEfficiency * eff_D[nBins];
   
+  TH2D * recoEff_photonU_pass[nBins];
+  TH2D * recoEff_photonU[nBins];
+  TEfficiency * eff_photonU[nBins];
+  
+  TH2D * recoEff_photonD_pass[nBins];
+  TH2D * recoEff_photonD[nBins];
+  TEfficiency * eff_photonD[nBins];
+  
   TH2D * recoEff_noSF_pass[nBins];
   TH2D * recoEff_noSF_net[nBins];
   TH2D * recoEff_noSF[nBins];
   TEfficiency * eff_noSF[nBins];
+
+  TH1D * recoEff_pt_pass_forReso_Reco[nBins];
+  TH1D * recoEff_pt_pass_forReso_RecoSmeared[nBins];
+  TH1D * recoEff_pt_pass_forReso_Gen[nBins];
+  TH1D * recoEff_ptReso[nBins];
+  TH1D * recoEff_pt_pass_forReso_Ratio_Reco[nBins];
+  TH1D * recoEff_pt_pass_forReso_Ratio_RecoSmeared[nBins];
+  TH1D * recoEff_pt_pass_forReso_Ratio_NominalToSmeared[nBins];
+
 
   for(int k = 0; k<nBins; k++){
     recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
@@ -86,6 +105,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     
     recoEff_U_pass[k] = new TH2D(Form("recoEff_U_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
     recoEff_D_pass[k] = new TH2D(Form("recoEff_D_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
+    
+    recoEff_photonU_pass[k] = new TH2D(Form("recoEff_photonU_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
+    recoEff_photonD_pass[k] = new TH2D(Form("recoEff_photonD_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
     
     recoEff_noSF_pass[k] = new TH2D(Form("recoEff_noSF_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
     recoEff_noSF_net[k] = new TH2D(Form("recoEff_noSF_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
@@ -98,6 +120,12 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_phi_net[k] = new TH1D(Form("recoEff_phi_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",30,-TMath::Pi(),TMath::Pi());
     recoEff_cent_pass[k] = new TH1D(Form("recoEff_cent_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",20,0,100);
     recoEff_cent_net[k] = new TH1D(Form("recoEff_cent_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",20,0,100);
+  
+    
+    recoEff_pt_pass_forReso_Reco[k] = new TH1D(Form("recoEff_pt_pass_forReso_Reco_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_pt_pass_forReso_RecoSmeared[k] = new TH1D(Form("recoEff_pt_pass_forReso_RecoSmeared_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_pt_pass_forReso_Gen[k] = new TH1D(Form("recoEff_pt_pass_forReso_Gen_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_ptReso[k] = new TH1D(Form("recoEff_ptReso_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.2,0.2);
   }
 
   int nEle;
@@ -337,8 +365,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           if(Zcand.M() < s.zMassRange[0] || Zcand.M() > s.zMassRange[1]) continue;      
 
           //acoplanarity cut
+          bool passesAco[3] = {1 , 1, 1};
           float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( elePhi->at(goodElectrons.at(j2)) - elePhi->at(goodElectrons.at(j)) )))/TMath::Pi(); 
-          if( Zcand.Pt() < s.minPtCutForPhotons && acoplanarity < s.acoCutForPhotons ) continue;
+          if( Zcand.Pt() < s.minPtCutForPhotons && acoplanarity < s.acoCutForPhotons ) passesAco[0] = false;
+          if( Zcand.Pt() < s.minPtCutForPhotonsU && acoplanarity < s.acoCutForPhotonsU ) passesAco[1] = false;
+          if( Zcand.Pt() < s.minPtCutForPhotonsD && acoplanarity < s.acoCutForPhotonsD ) passesAco[2] = false;
           
           //L1 trigger matching (1 L1 EG > 15 GeV)
           bool isFirstElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 15.0);
@@ -365,27 +396,56 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
             if(c.isInsideBin(hiBin,k)){
               //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
               if( mom.Pt() < s.zPtBins[ s.nZPtBins-1 ] && TMath::Abs( mom.Rapidity() ) < s.maxZRap ){
-                recoEff_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
-                recoEff_U_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorU );
-                recoEff_D_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorD );
-                recoEff_pt_pass[k]->Fill( mom.Pt(), eventWeight * scaleFactor);
-                recoEff_y_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
-                recoEff_cent_pass[k]->Fill( hiBin/2.0, eventWeight * scaleFactor);
-                recoEff_phi_pass[k]->Fill( mom.Phi(), eventWeight * scaleFactor);
+                if(passesAco[0]){
+                  recoEff_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
+                  recoEff_U_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorU );
+                  recoEff_D_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorD );
+                  recoEff_pt_pass[k]->Fill( mom.Pt(), eventWeight * scaleFactor);
+                  recoEff_y_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
+                  recoEff_cent_pass[k]->Fill( hiBin/2.0, eventWeight * scaleFactor);
+                  recoEff_phi_pass[k]->Fill( mom.Phi(), eventWeight * scaleFactor);
+              
+                  recoEff_pt_pass_forReso_Reco[k]->Fill(Zcand.Pt(), eventWeight);         
+                  recoEff_pt_pass_forReso_RecoSmeared[k]->Fill(Zcand.Pt() * r->Gaus(1,0.05), eventWeight);         
+                  recoEff_pt_pass_forReso_Gen[k]->Fill(mom.Pt(), eventWeight);         
+                  recoEff_ptReso[k]->Fill( (Zcand.Pt() - mom.Pt()) / mom.Pt(), eventWeight);         
           
-                //for the last few pt bins, halve the y binning so we have better stats
-                if(mom.Pt()> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
-                  int bin = recoEff_pass[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
-                  if( bin%2 ==1){
-                    recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
-                    recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactorU );
-                    recoEff_D_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactorD );
-                    recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight );
-                  } else { 
-                    recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactor );
-                    recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactorU );
-                    recoEff_D_pass[k]->Fill( recoEff_D_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactorD );
-                    recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight );
+                  //for the last few pt bins, halve the y binning so we have better stats
+                  if(mom.Pt()> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                    int bin = recoEff_pass[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
+                    if( bin%2 ==1){
+                      recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
+                      recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactorU );
+                      recoEff_D_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactorD );
+                      recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight );
+                    } else { 
+                      recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactor );
+                      recoEff_U_pass[k]->Fill( recoEff_U_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactorU );
+                      recoEff_D_pass[k]->Fill( recoEff_D_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactorD );
+                      recoEff_noSF_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight );
+                    }
+                  }
+                }//aco if statement
+                if(passesAco[1]){
+                  recoEff_photonU_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
+                  if(mom.Pt()> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                    int bin = recoEff_pass[k]->GetXaxis()->FindBin(mom.Rapidity()); 
+                    if( bin%2 ==1){
+                      recoEff_photonU_pass[k]->Fill( recoEff_photonU_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
+                    }else{
+                      recoEff_photonU_pass[k]->Fill( recoEff_photonU_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactor );
+                    }
+                  }
+                }
+                if(passesAco[2]){
+                  recoEff_photonD_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
+                  if(mom.Pt()> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                    int bin = recoEff_pass[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
+                    if( bin%2 ==1){
+                      recoEff_photonD_pass[k]->Fill( recoEff_photonD_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
+                    }else{
+                      recoEff_photonD_pass[k]->Fill( recoEff_photonD_pass[k]->GetXaxis()->GetBinCenter(bin-1), mom.Pt(), eventWeight * scaleFactor );
+                    }
                   }
                 }
               }
@@ -450,6 +510,36 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
       eff_D[i]->SetDirectory(0);
     }
     recoEff_D_pass[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_photonU_pass[i], recoEff_net[i]);
+    recoEff_photonU[i] = (TH2D*)recoEff_photonU_pass[i]->Clone(Form("recoEff_photonU_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_photonU[i]->Divide(recoEff_net[i]);
+    recoEff_photonU[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_photonU_pass[i]), *(recoEff_net[i]),"w") ){
+      eff_photonU[i] = new TEfficiency(*(recoEff_photonU_pass[i]), *(recoEff_net[i]));
+      eff_photonU[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_photonU[i]->SetName(Form("eff_photonU_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_photonU[i]->SetDirectory(0);
+    }
+
+    recoEff_photonU_pass[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_photonD_pass[i], recoEff_net[i]);
+    recoEff_photonD[i] = (TH2D*)recoEff_photonD_pass[i]->Clone(Form("recoEff_photonD_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_photonD[i]->Divide(recoEff_net[i]);
+    recoEff_photonD[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_photonD_pass[i]), *(recoEff_net[i]),"w") ){
+      eff_photonD[i] = new TEfficiency(*(recoEff_photonD_pass[i]), *(recoEff_net[i]));
+      eff_photonD[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_photonD[i]->SetName(Form("eff_photonD_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_photonD[i]->SetDirectory(0);
+    }
+
+    recoEff_photonD_pass[i]->SetDirectory(0);
   }
   for(int i = 0; i<nBins; i++){
     recoEff_noSF[i] = (TH2D*)recoEff_noSF_pass[i]->Clone(Form("recoEff_noSF_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
@@ -561,6 +651,14 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_D[i]->Write();
     eff_D[i]->Write();
     
+    recoEff_photonU[i]->Write();
+    recoEff_photonU_pass[i]->Write();
+    eff_photonU[i]->Write();
+    
+    recoEff_photonD[i]->Write();
+    recoEff_photonD_pass[i]->Write();
+    eff_photonD[i]->Write();
+    
     recoEff_noSF_net[i]->Write();
     recoEff_noSF_pass[i]->Write();
     recoEff_noSF[i]->Write();
@@ -585,6 +683,22 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_cent_pass[i]->Write();
     recoEff_cent_net[i]->Write();
     eff_cent[i]->Write();
+    
+    recoEff_pt_pass_forReso_Ratio_Reco[i] = (TH1D*) recoEff_pt_pass_forReso_Reco[i]->Clone(Form("recoEff_pt_pass_forReso_Ratio_Reco_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_pass_forReso_Ratio_Reco[i]->Divide(recoEff_pt_pass_forReso_Gen[i]);
+    recoEff_pt_pass_forReso_Ratio_Reco[i]->Write();
+    recoEff_pt_pass_forReso_Ratio_RecoSmeared[i] = (TH1D*) recoEff_pt_pass_forReso_RecoSmeared[i]->Clone(Form("recoEff_pt_pass_forReso_Ratio_RecoSmeared_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_pass_forReso_Ratio_RecoSmeared[i]->Divide(recoEff_pt_pass_forReso_Gen[i]);
+    recoEff_pt_pass_forReso_Ratio_RecoSmeared[i]->Write();
+
+    recoEff_pt_pass_forReso_Ratio_NominalToSmeared[i] = (TH1D*) recoEff_pt_pass_forReso_Ratio_RecoSmeared[i]->Clone(Form("recoEff_pt_pass_forReso_Ratio_SmearedToNominal_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_pass_forReso_Ratio_NominalToSmeared[i]->Divide(recoEff_pt_pass_forReso_Ratio_Reco[i]);
+    recoEff_pt_pass_forReso_Ratio_NominalToSmeared[i]->Write();
+
+    recoEff_pt_pass_forReso_Reco[i]->Write();
+    recoEff_pt_pass_forReso_RecoSmeared[i]->Write();
+    recoEff_pt_pass_forReso_Gen[i]->Write();
+    recoEff_ptReso[i]->Write();
   }
     
   output->Close();

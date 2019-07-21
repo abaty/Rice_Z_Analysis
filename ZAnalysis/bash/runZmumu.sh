@@ -12,5 +12,5 @@ isMC=$3
 
 for i in $(seq 0 14);
 do
-    ./bin/Z_EE_Channel.exe $inDir $tag $isMC $i 15 > 'unmergedOutputs/job_'$tag'_'$isMC'_'$i'.log' 2>&1 & 
+    ./bin/Z_mumu_Channel.exe $inDir $tag $isMC 0 $i 15 > 'unmergedOutputs/job_mumu_'$tag'_'$isMC'_'$i'.log' 2>&1 & 
 done

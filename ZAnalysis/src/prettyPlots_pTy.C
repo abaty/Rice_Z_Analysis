@@ -1,3 +1,4 @@
+#include "include/ptCorrector.h"
 #include "include/centralityTool.h"
 #include "include/Settings.h"
 #include "TStyle.h"
@@ -14,6 +15,8 @@
 void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   Settings s = Settings();
 
+  ptCorrector ptCorr = ptCorrector("resources/Z2mumu_Efficiencies.root","resources/Z2ee_EfficiencyMC_0.root");
+
   gStyle->SetErrorX(0);
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
@@ -24,14 +27,20 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   TFile * mu24 = TFile::Open(Zmumu24.c_str(),"read");
   TH1D * y_mu24 = (TH1D*)mu24->Get("yOS_minusAll_0_90");
   TH1D * pt_mu24 = (TH1D*)mu24->Get("pTOS_minusAll_0_90");
-  
+
+  pt_mu24->Divide( ptCorr.correction[0] );
+ 
   TFile * mu21 = TFile::Open(Zmumu21.c_str(),"read");
   TH1D * y_mu21 = (TH1D*)mu21->Get("yOS_minusAll_0_90");
   TH1D * pt_mu21 = (TH1D*)mu21->Get("pTOS_minusAll_0_90");
   
+  pt_mu21->Divide( ptCorr.correction[2] );
+  
   TFile * e = TFile::Open(Zee.c_str(),"read");
   TH1D * y_e = (TH1D*)e->Get("yOS_minusAll_0_90");
   TH1D * pt_e = (TH1D*)e->Get("pTOS_minusAll_0_90");
+  
+  pt_e->Divide( ptCorr.correction[1] );
 
 
   //make muon plot
@@ -58,6 +67,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   y_e->GetXaxis()->CenterTitle();
   y_e->GetYaxis()->CenterTitle();
   y_e->SetStats(0);  
+  y_e->GetXaxis()->SetRangeUser(-2.4,2.4);
   y_e->GetYaxis()->SetRangeUser(0,y_e->GetMaximum()*1.4);
 
   

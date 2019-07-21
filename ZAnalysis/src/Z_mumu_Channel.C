@@ -24,7 +24,7 @@
 #include <fstream>
 #include <string>
 
-void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Settings s, std::string outFile, bool isTest){
+void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Settings s, std::string outFile, bool isTest, int job, int nJobs){
   TH1::SetDefaultSumw2();
   ZEfficiency zEff = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC);
   MCReweight * vzRW;
@@ -177,6 +177,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     v.GetTree(files.at(f),tree);
     unsigned int maxEvt = isTest ? 100000 : v.GetEntries(); 
     for(unsigned int i = 0; i<maxEvt; i++){
+      if( i%nJobs != (unsigned int)job) continue;
       v.GetEntry(i);
       if(i%5000==0) std::cout << i << "/" << maxEvt << std::endl;
 
@@ -392,11 +393,11 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
 
   TFile * output;
   if(!isTest){
-    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s.root",(int)(etaCut*10), outFile.c_str()),"recreate");
-    if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s.root",(int)(etaCut*10), outFile.c_str()),"recreate");
+    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_job%d.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
+    if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s_job%d.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
   }else{
-    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_TEST.root",(int)(etaCut*10), outFile.c_str()),"recreate");
-    if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s_TEST.root",(int)(etaCut*10), outFile.c_str()),"recreate");
+    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
+    if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
   }
   for(int i = 0; i<nBins; i++){
     float entries = candPtFine[i]->Integral();
@@ -476,9 +477,9 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 5)
+  if(argc != 7)
   {
-    std::cout << "Usage: Z_mumu_Channel <fileList> <outFileTag> <isMC> < isTest>" << std::endl;
+    std::cout << "Usage: Z_mumu_Channel <fileList> <outFileTag> <isMC> < isTest> <jobNumber> <nJobs>" << std::endl;
     return 1;
   }  
 
@@ -490,6 +491,8 @@ int main(int argc, const char* argv[])
  
   bool isMC = (bool)std::atoi(argv[3]);
   bool isTest = (bool)std::atoi(argv[4]);
+  bool job = (bool)std::atoi(argv[5]);
+  bool nJobs = (bool)std::atoi(argv[6]);
 
   if(!inFile.is_open())
   {
@@ -510,7 +513,7 @@ int main(int argc, const char* argv[])
 
   Settings s = Settings();
    
-  doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest);
-  doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest);
+  doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, job, nJobs);
+  doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, job, nJobs);
   return 0; 
 }
