@@ -39,7 +39,7 @@ int CentralityBin::getHiBinFromhiHFSides( const Double_t hiHFP, const Double_t h
 
 int CentralityBin::getHiBinFromhiHF(const Double_t hiHF, int variation)
 {
-  if(variation<2 && hiHF >= 5199.95) return 0;
+  if(variation<=2 && hiHF >= 5199.95) return 0;
   if(variation == 3 && hiHF >= 6242.82) return 0;
 
   Int_t binPos = -1;
@@ -54,7 +54,7 @@ int CentralityBin::getHiBinFromhiHF(const Double_t hiHF, int variation)
   }
   if( variation == 1 ){
     for(int i = 0; i < nBins; ++i){
-      if(hiHF >= binTableDataDown[i] && hiHF < binTableDataDown[i+1]){
+      if(hiHF >= binTableDataUp[i] && hiHF < binTableDataUp[i+1]){
         binPos = i;
         break;
       }
@@ -62,7 +62,7 @@ int CentralityBin::getHiBinFromhiHF(const Double_t hiHF, int variation)
   }
   if( variation == 2 ){
     for(int i = 0; i < nBins; ++i){
-      if(hiHF >= binTableDataUp[i] && hiHF < binTableDataUp[i+1]){
+      if(hiHF >= binTableDataDown[i] && hiHF < binTableDataDown[i+1]){
         binPos = i;
         break;
       }

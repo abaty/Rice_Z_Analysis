@@ -19,8 +19,6 @@
 //   * idx = -2: TnP syst variation,  -1 sigma
 //   * idx = +1: stat variation,  +1 sigma
 //   * idx = +2: stat variation,  -1 sigma
-//   * idx = -3: run variation,  +1 sigma
-//   * idx = -4: run variation,  -1 sigma
 
 // For all:
 //   * idx = +200: tnp efficiency for data
@@ -222,54 +220,52 @@ double tnp_weight_trig_pbpb(double pt, double eta, int idx)
       else if (pt > 80 && pt <= 9999) num = 0.819963;
     }
   }
-  if (idx == -1) { // TnP fit syst up
+  else if (idx == -1) { // syst up
     if (fabs(eta) > 0 && fabs(eta) <= 1.2) { 
-      if (pt > 15 && pt <= 20) num = 0.901332;
-      else if (pt > 20 && pt <= 30) num = 0.925191;
-      else if (pt > 30 && pt <= 50) num = 0.949999;
-      else if (pt > 50 && pt <= 80) num = 0.950461;
-      else if (pt > 80 && pt <= 9999) num = 0.9415;
+      if (pt > 15 && pt <= 20) num = 0.884283;
+      else if (pt > 20 && pt <= 30) num = 0.924391;
+      else if (pt > 30 && pt <= 50) num = 0.949199;
+      else if (pt > 50 && pt <= 80) num = 0.949717;
+      else if (pt > 80 && pt <= 9999) num = 0.940982;
     }
     else if (fabs(eta) > 1.2 && fabs(eta) <= 2.1) { 
-      if (pt > 15 && pt <= 20) num = 0.90741;
-      else if (pt > 20 && pt <= 30) num = 0.909254;
-      else if (pt > 30 && pt <= 50) num = 0.9299;
-      else if (pt > 50 && pt <= 80) num = 0.944354;
-      else if (pt > 80 && pt <= 9999) num = 0.933213;
+      if (pt > 15 && pt <= 20) num = 0.898453;
+      else if (pt > 20 && pt <= 30) num = 0.907464;
+      else if (pt > 30 && pt <= 50) num = 0.927804;
+      else if (pt > 50 && pt <= 80) num = 0.941646;
+      else if (pt > 80 && pt <= 9999) num = 0.930199;
     }
     else if (fabs(eta) > 2.1 && fabs(eta) <= 2.4) { 
-      if (pt > 15 && pt <= 20) num = 0.848026;
-      else if (pt > 20 && pt <= 30) num = 0.87791;
-      else if (pt > 30 && pt <= 50) num = 0.905147;
-      else if (pt > 50 && pt <= 80) num = 0.920232;
-      else if (pt > 80 && pt <= 9999) num = 0.895628;
+      if (pt > 15 && pt <= 20) num = 0.835232;
+      else if (pt > 20 && pt <= 30) num = 0.873788;
+      else if (pt > 30 && pt <= 50) num = 0.901026;
+      else if (pt > 50 && pt <= 80) num = 0.916111;
+      else if (pt > 80 && pt <= 9999) num = 0.891507;
     }
   }
-  else if (idx == -2) { // TnP fit syst down
+  else if (idx == -2) { // syst down
     if (fabs(eta) > 0 && fabs(eta) <= 1.2) { 
-      if (pt > 15 && pt <= 20) num = 0.850186;
-      else if (pt > 20 && pt <= 30) num = 0.92279;
-      else if (pt > 30 && pt <= 50) num = 0.947598;
-      else if (pt > 50 && pt <= 80) num = 0.948229;
-      else if (pt > 80 && pt <= 9999) num = 0.939947;
+      if (pt > 15 && pt <= 20) num = 0.867235;
+      else if (pt > 20 && pt <= 30) num = 0.92359;
+      else if (pt > 30 && pt <= 50) num = 0.948398;
+      else if (pt > 50 && pt <= 80) num = 0.948973;
+      else if (pt > 80 && pt <= 9999) num = 0.940464;
     }
     else if (fabs(eta) > 1.2 && fabs(eta) <= 2.1) { 
-      if (pt > 15 && pt <= 20) num = 0.880538;
-      else if (pt > 20 && pt <= 30) num = 0.903885;
-      else if (pt > 30 && pt <= 50) num = 0.923613;
-      else if (pt > 50 && pt <= 80) num = 0.93623;
-      else if (pt > 80 && pt <= 9999) num = 0.92417;
+      if (pt > 15 && pt <= 20) num = 0.889496;
+      else if (pt > 20 && pt <= 30) num = 0.905675;
+      else if (pt > 30 && pt <= 50) num = 0.925708;
+      else if (pt > 50 && pt <= 80) num = 0.938938;
+      else if (pt > 80 && pt <= 9999) num = 0.927185;
     }
     else if (fabs(eta) > 2.1 && fabs(eta) <= 2.4) { 
-      if (pt > 15 && pt <= 20) num = 0.809645;
-      else if (pt > 20 && pt <= 30) num = 0.865546;
-      else if (pt > 30 && pt <= 50) num = 0.892783;
-      else if (pt > 50 && pt <= 80) num = 0.907868;
-      else if (pt > 80 && pt <= 9999) num = 0.883264;
+      if (pt > 15 && pt <= 20) num = 0.822439;
+      else if (pt > 20 && pt <= 30) num = 0.869667;
+      else if (pt > 30 && pt <= 50) num = 0.896904;
+      else if (pt > 50 && pt <= 80) num = 0.91199;
+      else if (pt > 80 && pt <= 9999) num = 0.887386;
     }
   }
-  else if (idx == -3) { num *= (1.0+0.006); } // run-dependence syst up
-  else if (idx == -4) { num *= (1.0-0.006); } // run-dependence syst down
 
   if (idx == 200) den = 1.0;
   if (idx == 300) num = den * den;

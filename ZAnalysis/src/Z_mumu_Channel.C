@@ -24,9 +24,14 @@
 #include <fstream>
 #include <string>
 
-void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Settings s, std::string outFile, bool isTest, int job, int nJobs){
+void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Settings s, std::string outFile, bool isTest, int hiBinVar, int job, int nJobs){
   TH1::SetDefaultSumw2();
   ZEfficiency zEff = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC);
+  ZEfficiency zEffU = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, 1);
+  ZEfficiency zEffD = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, -1);
+  ZEfficiency zEffphotonU = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, 2);
+  ZEfficiency zEffphotonD = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, -2);
+
   MCReweight * vzRW;
   if(isMC) vzRW = new MCReweight("resources/vzReweight.root");
 
@@ -48,26 +53,26 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   TH1D * massPeakSS_ptLT0p5_withEff[nBins]; 
   TH1D * massPeakOS_TauTau_withEff[nBins]; 
   
-  TH1D * pTOS_withEff[nBins]; 
-  TH1D * pTSS_withEff[nBins]; 
-  TH1D * pTOS_ptLT0p5acoLT0p001_withEff[nBins]; 
+  TH1D * pTOS_withEff[nBins][5]; 
+  TH1D * pTSS_withEff[nBins][5]; 
+  TH1D * pTOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * pTOS_TauTau_withEff[nBins]; 
   
-  TH1D * yOS_withEff[nBins]; 
-  TH1D * ySS_withEff[nBins]; 
-  TH1D * yOS_ptLT0p5acoLT0p001_withEff[nBins]; 
+  TH1D * yOS_withEff[nBins][5]; 
+  TH1D * ySS_withEff[nBins][5]; 
+  TH1D * yOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * yOS_TauTau_withEff[nBins]; 
   
-  TH1D * yieldOS_withEff[nBins]; 
-  TH1D * yieldSS_withEff[nBins]; 
-  TH1D * yieldOS_ptLT0p5acoLT0p001_withEff[nBins]; 
+  TH1D * yieldOS_withEff[nBins][5]; 
+  TH1D * yieldSS_withEff[nBins][5]; 
+  TH1D * yieldOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * yieldOS_TauTau_withEff[nBins]; 
 
   TH1D * yields;
   TH1D * yieldsSS;
   TH1D * yields_TauTau;
   TProfile * v2Num[nBins];
-  TProfile * v2NumVsCent;
+  TProfile * v2NumVsCent[3];
   TProfile * v2Denom[nBins];
   TProfile * v2DenomVsCent;
   TProfile * v2Q1Mid[nBins];
@@ -108,27 +113,35 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     massPeakOS_withEff[i] = new TH1D(Form("massPeakOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakSS_withEff[i] = new TH1D(Form("massPeakSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{#pm}#mu^{#pm}}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     
+
+
     massPeakOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("massPeakOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakSS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("massPeakSS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakOS_ptLT0p5_withEff[i] = new TH1D(Form("massPeakOS_ptLT0p5_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakSS_ptLT0p5_withEff[i] = new TH1D(Form("massPeakSS_ptLT0p5_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakOS_TauTau_withEff[i] = new TH1D(Form("massPeakOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     
-    pTOS_withEff[i] = new TH1D(Form("pTOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
-    pTSS_withEff[i] = new TH1D(Form("pTSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
-    pTOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("pTOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    for(int j = 0; j < (isMC ? 1 : 5); j++){
+      pTOS_withEff[i][j] = new TH1D(Form("pTOS_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+      pTSS_withEff[i][j] = new TH1D(Form("pTSS_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+      pTOS_ptLT0p5acoLT0p001_withEff[i][j] = new TH1D(Form("pTOS_ptLT0p5acoLT0p001_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    }
     pTOS_TauTau_withEff[i] = new TH1D(Form("pTOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
 
     int nRapBins = 16;
     if(etaCut < 2.11) nRapBins = 14;
-    yOS_withEff[i] = new TH1D(Form("yOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
-    ySS_withEff[i] = new TH1D(Form("ySS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
-    yOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("yOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
+    for(int j = 0; j < (isMC ? 1 : 5); j++){
+      yOS_withEff[i][j] = new TH1D(Form("yOS_withEff%s_%d_%d",h.variationName.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
+      ySS_withEff[i][j] = new TH1D(Form("ySS_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
+      yOS_ptLT0p5acoLT0p001_withEff[i][j] = new TH1D(Form("yOS_ptLT0p5acoLT0p001_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
+    }
     yOS_TauTau_withEff[i] = new TH1D(Form("yOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
     
-    yieldOS_withEff[i] = new TH1D(Form("yieldOS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
-    yieldSS_withEff[i] = new TH1D(Form("yieldSS_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{#pm}#mu^{#pm}}",1,0,1);
-    yieldOS_ptLT0p5acoLT0p001_withEff[i] = new TH1D(Form("yieldOS_ptLT0p5acoLT0p001_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    for(int j = 0; j < (isMC ? 1 : 5); j++){
+      yieldOS_withEff[i][j] = new TH1D(Form("yieldOS_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+      yieldSS_withEff[i][j] = new TH1D(Form("yieldSS_withEff%s_%d_%d",h.variationName.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{#pm}#mu^{#pm}}",1,0,1);
+      yieldOS_ptLT0p5acoLT0p001_withEff[i][j] = new TH1D(Form("yieldOS_ptLT0p5acoLT0p001_withEff%s_%d_%d",h.variationName.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    }
     yieldOS_TauTau_withEff[i] = new TH1D(Form("yieldOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
     
     candPt[i] = new TH1D(Form("candPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
@@ -141,24 +154,27 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     candPtVsM[i] = new TH2D(Form("candPtVsM_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",40,0,10,60,60,120);
     candAcoVsM[i] = new TH2D(Form("candAcoVsM_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",50,0,0.01,60,60,120); 
     candAcoVsPt[i] = new TH2D(Form("candAcoVsPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",50,0,0.01,50,0,5); 
- 
+
     v2Num[i] = new TProfile(Form("v2Num_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Denom[i] = new TProfile(Form("v2Denom_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Q1Mid[i] = new TProfile(Form("v2Q1Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Q2Mid[i] = new TProfile(Form("v2Q2Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2AvgEff[i] = new TProfile(Form("v2AvgEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
- 
+
     v2MuNum[i] = new TProfile(Form("v2MuNum_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2MuDenom[i] = new TProfile(Form("v2MuDenom_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2MuQ1Mid[i] = new TProfile(Form("v2MuQ1Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2MuQ2Mid[i] = new TProfile(Form("v2MuQ2Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
    
     avgMassVsPt[i] = new TProfile(Form("avgMassVsPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",10,0,5);
-  }  
-  v2NumVsCent = new TProfile("v2NumVsCent","",nBins,0,nBins);
+  } 
+  for(int i = 0; i<3; i++){ 
+    v2NumVsCent[i] = new TProfile(Form("v2NumVsCent%s",h.variationName.at(i).c_str()),"",nBins,0,nBins);
+  }
   v2DenomVsCent = new TProfile("v2DenomVsCent","",nBins,0,nBins);
   v2Q1MidVsCent = new TProfile("v2Q1MidVsCent","",nBins,0,nBins); 
   v2Q2MidVsCent = new TProfile("v2Q2MidVsCent","",nBins,0,nBins); 
+  
   v2AvgEffVsCent = new TProfile("v2AvgEffVsCent","",nBins,0,nBins);
   yields = new TH1D("yields","yields",nBins,0,nBins);   
   yieldsSS = new TH1D("yieldsSS","yieldsSS",nBins,0,nBins);   
@@ -187,7 +203,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       if( !(v.evtSel()[ PbPb::R5TeV::Y2018::clusterCompatibilityFilter ])) continue;
       if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
 
-      hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus(), v.HFsumETMinus(), (isMC ? 3 : 0));
+      hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus(), v.HFsumETMinus(), (isMC ? 3 : hiBinVar));
+
       float eventWeight = 1.0;
       if(isMC) eventWeight = vzRW->reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin );
       nEvents->Fill(0.5,eventWeight);
@@ -225,7 +242,13 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
         if( !(isDaughter1Trigger || isDaughter2Trigger) ) continue;
  
         bool isOppositeSign =  v.chargeD1()[j] != v.chargeD2()[j];
-        double efficiency = zEff.getEfficiency( v.y()[j], v.pT()[j] , hiBin );
+        double efficiencyArray[5] = {0};
+        efficiencyArray[0] = zEff.getEfficiency( v.y()[j], v.pT()[j] , hiBin );
+        efficiencyArray[1] = zEffU.getEfficiency( v.y()[j], v.pT()[j] , hiBin );
+        efficiencyArray[2] = zEffD.getEfficiency( v.y()[j], v.pT()[j] , hiBin );
+        efficiencyArray[3] = zEffphotonU.getEfficiency( v.y()[j], v.pT()[j] , hiBin );
+        efficiencyArray[4] = zEffphotonD.getEfficiency( v.y()[j], v.pT()[j] , hiBin );
+        double efficiency = efficiencyArray[0];
 
         if( isOppositeSign){
           for(int k = 0; k<nBins; k++){
@@ -234,9 +257,11 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
               if((isMC && !isTau) || !isMC){
                 massPeakOS[k]->Fill( v.mass()[j] );
                 massPeakOS_withEff[k]->Fill( v.mass()[j], 1.0/efficiency * eventWeight );
-                pTOS_withEff[k]->Fill( v.pT()[j], 1.0/efficiency * eventWeight );
-                yOS_withEff[k]->Fill( v.y()[j], 1.0/efficiency * eventWeight );
-                yieldOS_withEff[k]->Fill( 0.5, 1.0/efficiency * eventWeight );
+                for( int l = 0; l< (isMC ? 1 : 5); l++){
+                  pTOS_withEff[k][l]->Fill( v.pT()[j], 1.0/efficiencyArray[l] * eventWeight );
+                  yOS_withEff[k][l]->Fill( v.y()[j], 1.0/efficiencyArray[l] * eventWeight );
+                  yieldOS_withEff[k][l]->Fill( 0.5, 1.0/efficiencyArray[l] * eventWeight );
+                }
                 
                 yields->Fill(k,1.0/efficiency * eventWeight);
                 candPt[k]->Fill(v.pT()[j]);
@@ -251,16 +276,26 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
                 float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( v.PhiD1()[j] - v.PhiD2()[j] )))/TMath::Pi(); 
                 candAcoVsM[k]->Fill(acoplanarity ,v.mass()[j]);
                 candAcoVsPt[k]->Fill(acoplanarity ,v.pT()[j]);
+        
+                //we have 3 different aco cuts for variations
+                bool passesAco[3] = {1 , 1, 1};
+                if(v.pT()[j] < s.minPtCutForPhotons && acoplanarity < s.acoCutForPhotons) passesAco[0] = false;
+                if(v.pT()[j] < s.minPtCutForPhotonsU && acoplanarity < s.acoCutForPhotonsU) passesAco[1] = false;
+                if(v.pT()[j] < s.minPtCutForPhotonsD && acoplanarity < s.acoCutForPhotonsD) passesAco[2] = false;
                 
                 if(v.pT()[j] < s.minPtCutForPhotons){
                   massPeakOS_ptLT0p5_withEff[k]->Fill( v.mass()[j], 1.0/efficiency * eventWeight );
-                  if( acoplanarity < s.acoCutForPhotons){
-                    massPeakOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.mass()[j], 1.0/efficiency*eventWeight);
-                    pTOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.pT()[j], 1.0/efficiency*eventWeight);
-                    yOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.y()[j], 1.0/efficiency*eventWeight);
-                    yieldOS_ptLT0p5acoLT0p001_withEff[k]->Fill( 0.5, 1.0/efficiency*eventWeight);
-                  }
                 }
+ 
+                if( passesAco[0]) massPeakOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.mass()[j], 1.0/efficiency*eventWeight);
+                
+                for( int l = 0; l< (isMC ? 1 : 5); l++){
+                  if( (passesAco[0] && l<=2) || (passesAco[1] && l==3) || (passesAco[2] && l==4)){
+                    pTOS_ptLT0p5acoLT0p001_withEff[k][l]->Fill( v.pT()[j], 1.0/efficiencyArray[l] * eventWeight );
+                    yOS_ptLT0p5acoLT0p001_withEff[k][l]->Fill( v.y()[j], 1.0/efficiencyArray[l]*eventWeight);
+                    yieldOS_ptLT0p5acoLT0p001_withEff[k][l]->Fill( 0.5, 1.0/efficiencyArray[l]*eventWeight);
+                  }
+                }     
               }
               if( isMC && isTau ){
                 massPeakOS_TauTau_withEff[k]->Fill( v.mass()[j], 1.0/efficiency * eventWeight );
@@ -279,9 +314,11 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
                 candPtFiner[k]->Fill(v.pT()[j],-1);
                 massPeakSS[k]->Fill( v.mass()[j] );
                 massPeakSS_withEff[k]->Fill( v.mass()[j] , 1.0/efficiency * eventWeight);
-                pTSS_withEff[k]->Fill( v.pT()[j] , 1.0/efficiency * eventWeight);
-                ySS_withEff[k]->Fill( v.y()[j] , 1.0/efficiency * eventWeight);
-                yieldSS_withEff[k]->Fill( 0.5 , 1.0/efficiency * eventWeight);
+                for( int l = 0; l< (isMC ? 1 : 5); l++){
+                  pTSS_withEff[k][l]->Fill( v.pT()[j], 1.0/efficiencyArray[l] * eventWeight );
+                  ySS_withEff[k][l]->Fill( v.y()[j] , 1.0/efficiencyArray[l] * eventWeight);
+                  yieldSS_withEff[k][l]->Fill( 0.5 , 1.0/efficiencyArray[l] * eventWeight);
+                }
                 yieldsSS->Fill(k,1.0/efficiency * eventWeight);
                 
                 float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( v.PhiD1()[j] - v.PhiD2()[j] )))/TMath::Pi(); 
@@ -323,7 +360,9 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
               v2Q2Mid[k]->Fill(0.5,q2AndMid);
               v2AvgEff[k]->Fill(0.5,1.0/efficiency);
 
-              v2NumVsCent->Fill(k,num/efficiency);
+              for(int l = 0; l<3; l++){
+                v2NumVsCent[l]->Fill(k,num/efficiencyArray[l]);
+              }
               v2DenomVsCent->Fill(k,denom);
               v2Q1MidVsCent->Fill(k,q1AndMid);
               v2Q2MidVsCent->Fill(k,q2AndMid);
@@ -380,23 +419,28 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     h.makeDifferential( candEta[i]);
     h.makeDifferential( candY[i]);
 
-    h.makeDifferential( pTOS_withEff[i]);
-    h.makeDifferential( pTSS_withEff[i]);
-    h.makeDifferential( pTOS_ptLT0p5acoLT0p001_withEff[i]);
+    
+    for(int j = 0; j< (isMC ? 1 : 5); j++){
+      h.makeDifferential( pTOS_withEff[i][j]);
+      h.makeDifferential( pTSS_withEff[i][j]);
+      h.makeDifferential( pTOS_ptLT0p5acoLT0p001_withEff[i][j]);
+    }
     h.makeDifferential( pTOS_TauTau_withEff[i]);
 
-    h.makeDifferential( yOS_withEff[i]);
-    h.makeDifferential( ySS_withEff[i]);
-    h.makeDifferential( yOS_ptLT0p5acoLT0p001_withEff[i]);
+    for(int j = 0; j< (isMC ? 1 : 5); j++){
+      h.makeDifferential( yOS_withEff[i][j]);
+      h.makeDifferential( ySS_withEff[i][j]);
+      h.makeDifferential( yOS_ptLT0p5acoLT0p001_withEff[i][j]);
+    }
     h.makeDifferential( yOS_TauTau_withEff[i]);
   }
 
   TFile * output;
   if(!isTest){
-    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_job%d.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
+    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_hiBin%d_job%d.root",(int)(etaCut*10), outFile.c_str(), hiBinVar , job),"recreate");
     if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s_job%d.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
   }else{
-    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
+    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_hiBin%d_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), hiBinVar, job),"recreate");
     if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
   }
   for(int i = 0; i<nBins; i++){
@@ -415,19 +459,25 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     massPeakSS_ptLT0p5acoLT0p001_withEff[i]->Write(0);
     massPeakOS_TauTau_withEff[i]->Write();
 
-    pTOS_withEff[i]->Write();
-    pTSS_withEff[i]->Write();
-    pTOS_ptLT0p5acoLT0p001_withEff[i]->Write(0);
+    for(int j = 0; j< (isMC ? 1 : 5); j++){
+      pTOS_withEff[i][j]->Write();
+      pTSS_withEff[i][j]->Write();
+      pTOS_ptLT0p5acoLT0p001_withEff[i][j]->Write(0);
+    }
     pTOS_TauTau_withEff[i]->Write();
     
-    yOS_withEff[i]->Write();
-    ySS_withEff[i]->Write();
-    yOS_ptLT0p5acoLT0p001_withEff[i]->Write(0);
+    for(int j = 0; j< (isMC ? 1 : 5); j++){
+      yOS_withEff[i][j]->Write();
+      ySS_withEff[i][j]->Write();
+      yOS_ptLT0p5acoLT0p001_withEff[i][j]->Write(0);
+    }
     yOS_TauTau_withEff[i]->Write();
     
-    yieldOS_withEff[i]->Write();
-    yieldSS_withEff[i]->Write();
-    yieldOS_ptLT0p5acoLT0p001_withEff[i]->Write(0);
+    for(int j = 0; j< (isMC ? 1 : 5); j++){
+      yieldOS_withEff[i][j]->Write();
+      yieldSS_withEff[i][j]->Write();
+      yieldOS_ptLT0p5acoLT0p001_withEff[i][j]->Write(0);
+    }
     yieldOS_TauTau_withEff[i]->Write();
 
     candPt[i]->Write();
@@ -452,7 +502,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     avgMassVsPt[i]->Write();
   }
   
-  v2NumVsCent->Write();
+  for(int i = 0; i<3; i++) v2NumVsCent[i]->Write();
   v2DenomVsCent->Write();
   v2Q1MidVsCent->Write();
   v2Q2MidVsCent->Write();
@@ -513,7 +563,14 @@ int main(int argc, const char* argv[])
 
   Settings s = Settings();
    
-  doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, job, nJobs);
-  doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, job, nJobs);
+  doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 0, job, nJobs);
+  doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 0 , job, nJobs);
+
+  if(!isMC){
+    doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 1, job, nJobs);
+    doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 1 , job, nJobs);
+    doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 2, job, nJobs);
+    doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 2 , job, nJobs);
+  }
   return 0; 
 }

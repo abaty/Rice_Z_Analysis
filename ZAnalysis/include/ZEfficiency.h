@@ -54,6 +54,8 @@ ZEfficiency::ZEfficiency(std::string inputFile, bool isMC_, int variationIndex_ 
   if(isMC) suffix = "_noSF";
   else if(variationIndex == 1) suffix = "_U";
   else if(variationIndex == -1) suffix = "_D";
+  else if(variationIndex == 2) suffix = "_photonU";
+  else if(variationIndex == -2) suffix = "_photonD";
 
   f = TFile::Open(inputFile.c_str(),"read");
   e[0] = (TEfficiency*) f->Get(Form("eff%s_0_5",suffix.c_str()));

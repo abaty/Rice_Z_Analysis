@@ -13,7 +13,7 @@ class HistNameHelper{
   ~HistNameHelper();
 
   std::vector< std::string > name;
-
+  std::vector< std::string > variationName;
 };
 
 HistNameHelper::HistNameHelper(){
@@ -21,6 +21,9 @@ HistNameHelper::HistNameHelper(){
   name.push_back("pT");
   name.push_back("y");
   name.push_back("yield");
+
+
+  variationName = {"","_var1","_var2","_var3","_var4"};
 }
 
 HistNameHelper::~HistNameHelper(){
