@@ -287,10 +287,10 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
                   massPeakOS_ptLT0p5_withEff[k]->Fill( v.mass()[j], 1.0/efficiency * eventWeight );
                 }
  
-                if( passesAco[0]) massPeakOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.mass()[j], 1.0/efficiency*eventWeight);
+                if( !passesAco[0]) massPeakOS_ptLT0p5acoLT0p001_withEff[k]->Fill( v.mass()[j], 1.0/efficiency*eventWeight);
                 
                 for( int l = 0; l< (isMC ? 1 : 5); l++){
-                  if( (passesAco[0] && l<=2) || (passesAco[1] && l==3) || (passesAco[2] && l==4)){
+                  if( (!passesAco[0] && l<=2) || (!passesAco[1] && l==3) || (!passesAco[2] && l==4)){
                     pTOS_ptLT0p5acoLT0p001_withEff[k][l]->Fill( v.pT()[j], 1.0/efficiencyArray[l] * eventWeight );
                     yOS_ptLT0p5acoLT0p001_withEff[k][l]->Fill( v.y()[j], 1.0/efficiencyArray[l]*eventWeight);
                     yieldOS_ptLT0p5acoLT0p001_withEff[k][l]->Fill( 0.5, 1.0/efficiencyArray[l]*eventWeight);

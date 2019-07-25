@@ -446,10 +446,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
                     massPeakOS_ptLT0p5_withEff[k]->Fill( Zcand.M(), 1.0/efficiency * eventWeight );
                   }
  
-                  if( passesAco[0]) massPeakOS_ptLT0p5acoLT0p001_withEff[k]->Fill( Zcand.M(), 1.0/efficiency*eventWeight);
+                  if( !passesAco[0]) massPeakOS_ptLT0p5acoLT0p001_withEff[k]->Fill( Zcand.M(), 1.0/efficiency*eventWeight);
                 
                   for( int l = 0; l< (isMC ? 1 : 5); l++){
-                    if( (passesAco[0] && l<=2) || (passesAco[1] && l==3) || (passesAco[2] && l==4)){
+                    if( (!passesAco[0] && l<=2) || (!passesAco[1] && l==3) || (!passesAco[2] && l==4)){
                       pTOS_ptLT0p5acoLT0p001_withEff[k][l]->Fill( Zcand.Pt(), 1.0/efficiencyArray[l] * eventWeight );
                       yOS_ptLT0p5acoLT0p001_withEff[k][l]->Fill( Zcand.Rapidity(), 1.0/efficiencyArray[l]*eventWeight);
                       yieldOS_ptLT0p5acoLT0p001_withEff[k][l]->Fill( 0.5, 1.0/efficiencyArray[l]*eventWeight);
