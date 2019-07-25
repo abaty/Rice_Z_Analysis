@@ -1,6 +1,10 @@
+#include "include/combinePoints.h"
 #include "include/centralityTool.h"
 #include "include/Settings.h"
+#include "TBox.h"
+#include "include/HistNameHelper.h"
 #include "TStyle.h"
+#include "TMatrixD.h"
 #include "TLine.h"
 #include "TFile.h"
 #include "TH1D.h"
@@ -33,13 +37,16 @@ void sqrtHist(TH1D * h){
   }
 }
 
-void v2Plots(std::string Zmumu, std::string Zee){
+void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::string Zee_syst){
   TH1::SetDefaultSumw2();
 //  Settings s = Settings();
 
 //  CentralityTool c = CentralityTool();
 //  const int nBins = c.getNCentBins();
 
+  CombinePoints cp = CombinePoints();
+
+  HistNameHelper histName = HistNameHelper();
 
   //Z -> MuMu
   TH1D * v2MuMu_Num = 0; 
@@ -107,20 +114,47 @@ void v2Plots(std::string Zmumu, std::string Zee){
   v2EE->Divide(v2EE_Denom);
   v2EE->Print("All");
 
+//lets load our systematics
+
+  TFile * eeSyst = TFile::Open(Zee_syst.c_str(),"read");
+  TH1D * effErrorEE = (TH1D*) eeSyst->Get("effError");
+  TH1D * hfErrorEE = (TH1D*) eeSyst->Get("hfError");
+  TH1D * totalErrorEE = (TH1D*) eeSyst->Get("totalError");
+  TFile * mumuSyst = TFile::Open(Zmumu_syst.c_str(),"read");
+  TH1D * effErrorMuMu = (TH1D*) mumuSyst->Get("effError");
+  TH1D * hfErrorMuMu = (TH1D*) mumuSyst->Get("hfError");
+  TH1D * totalErrorMuMu = (TH1D*) mumuSyst->Get("totalError");
+  
+  TH1D * totalSystErrorCombo = (TH1D*) totalErrorMuMu->Clone("totalSystErrorCombo");
+
   TH1D * v2Combo = (TH1D*)v2->Clone("v2_Combo");
   for(int i = 0; i<v2Combo->GetXaxis()->GetNbins()+2; i++){
     float mu = v2->GetBinContent(i);
-    float muErr = v2->GetBinError(i);
+    float muStatErr = v2->GetBinError(i);
+    float muEffErr = effErrorMuMu->GetBinError(i);
+    float muHfErr = hfErrorMuMu->GetBinError(i);
     float e = v2EE->GetBinContent(i);
-    float eErr = v2EE->GetBinError(i);
+    float eStatErr = v2EE->GetBinError(i);
+    float eEffErr = effErrorEE->GetBinError(i);
+    float eHfErr = hfErrorEE->GetBinError(i);
+
+    std::vector< TMatrixD > covariance;
+    covariance.push_back( cp.getFullUncorrMatrix(muStatErr, eStatErr) );
+    covariance.push_back( cp.getFullUncorrMatrix(muEffErr, eEffErr) );
+    covariance.push_back( cp.getFullUncorrMatrix(muHfErr, eHfErr) );
+    std::vector<double> combined = cp.combine(mu, e, covariance);
 
     //calculate a weighted mean
-    float point = mu/(muErr*muErr)+e/(eErr*eErr);
-    float norm = 1.0/(muErr*muErr) + 1.0/(eErr*eErr);
-
-    v2Combo->SetBinContent(i, point/norm ); 
-    v2Combo->SetBinError(i, TMath::Sqrt(1.0/norm));
+    v2Combo->SetBinContent(i, combined.at(0) ); 
+    v2Combo->SetBinError(i, combined.at(1) );
+    totalSystErrorCombo->SetBinContent(i, combined.at(2));
   }
+  totalErrorMuMu->Print("All");
+  totalErrorEE->Print("All");
+  v2Combo->Print("All");
+  totalSystErrorCombo->Print("All");
+  hfErrorMuMu->Print("All");
+  hfErrorEE->Print("All");
 
 
   //***********************************************************************
@@ -129,49 +163,57 @@ void v2Plots(std::string Zmumu, std::string Zee){
   TH1D * v2Plot = new TH1D("v2Plot","",7,0,7);
   TH1D * v2EEPlot = new TH1D("v2EEPlot","",7,-0.15,6.85);
   TH1D * ATLAS = new TH1D("ATLAS","",7,0,7);
-  v2ComboPlot->SetBinContent(2,v2Combo->GetBinContent(v2Combo->FindBin(21)));
-  v2ComboPlot->SetBinError(2,v2Combo->GetBinError(v2Combo->FindBin(21)));
-  v2ComboPlot->SetBinContent(3,v2Combo->GetBinContent(v2Combo->FindBin(25)));
-  v2ComboPlot->SetBinError(3,v2Combo->GetBinError(v2Combo->FindBin(25)));
-  v2ComboPlot->SetBinContent(4,v2Combo->GetBinContent(v2Combo->FindBin(12)));
-  v2ComboPlot->SetBinError(4,v2Combo->GetBinError(v2Combo->FindBin(12)));
-  v2ComboPlot->SetBinContent(5,v2Combo->GetBinContent(v2Combo->FindBin(13)));
-  v2ComboPlot->SetBinError(5,v2Combo->GetBinError(v2Combo->FindBin(13)));
-  v2ComboPlot->SetBinContent(6,v2Combo->GetBinContent(v2Combo->FindBin(14)));
-  v2ComboPlot->SetBinError(6,v2Combo->GetBinError(v2Combo->FindBin(14)));
-  v2ComboPlot->SetBinContent(7,v2Combo->GetBinContent(v2Combo->FindBin(20)));
-  v2ComboPlot->SetBinError(7,v2Combo->GetBinError(v2Combo->FindBin(20)));
-  
-  v2Plot->SetBinContent(2,v2->GetBinContent(v2->FindBin(21)));
-  v2Plot->SetBinError(2,v2->GetBinError(v2->FindBin(21)));
-  v2Plot->SetBinContent(3,v2->GetBinContent(v2->FindBin(25)));
-  v2Plot->SetBinError(3,v2->GetBinError(v2->FindBin(25)));
-  v2Plot->SetBinContent(4,v2->GetBinContent(v2->FindBin(12)));
-  v2Plot->SetBinError(4,v2->GetBinError(v2->FindBin(12)));
-  v2Plot->SetBinContent(5,v2->GetBinContent(v2->FindBin(13)));
-  v2Plot->SetBinError(5,v2->GetBinError(v2->FindBin(13)));
-  v2Plot->SetBinContent(6,v2->GetBinContent(v2->FindBin(14)));
-  v2Plot->SetBinError(6,v2->GetBinError(v2->FindBin(14)));
-  v2Plot->SetBinContent(7,v2->GetBinContent(v2->FindBin(20)));
-  v2Plot->SetBinError(7,v2->GetBinError(v2->FindBin(20)));
 
-  v2EEPlot->SetBinContent(2,v2EE->GetBinContent(v2EE->FindBin(21)));
-  v2EEPlot->SetBinError(2,v2EE->GetBinError(v2EE->FindBin(21)));
-  v2EEPlot->SetBinContent(3,v2EE->GetBinContent(v2EE->FindBin(25)));
-  v2EEPlot->SetBinError(3,v2EE->GetBinError(v2EE->FindBin(25)));
-  v2EEPlot->SetBinContent(4,v2EE->GetBinContent(v2EE->FindBin(12)));
-  v2EEPlot->SetBinError(4,v2EE->GetBinError(v2EE->FindBin(12)));
-  v2EEPlot->SetBinContent(5,v2EE->GetBinContent(v2EE->FindBin(13)));
-  v2EEPlot->SetBinError(5,v2EE->GetBinError(v2EE->FindBin(13)));
-  v2EEPlot->SetBinContent(6,v2EE->GetBinContent(v2EE->FindBin(14)));
-  v2EEPlot->SetBinError(6,v2EE->GetBinError(v2EE->FindBin(14)));
-  v2EEPlot->SetBinContent(7,v2EE->GetBinContent(v2EE->FindBin(20)));
-  v2EEPlot->SetBinError(7,v2EE->GetBinError(v2EE->FindBin(20)));
+  TBox * v2ComboPlotBox[8];
+  TBox * v2PlotBox[8];
+  TBox * v2EEPlotBox[8];
+
+   
+  int binMapping[8] = {-1,-1,25,26,12,13,14,27}; 
+  v2ComboPlot->SetBinContent(2,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[2])));
+  v2ComboPlot->SetBinError(2,v2Combo->GetBinError(v2Combo->FindBin(binMapping[2])));
+  v2ComboPlot->SetBinContent(3,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[3])));
+  v2ComboPlot->SetBinError(3,v2Combo->GetBinError(v2Combo->FindBin(binMapping[3])));
+  v2ComboPlot->SetBinContent(4,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[4])));
+  v2ComboPlot->SetBinError(4,v2Combo->GetBinError(v2Combo->FindBin(binMapping[4])));
+  v2ComboPlot->SetBinContent(5,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[5])));
+  v2ComboPlot->SetBinError(5,v2Combo->GetBinError(v2Combo->FindBin(binMapping[5])));
+  v2ComboPlot->SetBinContent(6,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[6])));
+  v2ComboPlot->SetBinError(6,v2Combo->GetBinError(v2Combo->FindBin(binMapping[6])));
+  v2ComboPlot->SetBinContent(7,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[7])));
+  v2ComboPlot->SetBinError(7,v2Combo->GetBinError(v2Combo->FindBin(binMapping[7])));
+  
+  v2Plot->SetBinContent(2,v2->GetBinContent(v2->FindBin(binMapping[2])));
+  v2Plot->SetBinError(2,v2->GetBinError(v2->FindBin(binMapping[2])));
+  v2Plot->SetBinContent(3,v2->GetBinContent(v2->FindBin(binMapping[3])));
+  v2Plot->SetBinError(3,v2->GetBinError(v2->FindBin(binMapping[3])));
+  v2Plot->SetBinContent(4,v2->GetBinContent(v2->FindBin(binMapping[4])));
+  v2Plot->SetBinError(4,v2->GetBinError(v2->FindBin(binMapping[4])));
+  v2Plot->SetBinContent(5,v2->GetBinContent(v2->FindBin(binMapping[5])));
+  v2Plot->SetBinError(5,v2->GetBinError(v2->FindBin(binMapping[5])));
+  v2Plot->SetBinContent(6,v2->GetBinContent(v2->FindBin(binMapping[6])));
+  v2Plot->SetBinError(6,v2->GetBinError(v2->FindBin(binMapping[6])));
+  v2Plot->SetBinContent(7,v2->GetBinContent(v2->FindBin(binMapping[7])));
+  v2Plot->SetBinError(7,v2->GetBinError(v2->FindBin(binMapping[7])));
+
+  v2EEPlot->SetBinContent(2,v2EE->GetBinContent(v2EE->FindBin(binMapping[2])));
+  v2EEPlot->SetBinError(2,v2EE->GetBinError(v2EE->FindBin(binMapping[2])));
+  v2EEPlot->SetBinContent(3,v2EE->GetBinContent(v2EE->FindBin(binMapping[3])));
+  v2EEPlot->SetBinError(3,v2EE->GetBinError(v2EE->FindBin(binMapping[3])));
+  v2EEPlot->SetBinContent(4,v2EE->GetBinContent(v2EE->FindBin(binMapping[4])));
+  v2EEPlot->SetBinError(4,v2EE->GetBinError(v2EE->FindBin(binMapping[4])));
+  v2EEPlot->SetBinContent(5,v2EE->GetBinContent(v2EE->FindBin(binMapping[5])));
+  v2EEPlot->SetBinError(5,v2EE->GetBinError(v2EE->FindBin(binMapping[5])));
+  v2EEPlot->SetBinContent(6,v2EE->GetBinContent(v2EE->FindBin(binMapping[6])));
+  v2EEPlot->SetBinError(6,v2EE->GetBinError(v2EE->FindBin(binMapping[6])));
+  v2EEPlot->SetBinContent(7,v2EE->GetBinContent(v2EE->FindBin(binMapping[7])));
+  v2EEPlot->SetBinError(7,v2EE->GetBinError(v2EE->FindBin(binMapping[7])));
    
   ATLAS->SetBinContent(1,-0.015);
   ATLAS->SetBinError(1,-0.018);
+  TBox * ATLASBox;
 
-  const char * labels[7] = {"0-80%","0-80%","0-90%","0-10%", "10-30%", "30-50%", "50-100%"};
+  const char * labels[7] = {"0-80%","0-90%","20-80%","0-10%", "10-30%", "30-50%", "50-90%"};
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
   c1->SetLeftMargin(0.2);
@@ -183,7 +225,7 @@ void v2Plots(std::string Zmumu, std::string Zee){
   gStyle->SetPadTickY(1);
 
   v2Plot->SetStats(0);
-  v2Plot->GetYaxis()->SetRangeUser(-0.04,0.08);
+  v2Plot->GetYaxis()->SetRangeUser(-0.06,0.15);
 
   v2Plot->SetMarkerStyle(8);
   v2Plot->SetMarkerSize(1.3);
@@ -228,14 +270,27 @@ void v2Plots(std::string Zmumu, std::string Zee){
   leg->SetBorderSize(0);
   leg->AddEntry((TObject*)0,"2018 PbPb, p_{T}^{l} > 20 GeV","");
   leg->AddEntry((TObject*)0,"3 subevent SP Method","");
-  leg->AddEntry(v2Plot,"#mu^{+}#mu^{-} channel","p");
-  leg->AddEntry(v2EEPlot,"e^{+}e^{-} channel","p");
+  leg->AddEntry(v2Plot,"#mu^{+}#mu^{-} channel, |#eta_{#mu}|<2.4","p");
+  leg->AddEntry(v2EEPlot,"e^{+}e^{-} channel, |#eta_{e}|<2.1","p");
   leg->AddEntry(v2ComboPlot,"combined result","p");
-  leg->AddEntry(ATLAS,"2012 ATLAS (#mu#mu + ee, stat error only)","p");
+  leg->AddEntry(ATLAS,"2012 ATLAS","p");
 
   v2Plot->Draw();
   l->Draw("same");
   leg->Draw("same");
+  ATLAS->Draw("same");
+  v2EEPlot->Draw("same");
+  v2Plot->Draw("same");
+  v2ComboPlot->Draw("same");
+
+  for(int i = 1; i<8; i++){
+    if(i==1) histName.drawBoxAbsolute(ATLAS, i, ATLASBox, 0.014, 0.1, kViolet);
+    if(i>1){
+      histName.drawBoxAbsolute(v2ComboPlot, i , v2ComboPlotBox[i], totalSystErrorCombo->GetBinContent(totalSystErrorCombo->FindBin(binMapping[i])),0.1,(Color_t)kBlack); 
+      histName.drawBoxAbsolute(v2Plot, i , v2PlotBox[i],           totalErrorMuMu->GetBinContent(totalSystErrorCombo->FindBin(binMapping[i])),0.1,(Color_t)kBlue); 
+      histName.drawBoxAbsolute(v2EEPlot, i , v2EEPlotBox[i],       totalErrorEE->GetBinContent(totalSystErrorCombo->FindBin(binMapping[i])),0.1,(Color_t)(kRed+1)); 
+    }
+  }
   ATLAS->Draw("same");
   v2EEPlot->Draw("same");
   v2Plot->Draw("same");
@@ -251,15 +306,17 @@ void v2Plots(std::string Zmumu, std::string Zee){
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 3)
+  if(argc != 5)
   {
-    std::cout << "Usage: v2Plots <Z2ee file> < Z2mumu file>" << std::endl;
+    std::cout << "Usage: v2Plots <Z2ee file> < Z2mumu file> <Z2ee Syst file> <Z2mumu Syst file>" << std::endl;
     return 1;
   }  
 
   std::string Zee = argv[1];
   std::string Zmumu = argv[2];
+  std::string Zee_syst = argv[3];
+  std::string Zmumu_syst = argv[4];
    
-  v2Plots(Zmumu, Zee);
+  v2Plots(Zmumu, Zee, Zmumu_syst, Zee_syst);
   return 0; 
 }

@@ -1,6 +1,8 @@
 #ifndef HISTHELPER
 #define HISTHELPER
 
+#include "TColor.h"
+#include "TBox.h"
 #include "TMath.h"
 #include "TH1D.h"
 #include <string>
@@ -17,6 +19,8 @@ class HistNameHelper{
   void addInQuadrature2(TH1D * h1, TH1D * h2);
   void addInQuadrature3(TH1D * h1, TH1D * h2, TH1D * h3);
   void addInQuadrature4(TH1D * h1, TH1D * h2, TH1D * h3, TH1D * h4);
+
+  void drawBoxAbsolute(TH1D * h, int i, TBox * b, float absError, float width, Color_t color, bool doDraw = true);
   ~HistNameHelper();
 
   std::vector< std::string > name;
@@ -35,6 +39,13 @@ HistNameHelper::HistNameHelper(){
 
 HistNameHelper::~HistNameHelper(){
 
+}
+
+void HistNameHelper::drawBoxAbsolute(TH1D * h, int i, TBox * b, float absError, float width, Color_t color, bool doDraw){
+  b = new TBox(h->GetBinCenter(i)-width,h->GetBinContent(i)-absError,h->GetBinCenter(i)+width,h->GetBinContent(i)+absError);
+  b->SetLineColor(color);
+  b->SetFillStyle(0);
+  if(doDraw) b->Draw("same");
 }
 
 void HistNameHelper::makeDifferential(TH1D* h){

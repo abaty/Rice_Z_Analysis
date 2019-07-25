@@ -73,11 +73,11 @@ void systematicsV2(std::string file, std::string hiBin1, std::string hiBin2, boo
       v2MuMu_Num[i][j] = convertProfileToHistogram(p_v2MuMu_Num[i][j], "h_v2NumVsCent"+h.variationName.at(j));
       if(j==0){
         p_v2MuMu_Denom[i][j] = (TProfile*)ZFile[i]->Get("v2DenomVsCent");
-        v2MuMu_Denom[i][j] = convertProfileToHistogram(p_v2MuMu_Denom[i][j], "h_v2DenomVsCent"+h.variationName.at(j));
+        v2MuMu_Denom[i][j] = convertProfileToHistogram(p_v2MuMu_Denom[i][j], "h2_v2DenomVsCent"+h.variationName.at(j));
         p_v2MuMu_Q1Mid[i][j] = (TProfile*)ZFile[i]->Get("v2Q1MidVsCent");
-        v2MuMu_Q1Mid[i][j] = convertProfileToHistogram(p_v2MuMu_Q1Mid[i][j], "h_v2Q1MidVsCent"+h.variationName.at(j));
+        v2MuMu_Q1Mid[i][j] = convertProfileToHistogram(p_v2MuMu_Q1Mid[i][j], "h2_v2Q1MidVsCent"+h.variationName.at(j));
         p_v2MuMu_Q2Mid[i][j] = (TProfile*)ZFile[i]->Get("v2Q2MidVsCent");
-        v2MuMu_Q2Mid[i][j] = convertProfileToHistogram(p_v2MuMu_Q2Mid[i][j], "h_v2Q2MidVsCent"+h.variationName.at(j));
+        v2MuMu_Q2Mid[i][j] = convertProfileToHistogram(p_v2MuMu_Q2Mid[i][j], "h2_v2Q2MidVsCent"+h.variationName.at(j));
       }
     }
     v2MuMu_Denom[i][0]->Multiply(v2MuMu_Q1Mid[i][0]);
