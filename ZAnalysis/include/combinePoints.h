@@ -43,9 +43,15 @@ std::vector< double > CombinePoints::combine(double e, double m, std::vector< TM
   if( V.size() == 0 ) return std::vector<double>();
 
   TMatrixD C = V.at(0);
+  //std::cout << "Covariance: " << std::endl;
+  //std::cout << C[0][0] << " " << C[1][0] << std::endl;
+  //std::cout << C[0][1] << " " << C[1][1] << std::endl;
   for(unsigned int i = 1; i<V.size(); i++){
-    C += V.at(i);
+    C = C + V.at(i);
   }
+  //std::cout << "Covariance: " << std::endl;
+  //std::cout << C[0][0] << " " << C[1][0] << std::endl;
+  //std::cout << C[0][1] << " " << C[1][1] << std::endl;
   //C is convariance
 
   //I is inverse
@@ -63,8 +69,17 @@ std::vector< double > CombinePoints::combine(double e, double m, std::vector< TM
   //do a weighted sum of the sigma^2 of the stat matrix V[0]
   double stat2 = w0 * w0* (V.at(0))[0][0] + w1 * w1 * (V.at(0))[1][1];
   double syst2 = var2 - stat2;
+  
+  double simpleSyst2 = 0;
+  double eSyst2 = 0;
+  double mSyst2 = 0;
+  for(unsigned int i = 1; i<V.size(); i++){
+    eSyst2 = V.at(i)[0][0];
+    mSyst2 = V.at(i)[1][1];
+  }
+  simpleSyst2 = eSyst2 * w0 * w0 + mSyst2 * w1 * w1;
 
-  std::cout << mean << " " << var2 << " " << stat2 << " " << syst2 << " " << w0 << " " << w1 << std::endl;
+  std::cout << mean << " " << TMath::Sqrt(var2) << " " << TMath::Sqrt(stat2) << " " << TMath::Sqrt(syst2) << " " << w0 << " " << w1 << " " << TMath::Sqrt(simpleSyst2) << " " << TMath::Sqrt(simpleSyst2) - TMath::Sqrt(syst2) << std::endl;
 
   std::vector<double> out;
   out.push_back(mean);

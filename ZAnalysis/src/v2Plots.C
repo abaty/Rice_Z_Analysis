@@ -131,12 +131,12 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   for(int i = 0; i<v2Combo->GetXaxis()->GetNbins()+2; i++){
     float mu = v2->GetBinContent(i);
     float muStatErr = v2->GetBinError(i);
-    float muEffErr = effErrorMuMu->GetBinError(i);
-    float muHfErr = hfErrorMuMu->GetBinError(i);
+    float muEffErr = effErrorMuMu->GetBinContent(i);
+    float muHfErr = hfErrorMuMu->GetBinContent(i);
     float e = v2EE->GetBinContent(i);
     float eStatErr = v2EE->GetBinError(i);
-    float eEffErr = effErrorEE->GetBinError(i);
-    float eHfErr = hfErrorEE->GetBinError(i);
+    float eEffErr = effErrorEE->GetBinContent(i);
+    float eHfErr = hfErrorEE->GetBinContent(i);
 
     std::vector< TMatrixD > covariance;
     covariance.push_back( cp.getFullUncorrMatrix(muStatErr, eStatErr) );

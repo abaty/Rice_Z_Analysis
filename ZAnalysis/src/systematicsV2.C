@@ -119,7 +119,7 @@ void systematicsV2(std::string file, std::string hiBin1, std::string hiBin2, boo
   h.absAndSymmetrize(nominalhiBin1, nominalhiBin2);
  
   TH1D * totalError = (TH1D*) nominalvar1->Clone("totalError");
-  h.addInQuadrature2(totalError,nominalhiBin2);
+  h.addInQuadrature2(totalError,nominalhiBin1);
 
   TFile * out = TFile::Open(Form("systematics_v2_isEE%d.root",(int)isEE),"recreate");
   nominalvar1->SetName("effError");
