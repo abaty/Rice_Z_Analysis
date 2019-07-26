@@ -80,7 +80,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   TProfile * v2Q2Mid[nBins];
   TProfile * v2Q2MidVsCent;
   TProfile * v2AvgEff[nBins];
-  TProfile * v2AvgEffVsCent;
+  TProfile * v2AvgEffVsCent[3];
   
   TH1D * candPt[nBins];
   TH1D * candPtFine[nBins];
@@ -170,12 +170,12 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   } 
   for(int i = 0; i<3; i++){ 
     v2NumVsCent[i] = new TProfile(Form("v2NumVsCent%s",h.variationName.at(i).c_str()),"",nBins,0,nBins);
+    v2AvgEffVsCent[i] = new TProfile(Form("v2AvgEffVsCent%s",h.variationName.at(i).c_str()) ,"",nBins,0,nBins);
   }
   v2DenomVsCent = new TProfile("v2DenomVsCent","",nBins,0,nBins);
   v2Q1MidVsCent = new TProfile("v2Q1MidVsCent","",nBins,0,nBins); 
   v2Q2MidVsCent = new TProfile("v2Q2MidVsCent","",nBins,0,nBins); 
   
-  v2AvgEffVsCent = new TProfile("v2AvgEffVsCent","",nBins,0,nBins);
   yields = new TH1D("yields","yields",nBins,0,nBins);   
   yieldsSS = new TH1D("yieldsSS","yieldsSS",nBins,0,nBins);   
   yields_TauTau = new TH1D("yields_TauTau","yields_TauTau",nBins,0,nBins);   
@@ -362,11 +362,11 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
 
               for(int l = 0; l<3; l++){
                 v2NumVsCent[l]->Fill(k,num/efficiencyArray[l]);
+                v2AvgEffVsCent[l]->Fill(k,1.0/efficiencyArray[l]);
               }
               v2DenomVsCent->Fill(k,denom);
               v2Q1MidVsCent->Fill(k,q1AndMid);
               v2Q2MidVsCent->Fill(k,q2AndMid);
-              v2AvgEffVsCent->Fill(k,1.0/efficiency);
 
               //muons
               Q1 = Qp;
@@ -506,7 +506,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   v2DenomVsCent->Write();
   v2Q1MidVsCent->Write();
   v2Q2MidVsCent->Write();
-  v2AvgEffVsCent->Write();
+  for(int i = 0; i<3; i++) v2AvgEffVsCent[i]->Write();
   v2MuNumVsCent->Write();
   v2MuDenomVsCent->Write();
   v2MuQ1MidVsCent->Write();

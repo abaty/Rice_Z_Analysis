@@ -62,6 +62,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   TFile * ZmumuFile = TFile::Open(Zmumu.c_str(),"read");
  
   p_v2MuMu_Num = (TProfile*)ZmumuFile->Get("v2NumVsCent");
+  TProfile * p_AvgEffMu   = (TProfile*)ZmumuFile->Get("v2AvgEffVsCent");
   p_v2MuMu_Denom = (TProfile*)ZmumuFile->Get("v2DenomVsCent");
   p_v2MuMu_Q1Mid = (TProfile*)ZmumuFile->Get("v2Q1MidVsCent");
   p_v2MuMu_Q2Mid = (TProfile*)ZmumuFile->Get("v2Q2MidVsCent");
@@ -71,6 +72,11 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   v2MuMu_Q1Mid = convertProfileToHistogram(p_v2MuMu_Q1Mid, "h_v2Q1MidVsCent");
   v2MuMu_Q2Mid = convertProfileToHistogram(p_v2MuMu_Q2Mid, "h_v2Q2MidVsCent");
   v2MuMu_Num->Print("All");
+  
+  for(int k = 0; k<v2MuMu_Num->GetSize(); k++){
+    v2MuMu_Num->SetBinContent(k, v2MuMu_Num->GetBinContent(k) / p_AvgEffMu->GetBinContent(k) );
+    v2MuMu_Num->SetBinError(  k,   v2MuMu_Num->GetBinError(k) / p_AvgEffMu->GetBinContent(k) );
+  }
   
   v2MuMu_Denom->Multiply(v2MuMu_Q1Mid);
   v2MuMu_Denom->Divide(v2MuMu_Q2Mid);
@@ -95,6 +101,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
 
   TFile * ZeeFile = TFile::Open(Zee.c_str(),"read");
   p_v2EE_Num = (TProfile*)ZeeFile->Get("v2NumVsCent");
+  TProfile * p_AvgEffE   = (TProfile*)ZeeFile->Get("v2AvgEffVsCent");
   p_v2EE_Denom = (TProfile*)ZeeFile->Get("v2DenomVsCent");
   p_v2EE_Q1Mid = (TProfile*)ZeeFile->Get("v2Q1MidVsCent");
   p_v2EE_Q2Mid = (TProfile*)ZeeFile->Get("v2Q2MidVsCent");
@@ -104,7 +111,15 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   v2EE_Q1Mid = convertProfileToHistogram(p_v2EE_Q1Mid, "h_v2Q1MidVsCent_ee");
   v2EE_Q2Mid = convertProfileToHistogram(p_v2EE_Q2Mid, "h_v2Q2MidVsCent_ee");
   v2EE_Num->Print("All");
-  
+ 
+  //noramlzie by average efficiency
+
+  for(int k = 0; k<v2EE_Num->GetSize(); k++){
+    v2EE_Num->SetBinContent(k, v2EE_Num->GetBinContent(k) / p_AvgEffE->GetBinContent(k) );
+    v2EE_Num->SetBinError(  k,   v2EE_Num->GetBinError(k) / p_AvgEffE->GetBinContent(k) );
+  }
+
+ 
   v2EE_Denom->Multiply(v2EE_Q1Mid);
   v2EE_Denom->Divide(v2EE_Q2Mid);
   sqrtHist(v2EE_Denom);
@@ -225,7 +240,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   gStyle->SetPadTickY(1);
 
   v2Plot->SetStats(0);
-  v2Plot->GetYaxis()->SetRangeUser(-0.06,0.15);
+  v2Plot->GetYaxis()->SetRangeUser(-0.07,0.12);
 
   v2Plot->SetMarkerStyle(8);
   v2Plot->SetMarkerSize(1.3);
@@ -266,7 +281,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   l->SetLineStyle(7);
 
   
-  TLegend * leg = new TLegend(0.28,0.62,0.83,0.87);
+  TLegend * leg = new TLegend(0.28,0.64,0.83,0.87);
   leg->SetBorderSize(0);
   leg->AddEntry((TObject*)0,"2018 PbPb, p_{T}^{l} > 20 GeV","");
   leg->AddEntry((TObject*)0,"3 subevent SP Method","");

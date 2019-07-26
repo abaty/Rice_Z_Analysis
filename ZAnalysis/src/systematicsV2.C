@@ -66,11 +66,21 @@ void systematicsV2(std::string file, std::string hiBin1, std::string hiBin2, boo
   ZFile[1] = TFile::Open(hiBin1.c_str(),"read");
   ZFile[2] = TFile::Open(hiBin2.c_str(),"read");
  
+  TProfile * pEffCorr[3][3];
+
   for(int i = 0; i<3; i++){
     for(int j = 0; j<3; j++){
       if(i>0 && j>0) continue;
       p_v2MuMu_Num[i][j] =   (TProfile*)ZFile[i]->Get(Form("v2NumVsCent%s",h.variationName.at(j).c_str()));
+      pEffCorr[i][j] = (TProfile*)ZFile[i]->Get(Form("v2AvgEffVsCent%s",h.variationName.at(j).c_str()));
       v2MuMu_Num[i][j] = convertProfileToHistogram(p_v2MuMu_Num[i][j], "h_v2NumVsCent"+h.variationName.at(j));
+
+      //divide by average efficiency correction to effectively make the efficiency weights all normalized to 1
+      for(int k = 0; k<v2MuMu_Num[i][j]->GetSize(); k++){
+        v2MuMu_Num[i][j]->SetBinContent(k, v2MuMu_Num[i][j]->GetBinContent(k) / pEffCorr[i][j]->GetBinContent(k) );
+        v2MuMu_Num[i][j]->SetBinError(k,   v2MuMu_Num[i][j]->GetBinError(k) / pEffCorr[i][j]->GetBinContent(k) );
+      }
+
       if(j==0){
         p_v2MuMu_Denom[i][j] = (TProfile*)ZFile[i]->Get("v2DenomVsCent");
         v2MuMu_Denom[i][j] = convertProfileToHistogram(p_v2MuMu_Denom[i][j], "h2_v2DenomVsCent"+h.variationName.at(j));

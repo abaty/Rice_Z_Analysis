@@ -296,7 +296,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-2; i++){
       helper.drawBoxAbsolute(yieldCombo, i , netBox[i], comboSyst[binMap[i-1]]->GetBinContent(1)* scaleFactor_Combo[i-1],width,(Color_t)kBlack); 
       helper.drawBoxAbsolute(yieldPlot_ee, i , eBox[i], yieldPlot_ee->GetBinContent(i) * totalError[binMap[i-1]][0]->GetBinContent(1) ,width ,(Color_t)kRed+1); 
-      helper.drawBoxAbsolute(yieldPlot_mumu, i , mu21Box[i], yieldPlot_mumu->GetBinContent(i) * totalError[binMap[i-1]][1]->GetBinContent(1),width,(Color_t)kViolet); 
+      helper.drawBoxAbsolute(yieldPlot_mumu, i , mu21Box[i], yieldPlot_mumu->GetBinContent(i) * totalError[binMap[i-1]][1]->GetBinContent(1),width,(Color_t)kViolet+1); 
       helper.drawBoxAbsolute(yieldPlot_mumu24, i , mu24Box[i], yieldPlot_mumu24->GetBinContent(i) * totalError[binMap[i-1]][2]->GetBinContent(1),width,(Color_t)kBlue); 
   }
  
@@ -304,7 +304,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   glauberDummy->SetLineColor(kGray+2);
  
   //ATLAS point error    
-  helper.drawBoxAbsolute(ATLAS, 1 , ATLASBox, 0.00787*TMath::Power(10,-6) ,width,(Color_t)kGreen); 
+  helper.drawBoxAbsolute(ATLAS, 1 , ATLASBox, 0.00787*TMath::Power(10,-6) ,width,(Color_t)kGreen+1); 
   
   yieldPlot_mumu->Draw("same");
   yieldPlot_mumu24->Draw("same");

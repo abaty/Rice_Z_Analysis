@@ -89,6 +89,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TProfile * v2Q1MidVsCent;
   TProfile * v2Q2Mid[nBins];
   TProfile * v2Q2MidVsCent;
+  TProfile * v2AvgEffVsCent[3];
   
   TProfile * v2EleNum[nBins];
   TProfile * v2EleNumVsCent;
@@ -170,6 +171,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   yields = new TH1D("yields","yields",nBins,0,nBins);  
   yieldsSS = new TH1D("yieldsSS","yieldsSS",nBins,0,nBins);  
   for(int i = 0; i<3; i++){ 
+    v2AvgEffVsCent[i] = new TProfile(Form("v2AvgEffVsCent%s",h.variationName.at(i).c_str()),"",nBins,0,nBins);
     v2NumVsCent[i] = new TProfile(Form("v2NumVsCent%s",h.variationName.at(i).c_str()),"",nBins,0,nBins);
   }
   v2DenomVsCent = new TProfile("v2DenomVsCent","",nBins,0,nBins);
@@ -522,6 +524,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
 
                 for(int l = 0; l<3; l++){
                   v2NumVsCent[l]->Fill(k,num/efficiencyArray[l]);
+                  v2AvgEffVsCent[l]->Fill(k,1.0/efficiencyArray[l]);
                 }
                 v2DenomVsCent->Fill(k,denom);
                 v2Q1MidVsCent->Fill(k,q1AndMid);
@@ -661,6 +664,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   yieldsSS->Write();
   for(int l = 0; l<3; l++){
     v2NumVsCent[l]->Write();
+    v2AvgEffVsCent[l]->Write();
   }
   v2DenomVsCent->Write();
   v2Q1MidVsCent->Write();
