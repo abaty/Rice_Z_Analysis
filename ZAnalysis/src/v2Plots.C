@@ -184,7 +184,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   TBox * v2EEPlotBox[8];
 
    
-  int binMapping[8] = {-1,-1,25,26,12,13,14,27}; 
+  int binMapping[8] = {-1,-1,25,12,13,14,27,26}; 
   v2ComboPlot->SetBinContent(2,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[2])));
   v2ComboPlot->SetBinError(2,v2Combo->GetBinError(v2Combo->FindBin(binMapping[2])));
   v2ComboPlot->SetBinContent(3,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[3])));
@@ -228,7 +228,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   ATLAS->SetBinError(1,-0.018);
   TBox * ATLASBox;
 
-  const char * labels[7] = {"0-80%","0-90%","20-80%","0-10%", "10-30%", "30-50%", "50-90%"};
+  const char * labels[7] = {"0-80%","0-90%","0-10%", "10-30%", "30-50%", "50-90%","20-80%"};
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
   c1->SetLeftMargin(0.2);
