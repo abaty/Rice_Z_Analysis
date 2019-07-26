@@ -1,10 +1,13 @@
 #include "include/ptCorrector.h"
+#include "include/combinePoints.h"
 #include "include/centralityTool.h"
 #include "include/Settings.h"
+#include "include/HistNameHelper.h"
 #include "TStyle.h"
 #include "TFile.h"
 #include "TH1D.h"
 #include "TMath.h"
+#include "TMatrixD.h"
 #include "TCanvas.h"
 #include "TLegend.h"
 #include <vector>
@@ -12,8 +15,10 @@
 #include <fstream>
 #include <string>
 
-void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
+void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std::string ZeeSyst, std::string Zmumu21Syst, std::string Zmumu24Syst){
   Settings s = Settings();
+  CombinePoints cp = CombinePoints();
+  HistNameHelper helper = HistNameHelper();
 
   ptCorrector ptCorr = ptCorrector("resources/Z2mumu_Efficiencies.root","resources/Z2ee_EfficiencyMC_0.root");
 
@@ -42,11 +47,101 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   
   pt_e->Divide( ptCorr.correction[1] );
 
+  //**********************************************Systematics********************************************************
+  TFile * systFile[3];
+  systFile[0] = TFile::Open(ZeeSyst.c_str(),"read"); 
+  systFile[1] = TFile::Open(Zmumu21Syst.c_str(),"read"); 
+  systFile[2] = TFile::Open(Zmumu24Syst.c_str(),"read"); 
+  
+  TH1D * efficiencyError_0_90[3][3];
+  TH1D * emError_0_90[3][3];	
+  TH1D * hfError_0_90[3][3];	
+  TH1D * ptSmearError_0_90[3][3];	
+  TH1D * totalError_0_90[3][3];	
 
-  //make muon plot
+  TH1D * combo[3];
+  combo[1] = (TH1D*) pt_e->Clone("combined_pT_0_90"); 
+  combo[2] = (TH1D*) y_e->Clone("combined_y_0_90"); 
+  TH1D * comboSyst[3];
+  comboSyst[1] = (TH1D*) pt_e->Clone("combinedSyst_pT_0_90"); 
+  comboSyst[2] = (TH1D*) y_e->Clone("combinedSyst_y_0_90"); 
+
+  for(int i = 0; i<3; i++){
+    for(int j = 1; j<3; j++){
+      std::cout << i << " " << j << std::endl;
+      efficiencyError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_efficiencyError_0_90",helper.name.at(j).c_str()));
+      emError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_emError_0_90",helper.name.at(j).c_str()));
+      hfError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_hfError_0_90",helper.name.at(j).c_str()));
+      if(j==1) ptSmearError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_ptSmearError_0_90",helper.name.at(j).c_str()));
+      totalError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_totalError_0_90",helper.name.at(j).c_str()));
+    }
+  }
+  //plots here
+
+  
+  //scaling
   y_mu24->Scale(s.netLumi/(s.muLumi * s.Nmb));
   y_mu21->Scale(s.netLumi/(s.muLumi * s.Nmb));
   y_e->Scale(s.netLumi/(s.eLumi * s.Nmb));
+  pt_mu24->Scale(s.netLumi/(s.muLumi * s.Nmb));
+  pt_mu21->Scale(s.netLumi/(s.muLumi * s.Nmb));
+  pt_e->Scale(s.netLumi/(s.eLumi * s.Nmb));
+
+
+  //combination
+  for(int j = 1; j<3; j++){
+    TH1D * tempHistE, *tempHistMu;
+    if(j==1){
+      tempHistE = pt_e;
+      tempHistMu = pt_mu21;
+    }
+    if(j==2){
+      tempHistE = y_e;
+      tempHistMu = y_mu21;
+    }
+
+    tempHistE->Print("All");
+    tempHistMu->Print("All");
+
+    for(int i = 0; i<combo[j]->GetSize()+2; i++){
+      float e = tempHistE->GetBinContent(i);
+      float eStatErr = tempHistE->GetBinError(i);
+      float eEffErr = efficiencyError_0_90[0][j]->GetBinContent(i) * e;
+      float eEmErr = emError_0_90[0][j]->GetBinContent(i) * e;
+      float eHfErr = hfError_0_90[0][j]->GetBinContent(i) * e;
+      float ePtSmearErr = 0;
+      if(j==1) ePtSmearErr = ptSmearError_0_90[0][j]->GetBinContent(i) * e;
+      
+      float mu = tempHistMu->GetBinContent(i);
+      float muStatErr = tempHistMu->GetBinError(i);
+      float muEffErr = efficiencyError_0_90[1][j]->GetBinContent(i) * mu;
+      float muEmErr = emError_0_90[1][j]->GetBinContent(i) * mu;
+      float muHfErr = hfError_0_90[1][j]->GetBinContent(i) * mu;
+      float muPtSmearErr = 0;
+      if(j==1) muPtSmearErr = ptSmearError_0_90[1][j]->GetBinContent(i) * mu;
+
+      double scaleFactor = 10000000;     
+ 
+      std::vector< TMatrixD > covariance;
+      covariance.push_back( cp.getFullUncorrMatrix(muStatErr*scaleFactor, eStatErr*scaleFactor) );
+      covariance.push_back( cp.getFullUncorrMatrix(muEffErr*scaleFactor, eEffErr*scaleFactor) );
+      covariance.push_back( cp.getFullCorrMatrix(muEmErr*scaleFactor, eEmErr*scaleFactor) );//correlated
+      covariance.push_back( cp.getFullCorrMatrix(muHfErr*scaleFactor, eHfErr*scaleFactor) );//correlated
+      covariance.push_back( cp.getFullUncorrMatrix(muPtSmearErr*scaleFactor, ePtSmearErr*scaleFactor) );
+      std::vector<double> combined = cp.combine(mu*scaleFactor, e*scaleFactor, covariance);
+
+      //calculate a weighted mean
+      combo[j]->SetBinContent(i, combined.at(0)/scaleFactor ); 
+      combo[j]->SetBinError(i, combined.at(1)/scaleFactor );
+      comboSyst[j]->SetBinContent(i, combined.at(2)/scaleFactor);
+    }
+    std::cout << j << std::endl;
+    combo[j]->Print("All");
+  }
+  //**********************************************End Systematics****************************************************
+
+
+  //make muon plot
   y_e->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dy}");
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
@@ -74,6 +169,29 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   y_e->Draw("p");
   y_mu21->Draw("p same");
   y_mu24->Draw("p same");
+  combo[2]->SetMarkerStyle(8);
+  combo[2]->SetMarkerColor(kBlack);
+  combo[2]->SetLineColor(kBlack);
+  combo[2]->Draw("p same");
+
+  TBox * eBoxy[40];
+  TBox * mu21Boxy[40];
+  TBox * mu24Boxy[40];
+  TBox * netBoxy[40];
+  
+  for(int i = 1; i<combo[2]->GetSize()-1; i++){
+      helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.1,(Color_t)kBlack); 
+      helper.drawBoxAbsolute(y_e, i , eBoxy[i], y_e->GetBinContent(i) * totalError_0_90[0][2]->GetBinContent(i) ,0.1,(Color_t)kRed+1); 
+      helper.drawBoxAbsolute(y_mu21, i , mu21Boxy[i], y_mu21->GetBinContent(i) * totalError_0_90[1][2]->GetBinContent(i),0.1,(Color_t)kViolet); 
+      helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kBlue); 
+  }
+ 
+
+ 
+  y_e->Draw("p same");
+  y_mu21->Draw("p same");
+  y_mu24->Draw("p same");
+  combo[2]->Draw("p same");
 
   TLegend *ly = new TLegend(0.625,0.725,0.875,0.875);
   ly->SetBorderSize(0);
@@ -82,6 +200,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
   ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
   ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
+  ly->AddEntry(combo[2],"Combined (|#eta_{l}|<2.1)","p");
   ly->Draw("same");
   
   c1->SaveAs("plots/prettyPlots/rapidity_Pretty.png"); 
@@ -89,9 +208,6 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   c1->SaveAs("plots/prettyPlots/rapidity_Pretty.C"); 
   
   //make pt plot
-  pt_mu24->Scale(s.netLumi/(s.muLumi * s.Nmb));
-  pt_mu21->Scale(s.netLumi/(s.muLumi * s.Nmb));
-  pt_e->Scale(s.netLumi/(s.eLumi * s.Nmb));
   pt_e->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dp_{T}} (GeV^{-1})");
   
   pt_mu24->SetMarkerColor(kBlue);
@@ -119,6 +235,30 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   pt_e->Draw("p same");
   pt_mu21->Draw("p same");
   pt_mu24->Draw("p same");
+  combo[1]->SetMarkerStyle(8);
+  combo[1]->SetMarkerColor(kBlack);
+  combo[1]->SetLineColor(kBlack);
+  combo[1]->Draw("p same");
+  
+  TBox * eBoxpt[40];
+  TBox * mu21Boxpt[40];
+  TBox * mu24Boxpt[40];
+  TBox * netBoxpt[40];
+  
+  for(int i = 1; i<combo[1]->GetSize()-1; i++){
+      float width = (comboSyst[1]->GetXaxis()->GetBinUpEdge(i)-comboSyst[1]->GetXaxis()->GetBinLowEdge(i)) * 0.8 / 2.0;
+      helper.drawBoxAbsolute(combo[1], i , netBoxpt[i], comboSyst[1]->GetBinContent(i),width,(Color_t)kBlack); 
+      helper.drawBoxAbsolute(pt_e, i , eBoxpt[i], pt_e->GetBinContent(i) * totalError_0_90[0][1]->GetBinContent(i) ,width ,(Color_t)kRed+1); 
+      helper.drawBoxAbsolute(pt_mu21, i , mu21Boxpt[i], pt_mu21->GetBinContent(i) * totalError_0_90[1][1]->GetBinContent(i),width,(Color_t)kViolet); 
+      helper.drawBoxAbsolute(pt_mu24, i , mu24Boxpt[i], pt_mu24->GetBinContent(i) * totalError_0_90[2][1]->GetBinContent(i),width,(Color_t)kBlue); 
+  }
+ 
+
+ 
+  pt_e->Draw("p same");
+  pt_mu21->Draw("p same");
+  pt_mu24->Draw("p same");
+  combo[1]->Draw("p same");
 
   c1->SetLogy();
   c1->SetLogx();
@@ -130,6 +270,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
   lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
   lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
   lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
+  lpt->AddEntry(combo[1],"Combined (|#eta_{l}|<2.1)","p");
   lpt->Draw("same");
   
   c1->SaveAs("plots/prettyPlots/pt_Pretty.png"); 
@@ -142,16 +283,19 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24){
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 4)
+  if(argc != 7)
   {
-    std::cout << "Usage: massPeakPlots <Z2EE file> <Z2mumu21 file> <Z2mumu24 file>" << std::endl;
+    std::cout << "Usage: massPeakPlots <Z2EE file> <Z2mumu21 file> <Z2mumu24 file> <Z2EE syst> <Z2mumu21 syst> <Z2mumu24 syst>" << std::endl;
     return 1;
   }  
 
   std::string Zee = argv[1];
   std::string Zmumu21 = argv[2];
   std::string Zmumu24 = argv[3];
+  std::string ZeeSyst = argv[4];
+  std::string Zmumu21Syst = argv[5];
+  std::string Zmumu24Syst = argv[6];
    
-  prettyPlots(Zee, Zmumu21, Zmumu24);
+  prettyPlots(Zee, Zmumu21, Zmumu24, ZeeSyst, Zmumu21Syst, Zmumu24Syst);
   return 0; 
 }

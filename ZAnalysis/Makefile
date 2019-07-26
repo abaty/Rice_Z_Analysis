@@ -42,7 +42,7 @@ bin/efficiencyPlots.exe: src/efficiencyPlots.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/efficiencyPlots.exe src/efficiencyPlots.C
 
 bin/prettyPlots_pTy.exe: src/prettyPlots_pTy.C
-	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/prettyPlots_pTy.exe src/prettyPlots_pTy.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/prettyPlots_pTy.exe src/prettyPlots_pTy.C
 
 bin/prettyPlots_yields.exe: src/prettyPlots_yields.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/prettyPlots_yields.exe src/prettyPlots_yields.C
