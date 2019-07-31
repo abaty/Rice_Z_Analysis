@@ -204,6 +204,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   std::vector< float > * eledEtaAtVtx = 0;
   std::vector< float > * eledPhiAtVtx = 0;
   std::vector< float > * eleSCEta = 0;
+  std::vector< float > * eleSeedEta = 0;
   std::vector< float > * eleSCPhi = 0;
   std::vector< float > * eleHoverEBc = 0;
   //std::vector< float > * eleD0 = 0;
@@ -242,6 +243,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     eTree->SetBranchAddress("eledEtaAtVtx",&eledEtaAtVtx);
     eTree->SetBranchAddress("eledPhiAtVtx",&eledPhiAtVtx);
     eTree->SetBranchAddress("eleSCEta",&eleSCEta);
+    eTree->SetBranchAddress("eleSeedEta",&eleSeedEta);
     eTree->SetBranchAddress("eleSCPhi",&eleSCPhi);
     eTree->SetBranchAddress("eleHoverEBc",&eleHoverEBc);
     //eTree->SetBranchAddress("eleD0",&eleD0);
@@ -341,7 +343,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
         if(eleSCEta->at(j) < -1.39 && eleSCPhi->at(j) < -0.9 && eleSCPhi->at(j) > -1.6) continue;
 
         //check electron qualty variables
-        float dEta = TMath::Abs( eledEtaAtVtx->at(j) );
+        //this dEta variable is the same as eledEtaSeedAtVtx (checked CMSSW)
+        float dEta = TMath::Abs( eledEtaAtVtx->at(j) - eleSCEta->at(j) + eleSeedEta->at(j) );
         float dPhi = TMath::Abs( eledPhiAtVtx->at(j) );
         if(!eSel.isGoodElectron(ElectronSelector::WorkingPoint::loose, hiBin, eleSCEta->at(j), eleSigmaIEtaIEta->at(j), dEta, dPhi, eleMissHits->at(j), eleHoverEBc->at(j), eleEoverPInv->at(j), eleIP3D->at(j))) continue;
 
