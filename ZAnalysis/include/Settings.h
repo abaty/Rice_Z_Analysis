@@ -10,7 +10,7 @@ public:
   double NmbDown = 9.47799e+09;
 
   double muLumi = 1606.06;
-  double eLumi = 1603.392;
+  double eLumi = 1594.214;
   double netLumi = 1618.466;
 
 
