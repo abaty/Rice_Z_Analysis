@@ -52,6 +52,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   
   TH1D * nEvents = new TH1D("nEvents","nEvents",1,0,1);
 
+  TH2D * dEtaVsdEtaSeed = new TH2D("dEtaVsdEtaSeed","dEtaVsdEtaSeed",50,0,0.01,50,0,0.01);
+
   TH1D * massPeakOS[nBins]; 
   TH1D * massPeakSS[nBins]; 
   TH1D * massPeakOS_withEff[nBins]; 
@@ -345,6 +347,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
         //check electron qualty variables
         //this dEta variable is the same as eledEtaSeedAtVtx (checked CMSSW)
         float dEta = TMath::Abs( eledEtaAtVtx->at(j) - eleSCEta->at(j) + eleSeedEta->at(j) );
+        dEtaVsdEtaSeed->Fill(eledEtaAtVtx->at(j), dEta);
         float dPhi = TMath::Abs( eledPhiAtVtx->at(j) );
         if(!eSel.isGoodElectron(ElectronSelector::WorkingPoint::loose, hiBin, eleSCEta->at(j), eleSigmaIEtaIEta->at(j), dEta, dPhi, eleMissHits->at(j), eleHoverEBc->at(j), eleEoverPInv->at(j), eleIP3D->at(j))) continue;
 
@@ -676,6 +679,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   v2EleDenomVsCent->Write();
   v2EleQ1MidVsCent->Write();
   v2EleQ2MidVsCent->Write();
+
+  dEtaVsdEtaSeed->Write();
     
   output->Close();
 

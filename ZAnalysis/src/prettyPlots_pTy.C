@@ -1,4 +1,5 @@
 #include "include/ptCorrector.h"
+#include "include/CMS_lumi.C"
 #include "include/combinePoints.h"
 #include "include/centralityTool.h"
 #include "include/Settings.h"
@@ -156,9 +157,9 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_mu21->SetMarkerStyle(8);
   y_mu21->SetLineColor(kViolet+1);
   
-  y_e->SetMarkerColor(kRed);
+  y_e->SetMarkerColor(kRed+1);
   y_e->SetMarkerStyle(25);
-  y_e->SetLineColor(kRed);
+  y_e->SetLineColor(kRed+1);
   y_e->GetXaxis()->CenterTitle();
   y_e->GetYaxis()->CenterTitle();
   y_e->SetStats(0);  
@@ -182,7 +183,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   for(int i = 1; i<combo[2]->GetSize()-1; i++){
       helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.1,(Color_t)kBlack); 
       helper.drawBoxAbsolute(y_e, i , eBoxy[i], y_e->GetBinContent(i) * totalError_0_90[0][2]->GetBinContent(i) ,0.1,(Color_t)kRed+1); 
-      helper.drawBoxAbsolute(y_mu21, i , mu21Boxy[i], y_mu21->GetBinContent(i) * totalError_0_90[1][2]->GetBinContent(i),0.1,(Color_t)kViolet); 
+      helper.drawBoxAbsolute(y_mu21, i , mu21Boxy[i], y_mu21->GetBinContent(i) * totalError_0_90[1][2]->GetBinContent(i),0.1,(Color_t)kViolet+1); 
       helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kBlue); 
   }
  
@@ -203,6 +204,9 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ly->AddEntry(combo[2],"Combined (|#eta_{l}|<2.1)","p");
   ly->Draw("same");
   
+  c1->RedrawAxis();
+  CMS_lumi(c1,0,10);
+  
   c1->SaveAs("plots/prettyPlots/rapidity_Pretty.png"); 
   c1->SaveAs("plots/prettyPlots/rapidity_Pretty.pdf"); 
   c1->SaveAs("plots/prettyPlots/rapidity_Pretty.C"); 
@@ -218,9 +222,9 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   pt_mu21->SetMarkerStyle(8);
   pt_mu21->SetLineColor(kViolet+1);
   
-  pt_e->SetMarkerColor(kRed);
+  pt_e->SetMarkerColor(kRed+1);
   pt_e->SetMarkerStyle(25);
-  pt_e->SetLineColor(kRed);
+  pt_e->SetLineColor(kRed+1);
     
   TH1D * dummy = new TH1D("dummy",";p_{T} (GeV);#frac{1}{N_{MB}} #frac{dN_{Z}}{dp_{T}} (GeV^{-1})",2,0.1,200);
   dummy->SetBinContent(1,pt_mu24->GetMaximum());
@@ -249,7 +253,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       float width = (comboSyst[1]->GetXaxis()->GetBinUpEdge(i)-comboSyst[1]->GetXaxis()->GetBinLowEdge(i)) * 0.8 / 2.0;
       helper.drawBoxAbsolute(combo[1], i , netBoxpt[i], comboSyst[1]->GetBinContent(i),width,(Color_t)kBlack); 
       helper.drawBoxAbsolute(pt_e, i , eBoxpt[i], pt_e->GetBinContent(i) * totalError_0_90[0][1]->GetBinContent(i) ,width ,(Color_t)kRed+1); 
-      helper.drawBoxAbsolute(pt_mu21, i , mu21Boxpt[i], pt_mu21->GetBinContent(i) * totalError_0_90[1][1]->GetBinContent(i),width,(Color_t)kViolet); 
+      helper.drawBoxAbsolute(pt_mu21, i , mu21Boxpt[i], pt_mu21->GetBinContent(i) * totalError_0_90[1][1]->GetBinContent(i),width,(Color_t)kViolet+1); 
       helper.drawBoxAbsolute(pt_mu24, i , mu24Boxpt[i], pt_mu24->GetBinContent(i) * totalError_0_90[2][1]->GetBinContent(i),width,(Color_t)kBlue); 
   }
  
@@ -273,6 +277,10 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   lpt->AddEntry(combo[1],"Combined (|#eta_{l}|<2.1)","p");
   lpt->Draw("same");
   
+
+  c1->RedrawAxis();
+  CMS_lumi(c1,0,10);
+
   c1->SaveAs("plots/prettyPlots/pt_Pretty.png"); 
   c1->SaveAs("plots/prettyPlots/pt_Pretty.pdf"); 
   c1->SaveAs("plots/prettyPlots/pt_Pretty.C"); 

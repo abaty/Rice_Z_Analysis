@@ -1,3 +1,4 @@
+#include "include/CMS_lumi.C"
 #include "include/centralityTool.h"
 #include "include/combinePoints.h"
 #include "include/HistNameHelper.h"
@@ -326,6 +327,8 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   leg->AddEntry(ATLAS,"ATLAS pp |#eta^{l}| < 2.5","p");
 
   leg->Draw("same");
+  c1->RedrawAxis();
+  CMS_lumi(c1,0,10);
 
   c1->SaveAs("plots/prettyPlots/yields_Pretty.png");
   c1->SaveAs("plots/prettyPlots/yields_Pretty.pdf");

@@ -1,3 +1,4 @@
+#include "include/CMS_lumi.C"
 #include "include/combinePoints.h"
 #include "include/centralityTool.h"
 #include "include/Settings.h"
@@ -310,6 +311,9 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   v2EEPlot->Draw("same");
   v2Plot->Draw("same");
   v2ComboPlot->Draw("same");
+  
+  c1->RedrawAxis();
+  CMS_lumi(c1,0,10);
  
   c1->SaveAs("plots/v2/v2Summary.png");
   c1->SaveAs("plots/v2/v2Summary.pdf");
