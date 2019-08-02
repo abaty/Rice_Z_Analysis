@@ -184,9 +184,10 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.1,(Color_t)kBlack); 
       helper.drawBoxAbsolute(y_e, i , eBoxy[i], y_e->GetBinContent(i) * totalError_0_90[0][2]->GetBinContent(i) ,0.1,(Color_t)kRed+1); 
       helper.drawBoxAbsolute(y_mu21, i , mu21Boxy[i], y_mu21->GetBinContent(i) * totalError_0_90[1][2]->GetBinContent(i),0.1,(Color_t)kViolet+1); 
+  }
+  for(int i = 1; i<y_mu24->GetSize()-1; i++){
       helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kBlue); 
   }
- 
 
  
   y_e->Draw("p same");

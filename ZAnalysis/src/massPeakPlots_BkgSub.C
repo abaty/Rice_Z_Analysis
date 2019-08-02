@@ -186,7 +186,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     if(j==2) massPeakOS[i][j][0]->GetYaxis()->SetTitle("#frac{dN_{Z}}{dy}");
     massPeakOS[i][j][0]->GetXaxis()->CenterTitle();
     massPeakOS[i][j][0]->GetYaxis()->CenterTitle();
-    massPeakOS[i][j][0]->SetFillColor(kOrange+1);
+    massPeakOS[i][j][0]->SetFillColor(kWhite);
     massPeakOS[i][j][0]->SetMarkerStyle(8);
     massPeakOS[i][j][0]->SetMarkerColor(kBlack);
     massPeakOS[i][j][0]->SetLineColor(kBlack);
@@ -203,7 +203,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
       dummy->Draw();
     }
 
-    massPeakOS[i][j][0]->Draw("HIST same");
+    massPeakOS[i][j][0]->Draw("p same");
 
     bkg_ttbar[i][j][0]->SetFillColor(kGray);
     bkg_ttbar[i][j][0]->SetLineColor(kBlack);
@@ -232,9 +232,9 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     massPeakOS[i][j][0]->Draw("p same");
 
     TLegend *leg = new TLegend(0.65,0.7,0.9,0.875);
+    if(isMu) leg->AddEntry((TObject*)0,"Z #rightarrow #mu^{+}#mu^{-}","");
+    if(!isMu) leg->AddEntry((TObject*)0,"Z #rightarrow e^{+}e^{-}","");
     leg->AddEntry(massPeakOS[i][j][0],Form("Data (%d-%d%%)",c.getCentBinLow(i),c.getCentBinHigh(i)),"p");
-    if(isMu) leg->AddEntry(massPeakOS[i][j][0],"Z #rightarrow #mu^{+}#mu^{-}","f");
-    if(!isMu) leg->AddEntry(massPeakOS[i][j][0],"Z #rightarrow e^{+}e^{-}","f");
     leg->AddEntry(massPeakSS[i][j][0],"Same Sign (QCD)","f");
     leg->AddEntry(massPeakOS_photons[i][j][0],"EM background","f");
     leg->AddEntry(bkg_tau[i][j][0],"Z #rightarrow #tau^{+}#tau^{-}","f");

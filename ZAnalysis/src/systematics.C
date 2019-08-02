@@ -151,6 +151,15 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   }
 
   std::cout << "Writing" << std::endl;
+
+  const char * labels[9] = {"0-5%","5-10%","10-20%","20-30%","30-40%","40-50%", "50-70%", "70-90%", "0-90%"};
+  int binMap[9] = {0,1,2,3,4,5,15,16,25};
+
+  TH1D * effErrorByCent = new TH1D("effErrorByCent","",9,0,9);
+  TH1D * acoErrorByCent = new TH1D("acoErrorByCent","",9,0,9);
+  TH1D * hfErrorByCent = new TH1D("hfErrorByCent","",9,0,9);
+  TH1D * totalErrorByCent = new TH1D("totalErrorByCent","",9,0,9);
+  
   for(int i = 0; i<nBins; i++){
     for(int j = 1; j<4; j++){
       effError[i][j]->Write();
@@ -164,7 +173,18 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       tauError[i][j]->Write();
       totalError[i][j]->Write();
 
-      if(j==3) continue;
+      int binIdx = -1;
+      if(j==3){
+        for(int k = 0; k<9; k++){
+          if( binMap[k] == i ) binIdx = k;
+        }
+        if( binIdx < 0 ) continue;
+        
+        effErrorByCent->SetBinContent( effErrorByCent->FindBin(binIdx) , effError[i][j]->GetBinContent(1));
+        acoErrorByCent->SetBinContent( acoErrorByCent->FindBin(binIdx) , acoError[i][j]->GetBinContent(1));
+        hfErrorByCent->SetBinContent( hfErrorByCent->FindBin(binIdx) , hfError[i][j]->GetBinContent(1));
+        totalErrorByCent->SetBinContent( totalErrorByCent->FindBin(binIdx) , totalError[i][j]->GetBinContent(1));
+      }
  
       TCanvas * c1 = new TCanvas("","",800,800);
       if(j==1) totalError[i][j]->GetXaxis()->SetTitle("p_{T}");
@@ -189,9 +209,9 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       TLegend * leg = new TLegend(0.3,0.6,0.8,0.9);
       leg->SetFillStyle(0);
       leg->SetBorderSize(0);
-      if(isEE) leg->AddEntry((TObject*)0, "ee |#eta_l |<2.1","");
-      else if(isMu21) leg->AddEntry((TObject*)0, "#mu#mu |#eta_l |<2.1","");
-      else leg->AddEntry((TObject*)0, "#mu#mu |#eta_l |<2.4","");
+      if(isEE) leg->AddEntry((TObject*)0, "ee |#eta_{l} |<2.1","");
+      else if(isMu21) leg->AddEntry((TObject*)0, "#mu#mu |#eta_{l} |<2.1","");
+      else leg->AddEntry((TObject*)0, "#mu#mu |#eta_{l} |<2.4","");
 
       leg->AddEntry(totalError[i][j], "Total Uncertainty","l");
       leg->AddEntry(effError[i][j], "Lepton Reco","l");
@@ -216,6 +236,49 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
 
     }
   }
+  effErrorByCent->Print("All");
+  effErrorByCent->Write();   
+  acoErrorByCent->Write();   
+  hfErrorByCent->Write();    
+  totalErrorByCent->Write();
+
+  TCanvas * c1 = new TCanvas("","",800,800);
+  totalErrorByCent->GetXaxis()->SetTitle("Centrality");
+  totalErrorByCent->GetYaxis()->SetTitle("Relative Sys. Uncertainty");
+  totalErrorByCent->GetYaxis()->SetRangeUser(0,0.15);
+  totalErrorByCent->SetLineColor(kBlack);
+  totalErrorByCent->SetStats(0);
+  for(int i = 1; i<10; i++){
+    totalErrorByCent->GetXaxis()->SetBinLabel(i, labels[i-1]);
+    totalErrorByCent->GetXaxis()->ChangeLabel(i,45);
+  }
+  totalErrorByCent->Draw();
+  effErrorByCent->SetLineColor(kRed);
+  effErrorByCent->Draw("same");
+  acoErrorByCent->SetLineColor(kBlue);
+  acoErrorByCent->Draw("same");
+  hfErrorByCent->SetLineColor(kGreen);
+  hfErrorByCent->Draw("same");
+  
+  TLegend * leg = new TLegend(0.3,0.6,0.8,0.9);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  if(isEE) leg->AddEntry((TObject*)0, "ee |#eta_{l} |<2.1","");
+  else if(isMu21) leg->AddEntry((TObject*)0, "#mu#mu |#eta_{l} |<2.1","");
+  else leg->AddEntry((TObject*)0, "#mu#mu |#eta_{l} |<2.4","");
+
+  leg->AddEntry(totalErrorByCent, "Total Uncertainty","l");
+  leg->AddEntry(effErrorByCent, "Lepton Reco","l");
+  leg->AddEntry(acoErrorByCent,"EM Background Cut","l");
+  leg->AddEntry(hfErrorByCent, "HF Uncert. (N_{MB} + centrality)","l");
+  leg->AddEntry((TObject*)0,"MC Background uncert negligible","");
+  leg->AddEntry((TObject*)0,"Glauber Uncert not shown","");
+  leg->Draw("same");
+  c1->SaveAs(Form("plots/systematics/%sByCent_syst_isMu21%d_isMu%d.png",h.name.at(3).c_str(),(int)isMu21,(int)!isEE));
+  c1->SaveAs(Form("plots/systematics/%sByCent_syst_isMu21%d_isMu%d.pdf",h.name.at(3).c_str(),(int)isMu21,(int)!isEE));
+  c1->SaveAs(Form("plots/systematics/%sByCent_syst_isMu21%d_isMu%d.C",h.name.at(3).c_str(),(int)isMu21,(int)!isEE));
+  
+ 
   output->Close();
 
   return;
