@@ -171,7 +171,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     //Draw the histogram Stack
     gStyle->SetPadTickX(1);
     gStyle->SetPadTickY(1);
-    gStyle->SetErrorX(0);
+    //gStyle->SetErrorX(0);
     TCanvas * c1 = new TCanvas("c1","c1",800,800);
     c1->SetLeftMargin(0.2);
     c1->SetBottomMargin(0.2);

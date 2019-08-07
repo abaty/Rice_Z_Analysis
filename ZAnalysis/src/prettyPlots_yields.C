@@ -317,6 +317,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   yieldCombo->Print("All");  
 
   TLegend * leg = new TLegend(0.21,0.22,0.81,0.43);
+  leg->SetFillStyle(0);
   leg->SetBorderSize(0);
   leg->AddEntry((TObject*)0,"2018 PbPb, p_{T}^{l} > 20 GeV","");
   leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |#eta^{l}| < 2.4","p");

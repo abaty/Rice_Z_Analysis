@@ -175,17 +175,18 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
 
   //***********************************************************************
   //actual creation of plot here
-  TH1D * v2ComboPlot = new TH1D("v2ComboPlot","",7,0.15,7.15);
-  TH1D * v2Plot = new TH1D("v2Plot","",7,0,7);
-  TH1D * v2EEPlot = new TH1D("v2EEPlot","",7,-0.15,6.85);
-  TH1D * ATLAS = new TH1D("ATLAS","",7,0,7);
+  TH1D * v2ComboPlot = new TH1D("v2ComboPlot","",6,0.15,6.15);
+  TH1D * v2Plot = new TH1D("v2Plot","",6,0,6);
+  TH1D * v2EEPlot = new TH1D("v2EEPlot","",6,-0.15,5.85);
+  TH1D * ATLAS = new TH1D("ATLAS","",6,0,6);
 
-  TBox * v2ComboPlotBox[8];
-  TBox * v2PlotBox[8];
-  TBox * v2EEPlotBox[8];
+  TBox * v2ComboPlotBox[7];
+  TBox * v2PlotBox[7];
+  TBox * v2EEPlotBox[7];
 
    
-  int binMapping[8] = {-1,-1,25,12,13,14,27,26}; 
+  //int binMapping[8] = {-1,-1,25,12,13,14,27,26}; 
+  int binMapping[7] = {-1,-1,25,12,13,14,27}; 
   v2ComboPlot->SetBinContent(2,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[2])));
   v2ComboPlot->SetBinError(2,v2Combo->GetBinError(v2Combo->FindBin(binMapping[2])));
   v2ComboPlot->SetBinContent(3,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[3])));
@@ -196,8 +197,8 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   v2ComboPlot->SetBinError(5,v2Combo->GetBinError(v2Combo->FindBin(binMapping[5])));
   v2ComboPlot->SetBinContent(6,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[6])));
   v2ComboPlot->SetBinError(6,v2Combo->GetBinError(v2Combo->FindBin(binMapping[6])));
-  v2ComboPlot->SetBinContent(7,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[7])));
-  v2ComboPlot->SetBinError(7,v2Combo->GetBinError(v2Combo->FindBin(binMapping[7])));
+  //v2ComboPlot->SetBinContent(7,v2Combo->GetBinContent(v2Combo->FindBin(binMapping[7])));
+  //v2ComboPlot->SetBinError(7,v2Combo->GetBinError(v2Combo->FindBin(binMapping[7])));
   
   v2Plot->SetBinContent(2,v2->GetBinContent(v2->FindBin(binMapping[2])));
   v2Plot->SetBinError(2,v2->GetBinError(v2->FindBin(binMapping[2])));
@@ -209,8 +210,8 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   v2Plot->SetBinError(5,v2->GetBinError(v2->FindBin(binMapping[5])));
   v2Plot->SetBinContent(6,v2->GetBinContent(v2->FindBin(binMapping[6])));
   v2Plot->SetBinError(6,v2->GetBinError(v2->FindBin(binMapping[6])));
-  v2Plot->SetBinContent(7,v2->GetBinContent(v2->FindBin(binMapping[7])));
-  v2Plot->SetBinError(7,v2->GetBinError(v2->FindBin(binMapping[7])));
+  //v2Plot->SetBinContent(7,v2->GetBinContent(v2->FindBin(binMapping[7])));
+  //v2Plot->SetBinError(7,v2->GetBinError(v2->FindBin(binMapping[7])));
 
   v2EEPlot->SetBinContent(2,v2EE->GetBinContent(v2EE->FindBin(binMapping[2])));
   v2EEPlot->SetBinError(2,v2EE->GetBinError(v2EE->FindBin(binMapping[2])));
@@ -222,14 +223,15 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   v2EEPlot->SetBinError(5,v2EE->GetBinError(v2EE->FindBin(binMapping[5])));
   v2EEPlot->SetBinContent(6,v2EE->GetBinContent(v2EE->FindBin(binMapping[6])));
   v2EEPlot->SetBinError(6,v2EE->GetBinError(v2EE->FindBin(binMapping[6])));
-  v2EEPlot->SetBinContent(7,v2EE->GetBinContent(v2EE->FindBin(binMapping[7])));
-  v2EEPlot->SetBinError(7,v2EE->GetBinError(v2EE->FindBin(binMapping[7])));
+  //v2EEPlot->SetBinContent(7,v2EE->GetBinContent(v2EE->FindBin(binMapping[7])));
+  //v2EEPlot->SetBinError(7,v2EE->GetBinError(v2EE->FindBin(binMapping[7])));
    
   ATLAS->SetBinContent(1,-0.015);
   ATLAS->SetBinError(1,-0.018);
   TBox * ATLASBox;
 
-  const char * labels[7] = {"0-80%","0-90%","0-10%", "10-30%", "30-50%", "50-90%","20-80%"};
+  //const char * labels[7] = {"0-80%","0-90%","0-10%", "10-30%", "30-50%", "50-90%","20-80%"};
+  const char * labels[6] = {"0-80%","0-90%","0-10%", "10-30%", "30-50%", "50-90%"};
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
   c1->SetLeftMargin(0.2);
@@ -272,12 +274,12 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   ATLAS->SetLineWidth(3);
   ATLAS->SetMarkerSize(1.5);
 
-  for(int i = 1; i<8; i++){
+  for(int i = 1; i<7; i++){
     v2Plot->GetXaxis()->SetBinLabel(i, labels[i-1]);
     v2Plot->GetXaxis()->ChangeLabel(i,45);
   }
  
-  TLine * l = new TLine(0,0,7,0);
+  TLine * l = new TLine(0,0,6,0);
   l->SetLineColor(kBlack);
   l->SetLineStyle(7);
 
@@ -299,7 +301,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   v2Plot->Draw("same");
   v2ComboPlot->Draw("same");
 
-  for(int i = 1; i<8; i++){
+  for(int i = 1; i<7; i++){
     if(i==1) histName.drawBoxAbsolute(ATLAS, i, ATLASBox, 0.014, 0.1, kViolet);
     if(i>1){
       histName.drawBoxAbsolute(v2ComboPlot, i , v2ComboPlotBox[i], totalSystErrorCombo->GetBinContent(totalSystErrorCombo->FindBin(binMapping[i])),0.1,(Color_t)kBlack); 

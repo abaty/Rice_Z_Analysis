@@ -44,6 +44,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   
   TRandom3 * r = new TRandom3();
   
+  TH1D * massPeakOS[nBins]; 
+  TH1D * massPeakSS[nBins]; 
+  
   TH1D * recoEff_pt_pass[nBins];
   TH1D * recoEff_pt_net[nBins];
   TH1D * recoEff_pt[nBins];  
@@ -97,9 +100,14 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D * recoEff_pt_pass_forReso_Ratio_Reco[nBins];
   TH1D * recoEff_pt_pass_forReso_Ratio_RecoSmeared[nBins];
   TH1D * recoEff_pt_pass_forReso_Ratio_NominalToSmeared[nBins];
+  
+  TH1D * yReso[nBins];
 
 
   for(int k = 0; k<nBins; k++){
+    massPeakOS[k] = new TH1D(Form("massPeakOS_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
+    massPeakSS[k] = new TH1D(Form("massPeakSS_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{#pm}e^{#pm}}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
+    
     recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
     recoEff_net[k] = new TH2D(Form("recoEff_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
     
@@ -126,6 +134,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_pt_pass_forReso_RecoSmeared[k] = new TH1D(Form("recoEff_pt_pass_forReso_RecoSmeared_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
     recoEff_pt_pass_forReso_Gen[k] = new TH1D(Form("recoEff_pt_pass_forReso_Gen_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
     recoEff_ptReso[k] = new TH1D(Form("recoEff_ptReso_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.2,0.2);
+    
+    yReso[k] = new TH1D(Form("yReso_%d_%d",c.getCentBinLow(k), c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.1,0.1);
   }
 
   int nEle;
@@ -226,11 +236,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     skimTree->SetBranchAddress("phfCoincFilter2Th4",&phfCoincFilter2Th4);
     skimTree->SetBranchAddress("pclusterCompatibilityFilter",&pclusterCompatibilityFilter);
 
-    TTree * L1Tree = (TTree*)in->Get("l1object/L1UpgradeFlatTree");
-    L1Tree->SetBranchAddress("nEGs",&(eTrig.L1nEGs));
-    L1Tree->SetBranchAddress("egEta", &(eTrig.L1egEta));
-    L1Tree->SetBranchAddress("egPhi", &(eTrig.L1egPhi));
-    L1Tree->SetBranchAddress("egEt", &(eTrig.L1egEt));
+    //TTree * L1Tree = (TTree*)in->Get("l1object/L1UpgradeFlatTree");
+    //L1Tree->SetBranchAddress("nEGs",&(eTrig.L1nEGs));
+    //L1Tree->SetBranchAddress("egEta", &(eTrig.L1egEta));
+    //L1Tree->SetBranchAddress("egPhi", &(eTrig.L1egPhi));
+    //L1Tree->SetBranchAddress("egEt", &(eTrig.L1egEt));
 
     TTree * HLTObjTree;
     HLTObjTree = (TTree*)in->Get("hltobject/HLT_HIEle20Gsf_v");
@@ -350,7 +360,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
 
       timer.StartSplit("Loading HLT/L1 Object stuff");
       //get trigger matching stuff
-      L1Tree->GetEntry(i);
+      //L1Tree->GetEntry(i);
       HLTObjTree->GetEntry(i);
     
       //make Z candidates 
@@ -371,10 +381,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           if( Zcand.Pt() < s.minPtCutForPhotonsU && acoplanarity < s.acoCutForPhotonsU ) passesAco[1] = false;
           if( Zcand.Pt() < s.minPtCutForPhotonsD && acoplanarity < s.acoCutForPhotonsD ) passesAco[2] = false;
           
-          //L1 trigger matching (1 L1 EG > 15 GeV)
-          bool isFirstElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 15.0);
-          bool isSecondElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 15.0);
-          if(! (isFirstElectronL1Matched || isSecondElectronL1Matched)) continue;
+          //L1 trigger matching (1 L1 EG > 15 GeV) (remove this requirement on Aug 6th after talking with EGamma POG
+          //bool isFirstElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 15.0);
+          //bool isSecondElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 15.0);
+          //if(! (isFirstElectronL1Matched || isSecondElectronL1Matched)) continue;
 
           //HLT trigger matching (1 HLT match > 20 GeV)
           bool isFirstElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 20.0);
@@ -384,12 +394,19 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
 
           bool isOppositeSign =  eleCharge->at(goodElectrons.at(j)) != eleCharge->at(goodElectrons.at(j2));
           if(moreThan2) std::cout << j << " " << j2 << " " << Zcand.M() <<" " << Zcand.Pt() << " " << Zcand.Eta() << " " << Zcand.Phi() << " " << mom.Pt() << " " << mom.Eta() << " " << mom.Phi() <<  " isOS? " << (int)isOppositeSign << std::endl;
-          if(!isOppositeSign) continue;
-          if(moreThan2 && TMath::ACos(TMath::Cos(Zcand.Phi() - mom.Phi())) > 0.1 ) continue;
-          //Looks like this is a good candidate match! Let's get the scale factor
+          
+
+           //Looks like this is a good candidate match! Let's get the scale factor
           float scaleFactor = eTnP.getZSF(hiBin, elePt->at(goodElectrons.at(j)), eleSCEta->at(goodElectrons.at(j)), elePt->at(goodElectrons.at(j2)), eleSCEta->at(goodElectrons.at(j2)), 0) ;
           float scaleFactorU = eTnP.getZSF(hiBin, elePt->at(goodElectrons.at(j)), eleSCEta->at(goodElectrons.at(j)), elePt->at(goodElectrons.at(j2)), eleSCEta->at(goodElectrons.at(j2)), 1) ;
           float scaleFactorD = eTnP.getZSF(hiBin, elePt->at(goodElectrons.at(j)), eleSCEta->at(goodElectrons.at(j)), elePt->at(goodElectrons.at(j2)), eleSCEta->at(goodElectrons.at(j2)), -1) ;
+          if(moreThan2 && TMath::ACos(TMath::Cos(Zcand.Phi() - mom.Phi())) > 0.1 ) continue;
+          if(!isOppositeSign){
+            for(int k = 0; k<nBins; k++){ 
+              massPeakSS[k]->Fill( Zcand.M(), eventWeight*scaleFactor );
+            }
+            continue;
+          }
 
           //Fill numerator (and apply the scale factor here!)
           for(int k = 0; k<nBins; k++){ 
@@ -397,6 +414,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
               //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
               if( mom.Pt() < s.zPtBins[ s.nZPtBins-1 ] && TMath::Abs( mom.Rapidity() ) < s.maxZRap ){
                 if(passesAco[0]){
+
+                  massPeakOS[k]->Fill(Zcand.M(), eventWeight*scaleFactor);
                   recoEff_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
                   recoEff_U_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorU );
                   recoEff_D_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorD );
@@ -409,6 +428,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   recoEff_pt_pass_forReso_RecoSmeared[k]->Fill(Zcand.Pt() * r->Gaus(1,0.05), eventWeight);         
                   recoEff_pt_pass_forReso_Gen[k]->Fill(mom.Pt(), eventWeight);         
                   recoEff_ptReso[k]->Fill( (Zcand.Pt() - mom.Pt()) / mom.Pt(), eventWeight);         
+                
+                  yReso[k]->Fill( Zcand.Rapidity() - mom.Rapidity() , eventWeight);            
           
                   //for the last few pt bins, halve the y binning so we have better stats
                   if(mom.Pt()> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
@@ -699,6 +720,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_pt_pass_forReso_RecoSmeared[i]->Write();
     recoEff_pt_pass_forReso_Gen[i]->Write();
     recoEff_ptReso[i]->Write();
+
+    massPeakOS[i]->Write();
+    massPeakSS[i]->Write();
+    
+    yReso[i]->Write();
   }
     
   output->Close();

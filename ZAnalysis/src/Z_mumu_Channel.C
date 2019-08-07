@@ -92,7 +92,10 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   TH2D * candPtVsM[nBins];
   TH2D * candAcoVsM[nBins];
   TH2D * candAcoVsPt[nBins];
-  
+
+  TH1D * lepPt;  
+  TH1D * lepEta;
+  TH1D * lepPhi;  
   
   TProfile * v2MuNum[nBins];
   TProfile * v2MuNumVsCent;
@@ -179,6 +182,10 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   yields = new TH1D("yields","yields",nBins,0,nBins);   
   yieldsSS = new TH1D("yieldsSS","yieldsSS",nBins,0,nBins);   
   yields_TauTau = new TH1D("yields_TauTau","yields_TauTau",nBins,0,nBins);   
+    
+  lepPt = new TH1D("lepPt",";p_{T}",s.nZPtBins-1,s.zPtBins);
+  lepEta = new TH1D("lepEta",";p_{T}",20,-s.maxZRap,s.maxZRap);
+  lepPhi = new TH1D("lepPhi",";p_{T}",20,-TMath::Pi(),TMath::Pi());
  
   v2MuNumVsCent = new TProfile("v2MuNumVsCent","",nBins,0,nBins);
   v2MuDenomVsCent = new TProfile("v2MuDenomVsCent","",nBins,0,nBins);
@@ -262,7 +269,14 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
                   yOS_withEff[k][l]->Fill( v.y()[j], 1.0/efficiencyArray[l] * eventWeight );
                   yieldOS_withEff[k][l]->Fill( 0.5, 1.0/efficiencyArray[l] * eventWeight );
                 }
-                
+               
+                lepPt->Fill( v.pTD1()[j] ,eventWeight);
+                lepPt->Fill( v.pTD2()[j] ,eventWeight);
+                lepEta->Fill( v.EtaD1()[j] ,eventWeight);
+                lepEta->Fill( v.EtaD2()[j] ,eventWeight);
+                lepPhi->Fill( v.PhiD1()[j] ,eventWeight);
+                lepPhi->Fill( v.PhiD2()[j] ,eventWeight);
+ 
                 yields->Fill(k,1.0/efficiency * eventWeight);
                 candPt[k]->Fill(v.pT()[j]);
                 candPtFine[k]->Fill(v.pT()[j]);
@@ -501,6 +515,11 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     candAcoVsPt[i]->Write();
     avgMassVsPt[i]->Write();
   }
+    
+  lepPt->Write();
+  lepEta->Write();
+  lepPhi->Write();
+
   
   for(int i = 0; i<3; i++) v2NumVsCent[i]->Write();
   v2DenomVsCent->Write();

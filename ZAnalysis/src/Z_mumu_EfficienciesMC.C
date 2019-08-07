@@ -112,6 +112,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   TH1D * recoEff_pt_pass_forReso_Ratio_RecoSmeared21[nBins];
   TH1D * recoEff_pt_pass_forReso_Ratio_NominalToSmeared21[nBins];
 
+  TH1D * yReso[nBins];
 
   for(int k = 0; k<nBins; k++){
     recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins-1,s.zPtBins);
@@ -142,6 +143,8 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_pt_pass_forReso_RecoSmeared21[k] = new TH1D(Form("recoEff_pt_pass_forReso_RecoSmeared21_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
     recoEff_pt_pass_forReso_Gen21[k] = new TH1D(Form("recoEff_pt_pass_forReso_Gen21_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
     recoEff_ptReso21[k] = new TH1D(Form("recoEff_ptReso21_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.2,0.2);
+
+    yReso[k] = new TH1D(Form("yReso_%d_%d",c.getCentBinLow(k), c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.1,0.1);
   }
 
   //starting looping over the file
@@ -253,7 +256,8 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
                 recoEff_pt_pass_forReso_RecoSmeared[k]->Fill(v.pT()[indx] * r->Gaus(1,0.05), eventWeight);         
                 recoEff_pt_pass_forReso_Gen[k]->Fill(v.pT_gen()[j], eventWeight);         
                 recoEff_ptReso[k]->Fill( (v.pT()[indx] - v.pT_gen()[j]) / v.pT_gen()[j], eventWeight);         
-             
+                yReso[k]->Fill( v.y()[indx] - v.y_gen()[j] , eventWeight);            
+ 
                 if(TMath::Abs(v.EtaD1()[indx]) < s.maxZRapEle && TMath::Abs(v.EtaD2()[indx]) < s.maxZRapEle){   
                   recoEff_pt_pass_forReso_Reco21[k]->Fill(v.pT()[indx], eventWeight);         
                   recoEff_pt_pass_forReso_RecoSmeared21[k]->Fill(v.pT()[indx] * r->Gaus(1,0.05), eventWeight);         
@@ -564,6 +568,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_pt_pass_forReso_Gen21[i]->Write();
     recoEff_ptReso21[i]->Write();
 
+    yReso[i]->Write();
   }
 
   output->Close();

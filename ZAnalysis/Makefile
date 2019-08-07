@@ -8,7 +8,7 @@ endif
 MKDIR_BIN=mkdir -p $(PWD)/bin
 
 
-all: mkdirBin bin/Z_EE_Channel.exe bin/Z_mumu_Channel.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe bin/prettyPlots_pTy.exe bin/prettyPlots_yields.exe bin/systematics.exe bin/systematicsV2.exe
+all: mkdirBin bin/Z_EE_Channel.exe bin/Z_mumu_Channel.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe bin/prettyPlots_pTy.exe bin/prettyPlots_yields.exe bin/systematics.exe bin/systematicsV2.exe bin/dataMCCompare.exe
 
 mkdirBin:
 	$(MKDIR_BIN)
@@ -52,6 +52,9 @@ bin/systematics.exe: src/systematics.C
 
 bin/systematicsV2.exe: src/systematicsV2.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/systematicsV2.exe src/systematicsV2.C
+
+bin/dataMCCompare.exe: src/dataMCCompare.C
+	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/dataMCCompare.exe src/dataMCCompare.C
 
 clean:
 	rm -f $(PWD)/include/*~

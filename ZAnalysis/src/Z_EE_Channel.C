@@ -112,6 +112,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TH2D * candPtVsM[nBins];
   TH2D * candAcoVsM[nBins];
   TH2D * candAcoVsPt[nBins];
+  
+  TH1D * lepPt;  
+  TH1D * lepEta;
+  TH1D * lepPhi;  
 
 
   for(int i = 0; i<nBins; i++){
@@ -172,6 +176,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   }  
   yields = new TH1D("yields","yields",nBins,0,nBins);  
   yieldsSS = new TH1D("yieldsSS","yieldsSS",nBins,0,nBins);  
+  
+  lepPt = new TH1D("lepPt",";p_{T}",s.nZPtBins-1,s.zPtBins);
+  lepEta = new TH1D("lepEta",";p_{T}",20,-s.maxZRap,s.maxZRap);
+  lepPhi = new TH1D("lepPhi",";p_{T}",20,-TMath::Pi(),TMath::Pi());
+
   for(int i = 0; i<3; i++){ 
     v2AvgEffVsCent[i] = new TProfile(Form("v2AvgEffVsCent%s",h.variationName.at(i).c_str()),"",nBins,0,nBins);
     v2NumVsCent[i] = new TProfile(Form("v2NumVsCent%s",h.variationName.at(i).c_str()),"",nBins,0,nBins);
@@ -274,11 +283,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     skimTree->SetBranchAddress("phfCoincFilter2Th4",&phfCoincFilter2Th4);
     skimTree->SetBranchAddress("pclusterCompatibilityFilter",&pclusterCompatibilityFilter);
 
-    TTree * L1Tree = (TTree*)in->Get("l1object/L1UpgradeFlatTree");
-    L1Tree->SetBranchAddress("nEGs",&(eTrig.L1nEGs));
-    L1Tree->SetBranchAddress("egEta", &(eTrig.L1egEta));
-    L1Tree->SetBranchAddress("egPhi", &(eTrig.L1egPhi));
-    L1Tree->SetBranchAddress("egEt", &(eTrig.L1egEt));
+    //TTree * L1Tree = (TTree*)in->Get("l1object/L1UpgradeFlatTree");
+    //L1Tree->SetBranchAddress("nEGs",&(eTrig.L1nEGs));
+    //L1Tree->SetBranchAddress("egEta", &(eTrig.L1egEta));
+    //L1Tree->SetBranchAddress("egPhi", &(eTrig.L1egPhi));
+    //L1Tree->SetBranchAddress("egEt", &(eTrig.L1egEt));
 
     TTree * HLTObjTree;
     if(!doSingleEle20){
@@ -377,7 +386,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
 
       timer.StartSplit("Loading HLT/L1 Object stuff");
       //get trigger matching stuff
-      L1Tree->GetEntry(i);
+      //L1Tree->GetEntry(i);
       HLTObjTree->GetEntry(i);
     
       //make Z candidates 
@@ -393,9 +402,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
           if(Zcand.M() < s.zMassRange[0] || Zcand.M() > s.zMassRange[1]) continue;      
 
           //L1 trigger matching (1 L1 EG > 15 GeV)
-          bool isFirstElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 15.0);
-          bool isSecondElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 15.0);
-          if(! (isFirstElectronL1Matched || isSecondElectronL1Matched)) continue;
+          //bool isFirstElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 15.0);
+          //bool isSecondElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 15.0);
+          //if(! (isFirstElectronL1Matched || isSecondElectronL1Matched)) continue;
 
           //HLT trigger matching (1 HLT match > 20 GeV)
           if(doSingleEle20){
@@ -429,7 +438,14 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
                     yOS_withEff[k][l]->Fill( Zcand.Rapidity(), 1.0/efficiencyArray[l] * eventWeight );
                     yieldOS_withEff[k][l]->Fill( 0.5, 1.0/efficiencyArray[l] * eventWeight );
                   }
-                
+  
+                  lepPt->Fill( elePt->at(goodElectrons.at(j)) ,eventWeight);
+                  lepPt->Fill( elePt->at(goodElectrons.at(j2)) ,eventWeight);
+                  lepEta->Fill( eleEta->at(goodElectrons.at(j)) ,eventWeight);
+                  lepEta->Fill( eleEta->at(goodElectrons.at(j2)) ,eventWeight);
+                  lepPhi->Fill( elePhi->at(goodElectrons.at(j)) ,eventWeight);
+                  lepPhi->Fill( elePhi->at(goodElectrons.at(j2)) ,eventWeight);
+              
                   yields->Fill(k,eventWeight/efficiency);
                   massVsPt[k]->Fill(Zcand.M(), Zcand.Pt()); 
                   candPt[k]->Fill(Zcand.Pt());
@@ -681,6 +697,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   v2EleQ2MidVsCent->Write();
 
   dEtaVsdEtaSeed->Write();
+  
+  lepPt->Write();
+  lepEta->Write();
+  lepPhi->Write();
     
   output->Close();
 
