@@ -5,9 +5,9 @@
 class Settings{
 public:
 
-  double Nmb = 9.57519e+09;
-  double NmbUp = 9.62460e+09;
-  double NmbDown = 9.47799e+09;
+  double Nmb = 11311946989;
+  double NmbUp = 1.005*11311946989;
+  double NmbDown = 0.99*11311946989;
 
   double muLumi = 1606.06;
   double eLumi = 1594.214;
