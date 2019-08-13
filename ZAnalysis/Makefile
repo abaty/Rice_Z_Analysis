@@ -8,7 +8,7 @@ endif
 MKDIR_BIN=mkdir -p $(PWD)/bin
 
 
-all: mkdirBin bin/Z_EE_Channel.exe bin/Z_mumu_Channel.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe bin/prettyPlots_pTy.exe bin/prettyPlots_yields.exe bin/systematics.exe bin/systematicsV2.exe bin/dataMCCompare.exe
+all: mkdirBin bin/Z_EE_Channel.exe bin/Z_EE_Channel_STARLIGHT.exe bin/Z_mumu_Channel.exe bin/Z_mumu_Channel_STARLIGHT.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe bin/prettyPlots_pTy.exe bin/prettyPlots_yields.exe bin/systematics.exe bin/systematicsV2.exe bin/dataMCCompare.exe
 
 mkdirBin:
 	$(MKDIR_BIN)
@@ -17,8 +17,14 @@ mkdirBin:
 bin/Z_EE_Channel.exe: src/Z_EE_Channel.C
 	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/Z_EE_Channel.exe src/Z_EE_Channel.C
 
+bin/Z_EE_Channel_STARLIGHT.exe: src/Z_EE_Channel_STARLIGHT.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/Z_EE_Channel_STARLIGHT.exe src/Z_EE_Channel_STARLIGHT.C
+
 bin/Z_mumu_Channel.exe: src/Z_mumu_Channel.C
 	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/Z_mumu_Channel.exe src/Z_mumu_Channel.C
+
+bin/Z_mumu_Channel_STARLIGHT.exe: src/Z_mumu_Channel_STARLIGHT.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/Z_mumu_Channel_STARLIGHT.exe src/Z_mumu_Channel_STARLIGHT.C
 
 bin/Z_mumu_EfficienciesMC.exe: src/Z_mumu_EfficienciesMC.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/Z_mumu_EfficienciesMC.exe src/Z_mumu_EfficienciesMC.C

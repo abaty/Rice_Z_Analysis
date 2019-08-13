@@ -25,6 +25,7 @@
 #include <string>
 
 void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Settings s, std::string outFile, bool isTest, int hiBinVar, int job, int nJobs){
+  hiBinVar = hiBinVar +1 -1;
   TH1::SetDefaultSumw2();
   ZEfficiency zEff = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC);
   ZEfficiency zEffU = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, 1);
@@ -32,8 +33,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   ZEfficiency zEffphotonU = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, 2);
   ZEfficiency zEffphotonD = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, -2);
 
-  MCReweight * vzRW;
-  if(isMC) vzRW = new MCReweight("resources/vzReweight.root");
+  //MCReweight * vzRW;
+  //if(isMC) vzRW = new MCReweight("resources/vzReweight.root");
 
   HistNameHelper h = HistNameHelper();
   CentralityBin cb = CentralityBin();
@@ -207,23 +208,25 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       if(i%5000==0) std::cout << i << "/" << maxEvt << std::endl;
 
       //event selection
-      if( !(v.evtSel()[ PbPb::R5TeV::Y2018::hfCoincFilter2Th4 ])) continue;
-      if( !(v.evtSel()[ PbPb::R5TeV::Y2018::primaryVertexFilter ])) continue;
-      if( !(v.evtSel()[ PbPb::R5TeV::Y2018::clusterCompatibilityFilter ])) continue;
-      if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
+//      if( !(v.evtSel()[ PbPb::R5TeV::Y2018::hfCoincFilter2Th4 ])) continue;
+//      if( !(v.evtSel()[ PbPb::R5TeV::Y2018::primaryVertexFilter ])) continue;
+//      if( !(v.evtSel()[ PbPb::R5TeV::Y2018::clusterCompatibilityFilter ])) continue;
+//      if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
 
-      hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus(), v.HFsumETMinus(), (isMC ? 3 : hiBinVar));
+//      hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus(), v.HFsumETMinus(), (isMC ? 3 : hiBinVar));
+
+        hiBin = 160.0;
 
       float eventWeight = 1.0;
-      if(isMC) eventWeight = vzRW->reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin );
+//      if(isMC) eventWeight = vzRW->reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin );
       nEvents->Fill(0.5,eventWeight);
       
       //check out trigger 
-      if( !(v.trigHLT()[PbPb::R5TeV::Y2018::HLT_HIL3Mu12]) ) continue;
+//      if( !(v.trigHLT()[PbPb::R5TeV::Y2018::HLT_HIL3Mu12]) ) continue;
 
       //tag DY products in our MC sample
       bool isTau = false;
-      if(isMC){
+  /*    if(isMC){
         for(unsigned int k = 0; k<v.candSize_gen(); k++){
           if( TMath::Abs(v.DecayID_gen()[k]) == 23 ){
             isTau = false;
@@ -234,7 +237,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
             break;
           }
         }
-      }
+      }*/
 
       for(unsigned int j = 0; j<v.candSize(); j++){
         if( v.mass()[j] < s.zMassRange[0] || v.mass()[j] > s.zMassRange[1]) continue; 
@@ -246,9 +249,9 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
         if( !(v.VtxProb()[j] >0.001)) continue; 
  
         //make sure that one of the daughters was the trigger muon
-        bool isDaughter1Trigger = v.trigMuon1()[PbPb::R5TeV::Y2018::HLT_HIL3Mu12][j];
-        bool isDaughter2Trigger = v.trigMuon2()[PbPb::R5TeV::Y2018::HLT_HIL3Mu12][j];
-        if( !(isDaughter1Trigger || isDaughter2Trigger) ) continue;
+        //bool isDaughter1Trigger = v.trigMuon1()[PbPb::R5TeV::Y2018::HLT_HIL3Mu12][j];
+        //bool isDaughter2Trigger = v.trigMuon2()[PbPb::R5TeV::Y2018::HLT_HIL3Mu12][j];
+        //if( !(isDaughter1Trigger || isDaughter2Trigger) ) continue;
  
         bool isOppositeSign =  v.chargeD1()[j] != v.chargeD2()[j];
         double efficiencyArray[5] = {0};
@@ -453,13 +456,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   }
 
   TFile * output;
-  if(!isTest){
-    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_hiBin%d_job%d.root",(int)(etaCut*10), outFile.c_str(), hiBinVar , job),"recreate");
-    if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s_job%d.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
-  }else{
-    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_hiBin%d_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), hiBinVar, job),"recreate");
-    if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
-  }
+    if(isMC) output = new TFile(Form("Z2mumu_STARLIGHT_%d_%s_job%d.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
   for(int i = 0; i<nBins; i++){
     float entries = candPtFine[i]->Integral();
     candPtFine[i]->Scale(1.0/entries);
@@ -542,7 +539,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
 
   output->Close();
 
-  if(isMC) delete vzRW;
+  //if(isMC) delete vzRW;
 
   return;
 }
@@ -585,15 +582,9 @@ int main(int argc, const char* argv[])
   }
 
   Settings s = Settings();
-   
+  
+  isMC = true; 
   doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 0, job, nJobs);
-  doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 0 , job, nJobs);
 
-  if(!isMC){
-    doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 1, job, nJobs);
-    doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 1 , job, nJobs);
-    doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 2, job, nJobs);
-    doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 2 , job, nJobs);
-  }
   return 0; 
 }

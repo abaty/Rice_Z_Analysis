@@ -102,6 +102,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D * recoEff_pt_pass_forReso_Ratio_NominalToSmeared[nBins];
   
   TH1D * yReso[nBins];
+  TH2D * yResponse;
+  TH1D * yReco;
+  TH1D * yGen;
+  TH1D * yRatio;
 
 
   for(int k = 0; k<nBins; k++){
@@ -137,6 +141,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     
     yReso[k] = new TH1D(Form("yReso_%d_%d",c.getCentBinLow(k), c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.1,0.1);
   }
+  yReco = new TH1D("yReco",";y_{reco}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
+  yGen = new TH1D("yGen",";y_{gen}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
+  yResponse = new TH2D("yResponse","y_{reco};y_{gen}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
 
   int nEle;
   int hiBin;
@@ -414,6 +421,13 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
               //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
               if( mom.Pt() < s.zPtBins[ s.nZPtBins-1 ] && TMath::Abs( mom.Rapidity() ) < s.maxZRap ){
                 if(passesAco[0]){
+
+                  //90%
+                  if(k==25){
+                    yReco->Fill( Zcand.Rapidity(), eventWeight);
+                    yGen->Fill( mom.Rapidity(), eventWeight);
+                    yResponse->Fill(Zcand.Rapidity(), mom.Rapidity(), eventWeight);
+                  }
 
                   massPeakOS[k]->Fill(Zcand.M(), eventWeight*scaleFactor);
                   recoEff_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
@@ -726,7 +740,14 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     
     yReso[i]->Write();
   }
-    
+   
+  yReco->Write();
+  yGen->Write();
+  yResponse->Write();
+  yRatio = (TH1D*)yReco->Clone("yRatio");
+  yRatio->Divide(yGen);
+  yRatio->Write();
+ 
   output->Close();
 
   timer.Stop();

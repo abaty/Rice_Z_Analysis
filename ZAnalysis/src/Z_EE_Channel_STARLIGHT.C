@@ -22,6 +22,7 @@
 #include <string>
 
 void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::string outputTag,int hiBinVar = 0){
+  hiBinVar = hiBinVar +1 -1;
   Timer timer = Timer();
   timer.Start();
   timer.StartSplit("Start Up");
@@ -31,7 +32,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
 
   HistNameHelper h = HistNameHelper();
   ElectronSelector eSel = ElectronSelector();
-  ElectronTriggerMatcher matcher = ElectronTriggerMatcher();
+  //ElectronTriggerMatcher matcher = ElectronTriggerMatcher();
   ElecTrigObject eTrig = ElecTrigObject();
   ElectronEnergyScale energyScale = ElectronEnergyScale("data");
   ElectronEnergyScale energyScaleMC = ElectronEnergyScale("MC");
@@ -43,8 +44,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   ZEfficiency zEffphotonU = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root", isMC, 2);
   ZEfficiency zEffphotonD = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root", isMC, -2);
   
-  MCReweight * vzRW;
-  if(isMC) vzRW = new MCReweight("resources/vzReweight.root");
+  //MCReweight * vzRW;
+  //if(isMC) vzRW = new MCReweight("resources/vzReweight.root");
 
   CentralityBin cb = CentralityBin();
   CentralityTool c = CentralityTool();
@@ -305,15 +306,16 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     for(unsigned int i = 0; i < eTree->GetEntries(); i++){
       timer.StartSplit("Checking Evt Selections");
       skimTree->GetEntry(i);
-      if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
+      //if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
       
       //event selections
       evtTree->GetEntry(i);
-      if(TMath::Abs(vz)>15) continue;
-      hiBin = cb.getHiBinFromhiHF(hiHF, (isMC ? 3 : hiBinVar) );
+      //if(TMath::Abs(vz)>15) continue;
+      //hiBin = cb.getHiBinFromhiHF(hiHF, (isMC ? 3 : hiBinVar) );
+      hiBin = 160;
       float eventWeight = 1.0;
-      if(isMC) eventWeight = vzRW->reweightFactor( vz ) * c.findNcoll( hiBin );
-      nEvents->Fill(0.5,eventWeight);
+      //if(isMC) eventWeight = vzRW->reweightFactor( vz ) * c.findNcoll( hiBin );
+      //nEvents->Fill(0.5,eventWeight);
       
       timer.StartSplit("Checking Number of electrons");
       //check if the event has at least 2 electrons
@@ -329,8 +331,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       timer.StartSplit("Checking HLT Selections");
       //check for the trigger we want (double ele 10 or single ele 20)
       hltTree->GetEntry(i);
-      if((!doSingleEle20) && (!HLT_DoubleEle10)) continue;
-      if( doSingleEle20 && (!HLT_SingleEle20)) continue;
+      //if((!doSingleEle20) && (!HLT_DoubleEle10)) continue;
+      //if( doSingleEle20 && (!HLT_SingleEle20)) continue;
 
       //grab the rest of the important electron information 
       timer.StartSplit("Loading electron stuff");
@@ -371,7 +373,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
 
       //need to check if it is a tau daughter
       bool isTau = false;
-      if(isMC){
+      /*if(isMC){
         eTreeMC->GetEntry(i);
         for(int j = 0; j<nMC; j++){
           //break out if you find a Z->tautau
@@ -384,7 +386,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
           //if it decays to muons or electrons, break out
           if( TMath::Abs(mcPID->at(j)) == 13 || TMath::Abs(mcPID->at(j) == 11)) break;       
         }
-      }
+      }*/
 
       timer.StartSplit("Loading HLT/L1 Object stuff");
       //get trigger matching stuff
@@ -410,13 +412,13 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
 
           //HLT trigger matching (1 HLT match > 20 GeV)
           if(doSingleEle20){
-            bool isFirstElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 20.0);
-            bool isSecondElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 20.0);
-            if(! (isFirstElectronHLTMatched || isSecondElectronHLTMatched)) continue;
+          //  bool isFirstElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 20.0);
+          //  bool isSecondElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 20.0);
+          //  if(! (isFirstElectronHLTMatched || isSecondElectronHLTMatched)) continue;
           } else {  //(2 HLT matches > 10 GeV)
-            bool isFirstElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 10.0);
-            bool isSecondElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 10.0);
-            if(! (isFirstElectronHLTMatched && isSecondElectronHLTMatched)) continue;
+          //  bool isFirstElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 10.0);
+          //  bool isSecondElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 10.0);
+          //  if(! (isFirstElectronHLTMatched && isSecondElectronHLTMatched)) continue;
           }
    
           bool isOppositeSign =  eleCharge->at(goodElectrons.at(j)) != eleCharge->at(goodElectrons.at(j2));
@@ -629,8 +631,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   
 
   TFile * output;
-  if(!isMC) output = new TFile(Form("unmergedOutputs/Z2ee_%s_hiBin%d_%d_%d.root",outputTag.c_str(), hiBinVar, (int)isMC, jobNumber),"recreate");
-  else      output = new TFile(Form("unmergedOutputs/Z2ee_%s_%d_%d.root",outputTag.c_str(), (int)isMC, jobNumber),"recreate");
+  output = new TFile(Form("unmergedOutputs/Z2ee_STARLIGHT_%s_%d_%d.root",outputTag.c_str(), (int)isMC, jobNumber),"recreate");
   for(int i = 0; i<nBins; i++){
     massPeakOS[i]->Write();
     massPeakSS[i]->Write();
@@ -750,10 +751,7 @@ int main(int argc, const char* argv[])
     }
   }
    
+  isMC = true;
   doZ2EE(listOfFiles, job, isMC, outputTag, 0);
-  if(!isMC){
-    doZ2EE(listOfFiles, job, isMC, outputTag, 1);
-    doZ2EE(listOfFiles, job, isMC, outputTag, 2);
-  }
   return 0; 
 }
