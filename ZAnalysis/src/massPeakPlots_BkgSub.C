@@ -102,9 +102,9 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     //Remove photon background from signal (these get cut in data as well)
     massPeakOS_DYsignalMinusPhoton[i][j] = (TH1D*)massPeakOS_DYsignal[i][j]->Clone(Form("%sOS_DYsignalMinusPhoton_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
     massPeakOS_DYsignalMinusPhoton[i][j]->Add(massPeakOS_DYphoton[i][j],-1);
-    //add back the same sign pairs that we lose from charge-flipping
+    //add back the same sign pairs that we lose from charge-flipping (note that I think we should not do this now)
     massPeakOS_DYsignalMinusPhotonPlusSS[i][j] = (TH1D*)massPeakOS_DYsignalMinusPhoton[i][j]->Clone(Form("%sOS_DYsignalMinusPhotonPlusSS_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-    massPeakOS_DYsignalMinusPhotonPlusSS[i][j]->Add(massPeakSS_DY[i][j],1);
+    //massPeakOS_DYsignalMinusPhotonPlusSS[i][j]->Add(massPeakSS_DY[i][j],1);
 
     //add the other backgrounds
     massPeakOS_DYsignalMinusPhotonPlusBkg[i][j] = (TH1D*)massPeakOS_DYsignalMinusPhotonPlusSS[i][j]->Clone(Form("%sOS_DYsignalMinusPhotonPlusBkg_%d_%d",h.name.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
