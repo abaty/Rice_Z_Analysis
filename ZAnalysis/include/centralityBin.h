@@ -13,8 +13,12 @@ public:
   int getHiBinFromhiHF( const Double_t hiHF, int variation = 0);
   int getHiBinFromhiHFSides( const Double_t hiHFP, const Double_t hiHFM, int variation = 0);
 
+  int getHiBinFromZDC( float nPix, float ZDCSum, int variation = 0);
 
 private:
+
+  float banana_ZDCSum_Max = 414900;
+  float banana_nPix_Max = 99660;
 
   std::string mode;
   static const Int_t nBins = 200;
@@ -31,6 +35,28 @@ CentralityBin::CentralityBin(){
 
 CentralityBin::~CentralityBin(){
 
+}
+
+int CentralityBin::getHiBinFromZDC( float nPix, float ZDCSum, int variation){
+  float x = nPix/banana_nPix_Max;
+  float y = ZDCSum/banana_ZDCSum_Max;
+
+  if(nPix > 1) nPix = 1.0;
+  if(ZDCSum > 1) ZDCSum = 1.0;
+
+  if(variation == 0){
+    if     ( x < 0.096 && y < 0.238) return 190;
+    else if( x < 0.096 && y < 0.349) return 170;
+    else if( x < 0.096 && y < (-1.03553*x+0.463411)) return 150;
+    else if( x < 0.096 && y < (-3.07768*x+0.659458)) return 130;
+    else if( y > (101.316 * (x-0.11) + 0.507712)) return 110;
+    else if( y > (16.8073 * (x-0.18) + 0.501108)) return 90;
+    else if( y > (7.92129 * (x-0.27) + 0.467596)) return 70;
+    else if( y > (4.18278 * (x-0.41) + 0.402685)) return 50;
+    else if( y > (2.78105 * (x-0.61) + 0.298911)) return 30;
+    else return 10;
+  }
+  return 200;
 }
 
 int CentralityBin::getHiBinFromhiHFSides( const Double_t hiHFP, const Double_t hiHFM, int variation){

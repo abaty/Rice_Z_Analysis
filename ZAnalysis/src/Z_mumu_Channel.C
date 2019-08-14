@@ -24,7 +24,7 @@
 #include <fstream>
 #include <string>
 
-void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Settings s, std::string outFile, bool isTest, int hiBinVar, int job, int nJobs){
+void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Settings s, std::string outFile, bool isTest, int hiBinVar, int job, int nJobs, bool doZDC = false){
   TH1::SetDefaultSumw2();
   ZEfficiency zEff = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC);
   ZEfficiency zEffU = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, 1);
@@ -110,6 +110,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   TProfile * avgMassVsPt[nBins];
 
   int hiBin;
+  int hiBinZDC = 0;
 
   for(int i = 0; i<nBins; i++){
     massPeakOS[i] = new TH1D(Form("massPeakOS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
@@ -213,6 +214,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
 
       hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus(), v.HFsumETMinus(), (isMC ? 3 : hiBinVar));
+      if(!isMC && doZDC) hiBinZDC = cb.getHiBinFromZDC(v.Npixel() , v.ZDCPlus() + v.ZDCMinus() , 0);
+      else hiBinZDC = hiBin;
 
       float eventWeight = 1.0;
       if(isMC) eventWeight = vzRW->reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin );
@@ -261,7 +264,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
 
         if( isOppositeSign){
           for(int k = 0; k<nBins; k++){
-            if(c.isInsideBin( hiBin ,k)){
+            if(c.isInsideBin( hiBinZDC ,k)){
     
               if((isMC && !isTau) || !isMC){
                 massPeakOS[k]->Fill( v.mass()[j] );
@@ -325,7 +328,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
           }
         }else{
           for(int k = 0; k<nBins; k++){
-            if(c.isInsideBin( hiBin ,k)){
+            if(c.isInsideBin( hiBinZDC ,k)){
               if((isMC && !isTau) || !isMC){
                 candPtFine[k]->Fill(v.pT()[j],-1);
                 candPtFiner[k]->Fill(v.pT()[j],-1);
@@ -359,7 +362,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
         TComplex mu2Q = TComplex(1, 2*v.PhiD2()[j], true);
         if( isOppositeSign){
           for(int k = 0; k<nBins; k++){
-            if(c.isInsideBin( hiBin ,k)){
+            if(c.isInsideBin( hiBinZDC ,k)){
               TComplex Q1 = Qp;
               TComplex Q2 = Qn;
               if(v.eta()[j]>0){
@@ -454,10 +457,16 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
 
   TFile * output;
   if(!isTest){
-    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_hiBin%d_job%d.root",(int)(etaCut*10), outFile.c_str(), hiBinVar , job),"recreate");
+    if(!isMC){
+      if(doZDC)  output = new TFile(Form("Z2mumu_%d_%s_hiBinZDC%d_job%d.root",(int)(etaCut*10), outFile.c_str(), hiBinVar , job),"recreate");
+      else       output = new TFile(Form("Z2mumu_%d_%s_hiBin%d_job%d.root",(int)(etaCut*10), outFile.c_str(), hiBinVar , job),"recreate");
+    }
     if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s_job%d.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
   }else{
-    if(!isMC) output = new TFile(Form("Z2mumu_%d_%s_hiBin%d_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), hiBinVar, job),"recreate");
+    if(!isMC){
+      if(doZDC)  output = new TFile(Form("Z2mumu_%d_%s_hiBinZDC%d_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), hiBinVar, job),"recreate");
+      else       output = new TFile(Form("Z2mumu_%d_%s_hiBin%d_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), hiBinVar, job),"recreate");
+    }
     if(isMC) output = new TFile(Form("Z2mumu_MC_%d_%s_job%d_TEST.root",(int)(etaCut*10), outFile.c_str(), job),"recreate");
   }
   for(int i = 0; i<nBins; i++){
@@ -588,6 +597,7 @@ int main(int argc, const char* argv[])
    
   doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 0, job, nJobs);
   doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 0 , job, nJobs);
+  doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 0 , job, nJobs, true);//ZDC variation
 
   if(!isMC){
     doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 1, job, nJobs);

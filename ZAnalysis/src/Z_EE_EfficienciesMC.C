@@ -45,6 +45,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TRandom3 * r = new TRandom3();
   
   TH1D * massPeakOS[nBins]; 
+  TH1D * massPeakOS_noSF[nBins]; 
   TH1D * massPeakSS[nBins]; 
   
   TH1D * recoEff_pt_pass[nBins];
@@ -110,6 +111,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
 
   for(int k = 0; k<nBins; k++){
     massPeakOS[k] = new TH1D(Form("massPeakOS_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
+    massPeakOS_noSF[k] = new TH1D(Form("massPeakOS_noSF_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakSS[k] = new TH1D(Form("massPeakSS_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{#pm}e^{#pm}}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     
     recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
@@ -430,6 +432,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   }
 
                   massPeakOS[k]->Fill(Zcand.M(), eventWeight*scaleFactor);
+                  massPeakOS_noSF[k]->Fill(Zcand.M(), eventWeight);
                   recoEff_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
                   recoEff_U_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorU );
                   recoEff_D_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorD );
@@ -736,6 +739,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_ptReso[i]->Write();
 
     massPeakOS[i]->Write();
+    massPeakOS_noSF[i]->Write();
     massPeakSS[i]->Write();
     
     yReso[i]->Write();

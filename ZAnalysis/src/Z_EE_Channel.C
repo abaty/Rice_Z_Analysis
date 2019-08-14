@@ -21,13 +21,11 @@
 #include <fstream>
 #include <string>
 
-void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::string outputTag,int hiBinVar = 0){
+void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::string outputTag,int hiBinVar = 0, bool doZDC = false){
   Timer timer = Timer();
   timer.Start();
   timer.StartSplit("Start Up");
 
-  //switch between single electron 20 and double electron 10
-  bool doSingleEle20 = true;
 
   HistNameHelper h = HistNameHelper();
   ElectronSelector eSel = ElectronSelector();
@@ -206,6 +204,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
 
   int nEle;
   int hiBin;
+  int hiBinZDC;
+  int hiNpix;
   float hiHF;
   float vz;
 
@@ -237,7 +237,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   std::vector< int > * mcPID = 0;
   std::vector< int > * mcMomPID = 0;
   std::vector< int > * mcGMomPID = 0;
+  
 
+  int ZDC_n = 0;
+  float ZDC_E[100];
 
   int hiNevtPlane;
   float hiQVecMag[200];
@@ -272,16 +275,16 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     eTree->SetBranchAddress("eleIP3D",&eleIP3D);
     eTree->SetBranchAddress("eleEoverPInv",&eleEoverPInv);
     
-    TTree * eTreeMC = (TTree*)in->Get("ggHiNtuplizerGED/EventTree");
     if(isMC){
-      eTreeMC->SetBranchAddress("nMC",&nMC);
-      eTreeMC->SetBranchAddress("mcPID",&mcPID);
-      eTreeMC->SetBranchAddress("mcMomPID",&mcMomPID);
-      eTreeMC->SetBranchAddress("mcGMomPID",&mcGMomPID);
+      eTree->SetBranchAddress("nMC",&nMC);
+      eTree->SetBranchAddress("mcPID",&mcPID);
+      eTree->SetBranchAddress("mcMomPID",&mcMomPID);
+      eTree->SetBranchAddress("mcGMomPID",&mcGMomPID);
     }
 
     TTree * evtTree = (TTree*)in->Get("hiEvtAnalyzer/HiTree");
     //evtTree->SetBranchAddress("hiBin",&hiBin);
+    evtTree->SetBranchAddress("hiNpix",&hiNpix);
     evtTree->SetBranchAddress("hiHF",&hiHF);
     evtTree->SetBranchAddress("vz",&vz);
     evtTree->SetBranchAddress("hiNevtPlane",&hiNevtPlane);  
@@ -299,12 +302,13 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     //L1Tree->SetBranchAddress("egPhi", &(eTrig.L1egPhi));
     //L1Tree->SetBranchAddress("egEt", &(eTrig.L1egEt));
 
+    TTree * ZDCTree;
+    ZDCTree = (TTree*)in->Get("rechitanalyzerpp/zdcrechit");
+    ZDCTree->SetBranchAddress("n",&ZDC_n);
+    ZDCTree->SetBranchAddress("e",ZDC_E);
+
     TTree * HLTObjTree;
-    if(!doSingleEle20){
-      HLTObjTree = (TTree*)in->Get("hltobject/HLT_HIDoubleEle10GsfMass50_v");
-    } else {
-      HLTObjTree = (TTree*)in->Get("hltobject/HLT_HIEle20Gsf_v");
-    }
+    HLTObjTree = (TTree*)in->Get("hltobject/HLT_HIEle20Gsf_v");
     HLTObjTree->SetBranchAddress("eta",&(eTrig.HLTEta));
     HLTObjTree->SetBranchAddress("phi",&(eTrig.HLTPhi));
     HLTObjTree->SetBranchAddress("pt",&(eTrig.HLTPt));
@@ -319,6 +323,14 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       evtTree->GetEntry(i);
       if(TMath::Abs(vz)>15) continue;
       hiBin = cb.getHiBinFromhiHF(hiHF, (isMC ? 3 : hiBinVar) );
+    
+      if(doZDC) ZDCTree->GetEntry(i);
+      float ZDCSum = 0;
+      for(int z = 0; z< ZDC_n; z++) ZDCSum += ZDC_E[z];
+      if(!isMC && doZDC) hiBinZDC = cb.getHiBinFromZDC( hiNpix , ZDCSum , 0);
+      else hiBinZDC = hiBin;
+      
+
       float eventWeight = 1.0;
       if(isMC) eventWeight = vzRW->reweightFactor( vz ) * c.findNcoll( hiBin );
       nEvents->Fill(0.5,eventWeight);
@@ -337,8 +349,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       timer.StartSplit("Checking HLT Selections");
       //check for the trigger we want (double ele 10 or single ele 20)
       hltTree->GetEntry(i);
-      if((!doSingleEle20) && (!HLT_DoubleEle10)) continue;
-      if( doSingleEle20 && (!HLT_SingleEle20)) continue;
+      if( !HLT_SingleEle20) continue;
 
       //grab the rest of the important electron information 
       timer.StartSplit("Loading electron stuff");
@@ -380,7 +391,6 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       //need to check if it is a tau daughter
       bool isTau = false;
       if(isMC){
-        eTreeMC->GetEntry(i);
         for(int j = 0; j<nMC; j++){
           //break out if you find a Z->tautau
           if( mcGMomPID->at(j) == 23 && TMath::Abs(mcMomPID->at(j)) == 15){
@@ -417,15 +427,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
           //if(! (isFirstElectronL1Matched || isSecondElectronL1Matched)) continue;
 
           //HLT trigger matching (1 HLT match > 20 GeV)
-          if(doSingleEle20){
-            bool isFirstElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 20.0);
-            bool isSecondElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 20.0);
-            if(! (isFirstElectronHLTMatched || isSecondElectronHLTMatched)) continue;
-          } else {  //(2 HLT matches > 10 GeV)
-            bool isFirstElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 10.0);
-            bool isSecondElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 10.0);
-            if(! (isFirstElectronHLTMatched && isSecondElectronHLTMatched)) continue;
-          }
+          bool isFirstElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 20.0);
+          bool isSecondElectronHLTMatched = matcher.isHLTMatched(eleSCEta->at(goodElectrons.at(j2)), eleSCPhi->at(goodElectrons.at(j2)), eTrig, 20.0);
+          if(! (isFirstElectronHLTMatched || isSecondElectronHLTMatched)) continue;
    
           bool isOppositeSign =  eleCharge->at(goodElectrons.at(j)) != eleCharge->at(goodElectrons.at(j2));
           double efficiencyArray[5] = {0};
@@ -439,7 +443,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
           if(moreThan2) std::cout << j << " " << j2 << " " << Zcand.M() <<" " << Zcand.Pt() << " isOS? " << (int)isOppositeSign << std::endl;
           if( isOppositeSign){
             for(int k = 0; k<nBins; k++){
-              if(c.isInsideBin(hiBin,k)){
+              if(c.isInsideBin(hiBinZDC,k)){
                 if((isMC && !isTau) || !isMC){
                   massPeakOS[k]->Fill( Zcand.M() );
                   massPeakOS_withEff[k]->Fill( Zcand.M(), eventWeight/efficiency );
@@ -501,7 +505,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
             }//end for loop
           }else{
             for(int k = 0; k<nBins; k++){
-              if(c.isInsideBin(hiBin,k)){
+              if(c.isInsideBin(hiBinZDC,k)){
                 if((isMC && !isTau) || !isMC){
                   massPeakSS[k]->Fill( Zcand.M() );
                   massPeakSS_withEff[k]->Fill( Zcand.M(), eventWeight/efficiency );
@@ -542,7 +546,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
             TComplex ele2Q = TComplex(1, 2*elePhi->at(goodElectrons.at(j2)), true);
 
             for(int k = 0; k<nBins; k++){
-              if(c.isInsideBin(hiBin,k)){
+              if(c.isInsideBin(hiBinZDC,k)){
                 //see equation 1 in HIN-16-007
                 //'a' is Q1 and 'b' is Q2, c is Qmid
                 TComplex Q1 = Qp;
@@ -645,8 +649,12 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   
 
   TFile * output;
-  if(!isMC) output = new TFile(Form("unmergedOutputs/Z2ee_%s_hiBin%d_%d_%d.root",outputTag.c_str(), hiBinVar, (int)isMC, jobNumber),"recreate");
-  else      output = new TFile(Form("unmergedOutputs/Z2ee_%s_%d_%d.root",outputTag.c_str(), (int)isMC, jobNumber),"recreate");
+  if(!isMC){
+    if(!doZDC) output = new TFile(Form("unmergedOutputs/Z2ee_%s_hiBin%d_%d_%d.root",outputTag.c_str(), hiBinVar, (int)isMC, jobNumber),"recreate");
+    else       output = new TFile(Form("unmergedOutputs/Z2ee_%s_hiBinZDC%d_%d_%d.root",outputTag.c_str(), hiBinVar, (int)isMC, jobNumber),"recreate");
+  }else{
+    output = new TFile(Form("unmergedOutputs/Z2ee_%s_%d_%d.root",outputTag.c_str(), (int)isMC, jobNumber),"recreate");
+  }
   for(int i = 0; i<nBins; i++){
     massPeakOS[i]->Write();
     massPeakSS[i]->Write();
@@ -771,6 +779,7 @@ int main(int argc, const char* argv[])
   }
    
   doZ2EE(listOfFiles, job, isMC, outputTag, 0);
+  doZ2EE(listOfFiles, job, isMC, outputTag, 0, true);
   if(!isMC){
     doZ2EE(listOfFiles, job, isMC, outputTag, 1);
     doZ2EE(listOfFiles, job, isMC, outputTag, 2);
