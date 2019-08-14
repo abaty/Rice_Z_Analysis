@@ -67,21 +67,25 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TH1D * massPeakOS_ptLT0p5_withEff[nBins]; 
   TH1D * massPeakSS_ptLT0p5_withEff[nBins]; 
   TH1D * massPeakOS_TauTau_withEff[nBins]; 
+  TH1D * massPeakSS_TauTau_withEff[nBins]; 
   
   TH1D * pTOS_withEff[nBins][5]; 
   TH1D * pTSS_withEff[nBins][5]; 
   TH1D * pTOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * pTOS_TauTau_withEff[nBins]; 
+  TH1D * pTSS_TauTau_withEff[nBins]; 
   
   TH1D * yOS_withEff[nBins][5]; 
   TH1D * ySS_withEff[nBins][5]; 
   TH1D * yOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * yOS_TauTau_withEff[nBins]; 
+  TH1D * ySS_TauTau_withEff[nBins]; 
   
   TH1D * yieldOS_withEff[nBins][5]; 
   TH1D * yieldSS_withEff[nBins][5]; 
   TH1D * yieldOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * yieldOS_TauTau_withEff[nBins]; 
+  TH1D * yieldSS_TauTau_withEff[nBins]; 
   
   TProfile * v2Num[nBins];
   TProfile * v2NumVsCent[3];
@@ -131,6 +135,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     massPeakOS_ptLT0p5_withEff[i] = new TH1D(Form("massPeakOS_ptLT0p5_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakSS_ptLT0p5_withEff[i] = new TH1D(Form("massPeakSS_ptLT0p5_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakOS_TauTau_withEff[i] = new TH1D(Form("massPeakOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
+    massPeakSS_TauTau_withEff[i] = new TH1D(Form("massPeakSS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     
     for(int j = 0; j < (isMC ? 1 : 5); j++){
       pTOS_withEff[i][j] = new TH1D(Form("pTOS_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
@@ -138,6 +143,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       pTOS_ptLT0p5acoLT0p001_withEff[i][j] = new TH1D(Form("pTOS_ptLT0p5acoLT0p001_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     }
     pTOS_TauTau_withEff[i] = new TH1D(Form("pTOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    pTSS_TauTau_withEff[i] = new TH1D(Form("pTSS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
 
     int nRapBins = 14;
     for(int j = 0; j < (isMC ? 1 : 5); j++){
@@ -146,6 +152,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       yOS_ptLT0p5acoLT0p001_withEff[i][j] = new TH1D(Form("yOS_ptLT0p5acoLT0p001_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);
     }
     yOS_TauTau_withEff[i] = new TH1D(Form("yOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);
+    ySS_TauTau_withEff[i] = new TH1D(Form("ySS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);
     
     for(int j = 0; j < (isMC ? 1 : 5); j++){
       yieldOS_withEff[i][j] = new TH1D(Form("yieldOS_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
@@ -153,6 +160,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       yieldOS_ptLT0p5acoLT0p001_withEff[i][j] = new TH1D(Form("yieldOS_ptLT0p5acoLT0p001_withEff%s_%d_%d",h.variationName.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
     }
     yieldOS_TauTau_withEff[i] = new TH1D(Form("yieldOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    yieldSS_TauTau_withEff[i] = new TH1D(Form("yieldSS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
 
     v2Num[i] = new TProfile(Form("v2Num_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Denom[i] = new TProfile(Form("v2Denom_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
@@ -509,7 +517,13 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
                     massPeakSS_ptLT0p5_withEff[k]->Fill( Zcand.M(), 1.0/efficiency * eventWeight );
                     if( acoplanarity < s.acoCutForPhotons) massPeakSS_ptLT0p5acoLT0p001_withEff[k]->Fill( Zcand.M(), 1.0/efficiency*eventWeight);
                   }
-                }
+                }//end MC if
+                if( isMC && isTau ){
+                  massPeakSS_TauTau_withEff[k]->Fill( Zcand.M(), 1.0/efficiency * eventWeight );
+                  pTSS_TauTau_withEff[k]->Fill( Zcand.Pt(), 1.0/efficiency * eventWeight );
+                  ySS_TauTau_withEff[k]->Fill( Zcand.Rapidity(), 1.0/efficiency * eventWeight );
+                  yieldSS_TauTau_withEff[k]->Fill( 0.5, 1.0/efficiency * eventWeight );
+                }     
               }
             }
           }
@@ -618,6 +632,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       h.makeDifferential( pTOS_ptLT0p5acoLT0p001_withEff[i][j]);
     }
     h.makeDifferential( pTOS_TauTau_withEff[i]);
+    h.makeDifferential( pTSS_TauTau_withEff[i]);
 
     for(int j = 0; j< (isMC ? 1 : 5); j++){
       h.makeDifferential( yOS_withEff[i][j]);
@@ -625,6 +640,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       h.makeDifferential( yOS_ptLT0p5acoLT0p001_withEff[i][j]);
     }
     h.makeDifferential( yOS_TauTau_withEff[i]);
+    h.makeDifferential( ySS_TauTau_withEff[i]);
   }
   
 
@@ -641,6 +657,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     massPeakOS_ptLT0p5acoLT0p001_withEff[i]->Write();
     massPeakSS_ptLT0p5acoLT0p001_withEff[i]->Write();
     massPeakOS_TauTau_withEff[i]->Write();
+    massPeakSS_TauTau_withEff[i]->Write();
     
     for(int j = 0; j< (isMC ? 1 : 5); j++){
       pTOS_withEff[i][j]->Write();
@@ -648,6 +665,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       pTOS_ptLT0p5acoLT0p001_withEff[i][j]->Write(0);
     }
     pTOS_TauTau_withEff[i]->Write();
+    pTSS_TauTau_withEff[i]->Write();
     
     for(int j = 0; j< (isMC ? 1 : 5); j++){
       yOS_withEff[i][j]->Write();
@@ -655,6 +673,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       yOS_ptLT0p5acoLT0p001_withEff[i][j]->Write(0);
     }
     yOS_TauTau_withEff[i]->Write();
+    ySS_TauTau_withEff[i]->Write();
     
     for(int j = 0; j< (isMC ? 1 : 5); j++){
       yieldOS_withEff[i][j]->Write();
@@ -662,6 +681,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       yieldOS_ptLT0p5acoLT0p001_withEff[i][j]->Write(0);
     }
     yieldOS_TauTau_withEff[i]->Write();
+    yieldSS_TauTau_withEff[i]->Write();
 
     massVsPt[i]->Write();
     candPt[i]->Write();
