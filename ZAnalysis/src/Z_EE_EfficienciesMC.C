@@ -34,7 +34,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   ElecTrigObject eTrig = ElecTrigObject();
   ElectronTnP eTnP = ElectronTnP();  
 
-  MCReweight vzRW = MCReweight("resources/vzReweight.root");
+  MCReweight vzRW = MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
   
   Settings s = Settings();
 
@@ -270,7 +270,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
       if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
       
       hiBin = cb.getHiBinFromhiHF(hiHF,3);
-      double eventWeight = vzRW.reweightFactor( vz ) * c.findNcoll( hiBin ) * (ttbar_w->at(1080)/10000.0);//1080 is EEPS16NLO+CT14;
+      double eventWeight = vzRW.reweightFactor( vz ) * vzRW.reweightFactorCent(hiBin) * c.findNcoll( hiBin ) * (ttbar_w->at(1080)/10000.0);//1080 is EEPS16NLO+CT14;
       
       timer.StartSplit("Loading GEN electron tree");
       eTreeMC->GetEntry(i);

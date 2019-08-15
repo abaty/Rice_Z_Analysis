@@ -42,7 +42,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   ZEfficiency zEffphotonD = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root", isMC, -2);
   
   MCReweight * vzRW;
-  if(isMC) vzRW = new MCReweight("resources/vzReweight.root");
+  if(isMC) vzRW = new MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
 
   CentralityBin cb = CentralityBin();
   CentralityTool c = CentralityTool();
@@ -335,7 +335,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       
 
       float eventWeight = 1.0;
-      if(isMC) eventWeight = vzRW->reweightFactor( vz ) * c.findNcoll( hiBin ) * (ttbar_w->at(1080)/10000.0);//1080 is EEPS16NLO+CT14
+      if(isMC) eventWeight = vzRW->reweightFactor( vz ) * vzRW->reweightFactorCent(hiBin) * c.findNcoll( hiBin ) * (ttbar_w->at(1080)/10000.0);//1080 is EEPS16NLO+CT14
       nEvents->Fill(0.5,eventWeight);
       
       timer.StartSplit("Checking Number of electrons");
