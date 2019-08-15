@@ -218,7 +218,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       else hiBinZDC = hiBin;
 
       float eventWeight = 1.0;
-      if(isMC) eventWeight = vzRW->reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin );
+      if(isMC) eventWeight = vzRW->reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin ) * (v.weightLHE_gen(1080)/10000.0);//1080 is EPPS16
       nEvents->Fill(0.5,eventWeight);
       
       //check out trigger 

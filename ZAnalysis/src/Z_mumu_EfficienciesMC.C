@@ -164,7 +164,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
       if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
       hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus() , v.HFsumETMinus() ,3);   
 
-      double eventWeight = vzRW.reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin );
+      double eventWeight = vzRW.reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin ) * (v.weightLHE_gen(1080)/10000.0);//1080 is EPPS16
 
       for(unsigned int j = 0; j<v.candSize_gen(); j++){
 

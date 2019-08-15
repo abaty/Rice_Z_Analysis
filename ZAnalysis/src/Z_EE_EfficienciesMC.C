@@ -151,6 +151,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   int hiBin;
   float hiHF;
   float vz;
+  std::vector< float > * ttbar_w = 0;
 
   int pprimaryVertexFilter;
   int phfCoincFilter2Th4;
@@ -239,7 +240,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     //evtTree->SetBranchAddress("hiBin",&hiBin);
     evtTree->SetBranchAddress("hiHF",&hiHF);
     evtTree->SetBranchAddress("vz",&vz);
-  
+    evtTree->SetBranchAddress("ttbar_w",ttbar_w); 
+ 
     TTree * skimTree = (TTree*)in->Get("skimanalysis/HltTree");
     skimTree->SetBranchAddress("pprimaryVertexFilter",&pprimaryVertexFilter);
     skimTree->SetBranchAddress("phfCoincFilter2Th4",&phfCoincFilter2Th4);
@@ -268,7 +270,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
       if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
       
       hiBin = cb.getHiBinFromhiHF(hiHF,3);
-      double eventWeight = vzRW.reweightFactor( vz ) * c.findNcoll( hiBin );
+      double eventWeight = vzRW.reweightFactor( vz ) * c.findNcoll( hiBin ) * (ttbar_w->at(1080)/10000.0);//1080 is EEPS16NLO+CT14;
       
       timer.StartSplit("Loading GEN electron tree");
       eTreeMC->GetEntry(i);

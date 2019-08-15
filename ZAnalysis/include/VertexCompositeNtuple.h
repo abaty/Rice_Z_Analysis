@@ -173,6 +173,7 @@ public :
 
   // GEN INFO GETTERS
   Float_t   weight_gen()                  { SetBranch("weight_gen");                  return weight_gen_;                 }
+  Float_t   weightLHE_gen(int i)          { SetBranch("weightLHE_gen");               return weightLHE_gen_->at(i);       }
   UInt_t    candSize_gen()                { SetBranch("candSize_gen");                return candSize_gen_;               }
   Float_t*  pT_gen()                      { SetBranch("pT_gen");                      return pT_gen_;                     }
   Float_t*  eta_gen()                     { SetBranch("eta_gen");                     return eta_gen_;                    }
@@ -362,6 +363,7 @@ public :
 
   // GEN INFO VARIABLES
   Float_t           weight_gen_=-99.;
+  std::vector< float > * weightLHE_gen_ = 0;
   UInt_t            candSize_gen_=0;
   Float_t           pT_gen_[NGEN]={0};   //[candSize_gen]
   Float_t           eta_gen_[NGEN]={0};   //[candSize_gen]
@@ -517,6 +519,7 @@ public :
   
   // GEN INFO BRANCHES
   TBranch          *b_weight_gen;   //!
+  TBranch          *b_weightLHE_gen;   //!
   TBranch          *b_candSize_gen;   //!
   TBranch          *b_pT_gen;   //!
   TBranch          *b_eta_gen;   //!
@@ -771,6 +774,7 @@ void VertexCompositeNtuple::InitTree(void)
 
     // SET GEN INFO BRANCHES
     if (fChain->GetBranch("weight_gen"))                  fChain->SetBranchAddress("weight_gen",                &weight_gen_,                 &b_weight_gen                );
+    if (fChain->GetBranch("weightLHE_gen"))               fChain->SetBranchAddress("weightLHE_gen",             &weightLHE_gen_,               &b_weightLHE_gen             );
     if (fChain->GetBranch("candSize_gen"))                fChain->SetBranchAddress("candSize_gen",              &candSize_gen_,               &b_candSize_gen              );
     if (fChain->GetBranch("pT_gen"))                      fChain->SetBranchAddress("pT_gen",                     pT_gen_,                     &b_pT_gen                    );
     if (fChain->GetBranch("eta_gen"))                     fChain->SetBranchAddress("eta_gen",                    eta_gen_,                    &b_eta_gen                   );
@@ -932,6 +936,7 @@ void VertexCompositeNtuple::Clear(void)
   // CLEAR GEN INFO VARIABLES
   const auto& nGen = (candSize_gen_>0 ? candSize_gen_ : NGEN);
   if (GetBranchStatus("weight_gen")==1)   weight_gen_ = -99.;
+  if (GetBranchStatus("weightLHE_gen")==1)   (*weightLHE_gen_) = std::vector< float >();
   if (GetBranchStatus("candSize_gen")==1) candSize_gen_ = 0;
   if (GetBranchStatus("pT_gen")==1)       std::fill(pT_gen_, pT_gen_+nGen, -1.);
   if (GetBranchStatus("eta_gen")==1)      std::fill(eta_gen_, eta_gen_+nGen, -9.);

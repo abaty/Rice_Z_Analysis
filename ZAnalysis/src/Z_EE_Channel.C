@@ -209,6 +209,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   float hiHF;
   float vz;
 
+  std::vector< float > * ttbar_w = 0;
+
   int pprimaryVertexFilter;
   int phfCoincFilter2Th4;
   int pclusterCompatibilityFilter;
@@ -290,6 +292,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     evtTree->SetBranchAddress("hiNevtPlane",&hiNevtPlane);  
     evtTree->SetBranchAddress("hiQVecMag",hiQVecMag);  
     evtTree->SetBranchAddress("hiQVecAngle",hiQVecAngle);  
+    if(isMC) evtTree->SetBranchAddress("ttbar_w",ttbar_w);
   
     TTree * skimTree = (TTree*)in->Get("skimanalysis/HltTree");
     skimTree->SetBranchAddress("pprimaryVertexFilter",&pprimaryVertexFilter);
@@ -332,7 +335,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       
 
       float eventWeight = 1.0;
-      if(isMC) eventWeight = vzRW->reweightFactor( vz ) * c.findNcoll( hiBin );
+      if(isMC) eventWeight = vzRW->reweightFactor( vz ) * c.findNcoll( hiBin ) * (ttbar_w->at(1080)/10000.0);//1080 is EEPS16NLO+CT14
       nEvents->Fill(0.5,eventWeight);
       
       timer.StartSplit("Checking Number of electrons");
