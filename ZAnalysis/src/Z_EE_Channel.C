@@ -292,7 +292,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     evtTree->SetBranchAddress("hiNevtPlane",&hiNevtPlane);  
     evtTree->SetBranchAddress("hiQVecMag",hiQVecMag);  
     evtTree->SetBranchAddress("hiQVecAngle",hiQVecAngle);  
-    if(isMC) evtTree->SetBranchAddress("ttbar_w",ttbar_w);
+    if(isMC) evtTree->SetBranchAddress("ttbar_w",&ttbar_w);
   
     TTree * skimTree = (TTree*)in->Get("skimanalysis/HltTree");
     skimTree->SetBranchAddress("pprimaryVertexFilter",&pprimaryVertexFilter);

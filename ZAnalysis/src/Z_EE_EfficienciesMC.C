@@ -240,7 +240,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     //evtTree->SetBranchAddress("hiBin",&hiBin);
     evtTree->SetBranchAddress("hiHF",&hiHF);
     evtTree->SetBranchAddress("vz",&vz);
-    evtTree->SetBranchAddress("ttbar_w",ttbar_w); 
+    evtTree->SetBranchAddress("ttbar_w",&ttbar_w); 
  
     TTree * skimTree = (TTree*)in->Get("skimanalysis/HltTree");
     skimTree->SetBranchAddress("pprimaryVertexFilter",&pprimaryVertexFilter);
@@ -582,6 +582,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_photonD_pass[i]->SetDirectory(0);
   }
   for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_noSF_pass[i], recoEff_noSF_net[i]);
     recoEff_noSF[i] = (TH2D*)recoEff_noSF_pass[i]->Clone(Form("recoEff_noSF_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     recoEff_noSF[i]->Divide(recoEff_noSF_net[i]);
     recoEff_noSF[i]->SetDirectory(0);

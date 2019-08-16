@@ -33,7 +33,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   ZEfficiency zEffphotonD = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, -2);
 
   MCReweight * vzRW;
-  if(isMC) vzRW = new MCReweight("resources/vzReweight.root");
+  if(isMC) vzRW = new MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
 
   HistNameHelper h = HistNameHelper();
   CentralityBin cb = CentralityBin();
@@ -218,7 +218,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       else hiBinZDC = hiBin;
 
       float eventWeight = 1.0;
-      if(isMC) eventWeight = vzRW->reweightFactor( v.bestvtxZ() ) * c.findNcoll( hiBin ) * (v.weightLHE_gen(1080)/10000.0);//1080 is EPPS16
+      if(isMC) eventWeight = vzRW->reweightFactor( v.bestvtxZ() ) * vzRW->reweightFactorCent(hiBin) * c.findNcoll( hiBin ) * (v.weightLHE_gen(1080)/10000.0);//1080 is EPPS16
       nEvents->Fill(0.5,eventWeight);
       
       //check out trigger 
