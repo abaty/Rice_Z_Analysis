@@ -388,9 +388,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           //acoplanarity cut
           bool passesAco[3] = {1 , 1, 1};
           float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( elePhi->at(goodElectrons.at(j2)) - elePhi->at(goodElectrons.at(j)) )))/TMath::Pi(); 
-          if( Zcand.Pt() < s.minPtCutForPhotons && acoplanarity < s.acoCutForPhotons ) passesAco[0] = false;
-          if( Zcand.Pt() < s.minPtCutForPhotonsU && acoplanarity < s.acoCutForPhotonsU ) passesAco[1] = false;
-          if( Zcand.Pt() < s.minPtCutForPhotonsD && acoplanarity < s.acoCutForPhotonsD ) passesAco[2] = false;
+          if( Zcand.Pt() < s.minPtCutForPhotons_ELE && acoplanarity < s.acoCutForPhotons_ELE ) passesAco[0] = false;
+          if( Zcand.Pt() < s.minPtCutForPhotonsU_ELE && acoplanarity < s.acoCutForPhotonsU_ELE ) passesAco[1] = false;
+          if( Zcand.Pt() < s.minPtCutForPhotonsD_ELE && acoplanarity < s.acoCutForPhotonsD_ELE ) passesAco[2] = false;
           
           //L1 trigger matching (1 L1 EG > 15 GeV) (remove this requirement on Aug 6th after talking with EGamma POG
           //bool isFirstElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 15.0);

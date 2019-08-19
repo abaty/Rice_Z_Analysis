@@ -480,9 +480,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
                 
                   //we have 3 different aco cuts for variations
                   bool passesAco[3] = {1 , 1, 1};
-                  if(Zcand.Pt() < s.minPtCutForPhotons && acoplanarity < s.acoCutForPhotons) passesAco[0] = false;
-                  if(Zcand.Pt() < s.minPtCutForPhotonsU && acoplanarity < s.acoCutForPhotonsU) passesAco[1] = false;
-                  if(Zcand.Pt() < s.minPtCutForPhotonsD && acoplanarity < s.acoCutForPhotonsD) passesAco[2] = false;
+                  if(Zcand.Pt() < s.minPtCutForPhotons_ELE && acoplanarity < s.acoCutForPhotons_ELE) passesAco[0] = false;
+                  if(Zcand.Pt() < s.minPtCutForPhotonsU_ELE && acoplanarity < s.acoCutForPhotonsU_ELE) passesAco[1] = false;
+                  if(Zcand.Pt() < s.minPtCutForPhotonsD_ELE && acoplanarity < s.acoCutForPhotonsD_ELE) passesAco[2] = false;
                 
                   if(Zcand.Pt() < s.minPtCutForPhotons){
                     massPeakOS_ptLT0p5_withEff[k]->Fill( Zcand.M(), 1.0/efficiency * eventWeight );
@@ -520,9 +520,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
                   yieldsSS->Fill(k,eventWeight/efficiency);
                 
                   float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( elePhi->at(goodElectrons.at(j2)) - elePhi->at(goodElectrons.at(j)) )))/TMath::Pi(); 
-                  if(Zcand.Pt() < s.minPtCutForPhotons){
+                  if(Zcand.Pt() < s.minPtCutForPhotons_ELE){
                     massPeakSS_ptLT0p5_withEff[k]->Fill( Zcand.M(), 1.0/efficiency * eventWeight );
-                    if( acoplanarity < s.acoCutForPhotons) massPeakSS_ptLT0p5acoLT0p001_withEff[k]->Fill( Zcand.M(), 1.0/efficiency*eventWeight);
+                    if( acoplanarity < s.acoCutForPhotons_ELE) massPeakSS_ptLT0p5acoLT0p001_withEff[k]->Fill( Zcand.M(), 1.0/efficiency*eventWeight);
                   }
                 }//end MC if
                 if( isMC && isTau ){

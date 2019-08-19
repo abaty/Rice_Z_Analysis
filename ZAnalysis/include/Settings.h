@@ -33,14 +33,19 @@ public:
   static const int nMuEffBinsPt = 11;
   double muEffBinsPt[nMuEffBinsPt+1] = {20,25,30,35,40,45,50,60,80,120,160,200};
 
-  double minPtCutForPhotons = 0.5;
+  double minPtCutForPhotons = 1.25;
   double acoCutForPhotons = 0.001;
-  
-  double minPtCutForPhotonsU = 0.75;
+  double minPtCutForPhotonsU = 1.75;
   double acoCutForPhotonsU = 0.0015;
+  double minPtCutForPhotonsD = 1.0;
+  double acoCutForPhotonsD = 0.00075;
   
-  double minPtCutForPhotonsD = 0.25;
-  double acoCutForPhotonsD = 0.0005;
+  double minPtCutForPhotons_ELE = 2.5;
+  double acoCutForPhotons_ELE = 0.001;
+  double minPtCutForPhotonsU_ELE = 3.0;
+  double acoCutForPhotonsU_ELE = 0.0015;
+  double minPtCutForPhotonsD_ELE = 2.0;
+  double acoCutForPhotonsD_ELE = 0.00075;
 
   //MC xsections (/pb)
   double ttbar_XS = 69.0;
