@@ -13,6 +13,7 @@ class ZEfficiency{
   ZEfficiency(std::string inputFile, bool isMC_ = false, int variationIndex_ = 0);
   ~ZEfficiency();
   double getEfficiency( double y, double pt, double hiBin);
+  double getEfficiencyRelStatErr( double y, double pt, double hiBin);
 
   private:
 
@@ -22,6 +23,32 @@ class ZEfficiency{
   TEfficiency * e[11];
 
 };
+
+double ZEfficiency::getEfficiencyRelStatErr(double y, double pt, double hiBin){
+  double originalPt = pt;
+  if(pt>=200){
+    std::cout << "Very High-Pt Z (>200) detected. Pt = " << originalPt << " I am pretending it's pt is 199.9 for efficiency purposes!" << std::endl;
+    pt = 199.9;
+  }
+
+  int indx = 0;
+  if(hiBin>-1 && hiBin < 10) indx = 0;
+  else if(hiBin >= 10 && hiBin < 20) indx = 1;
+  else indx = hiBin/20+1;
+
+  int bin = e[indx]->FindFixBin(y, pt);
+  float efficiency =  e[indx]->GetEfficiency(bin);
+  float efficiencyU =  e[indx]->GetEfficiencyErrorUp(bin);
+  float efficiencyD =  e[indx]->GetEfficiencyErrorLow(bin);
+  float effRelError = TMath::Max(efficiencyU, efficiencyD)/efficiency;
+
+  if(efficiency >=0 && efficiency <=1) return effRelError;
+  else{
+    std::cout << "efficiency not in the range [0,1], returning error of 0!" << std::endl;
+    std::cout << "Rapidity: " << y << " Pt: " << originalPt << std::endl;
+    return 0;
+  }
+}
 
 double ZEfficiency::getEfficiency(double y, double pt, double hiBin){
   double originalPt = pt;

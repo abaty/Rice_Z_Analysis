@@ -137,6 +137,7 @@ void effPlots(std::string Zmumu, std::string Zee){
   c1->SaveAs("plots/efficiencies/EffVsCent.pdf");
   c1->SaveAs("plots/efficiencies/EffVsCent.C");
 
+  efficiency2D[0]->GetZaxis()->SetRangeUser(0,1.0);
   efficiency2D[0]->Draw("colz");
   c1->SaveAs("plots/efficiencies/Eff2D_mu.png");
   c1->SaveAs("plots/efficiencies/Eff2D_mu.pdf");
@@ -147,6 +148,7 @@ void effPlots(std::string Zmumu, std::string Zee){
   c1->SaveAs("plots/efficiencies/Eff2D_mu_log.C");
   c1->SetLogy(0);
   
+  efficiency2D[1]->GetZaxis()->SetRangeUser(0,1.0);
   efficiency2D[1]->Draw("colz");
   c1->SaveAs("plots/efficiencies/Eff2D_e.png");
   c1->SaveAs("plots/efficiencies/Eff2D_e.pdf");

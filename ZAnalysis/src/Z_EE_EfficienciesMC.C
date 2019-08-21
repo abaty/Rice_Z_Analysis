@@ -114,20 +114,20 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     massPeakOS_noSF[k] = new TH1D(Form("massPeakOS_noSF_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakSS[k] = new TH1D(Form("massPeakSS_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{#pm}e^{#pm}}",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     
-    recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
-    recoEff_net[k] = new TH2D(Form("recoEff_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
+    recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins4Eff-1,s.zPtBins4Eff);
+    recoEff_net[k] = new TH2D(Form("recoEff_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins4Eff-1,s.zPtBins4Eff);
     
-    recoEff_U_pass[k] = new TH2D(Form("recoEff_U_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
-    recoEff_D_pass[k] = new TH2D(Form("recoEff_D_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
+    recoEff_U_pass[k] = new TH2D(Form("recoEff_U_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins4Eff-1,s.zPtBins4Eff);
+    recoEff_D_pass[k] = new TH2D(Form("recoEff_D_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins4Eff-1,s.zPtBins4Eff);
     
-    recoEff_photonU_pass[k] = new TH2D(Form("recoEff_photonU_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
-    recoEff_photonD_pass[k] = new TH2D(Form("recoEff_photonD_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
+    recoEff_photonU_pass[k] = new TH2D(Form("recoEff_photonU_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins4Eff-1,s.zPtBins4Eff);
+    recoEff_photonD_pass[k] = new TH2D(Form("recoEff_photonD_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins4Eff-1,s.zPtBins4Eff);
     
-    recoEff_noSF_pass[k] = new TH2D(Form("recoEff_noSF_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
-    recoEff_noSF_net[k] = new TH2D(Form("recoEff_noSF_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins-1,s.zPtBins);
+    recoEff_noSF_pass[k] = new TH2D(Form("recoEff_noSF_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins4Eff-1,s.zPtBins4Eff);
+    recoEff_noSF_net[k] = new TH2D(Form("recoEff_noSF_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZPtBins4Eff-1,s.zPtBins4Eff);
     
-    recoEff_pt_pass[k] = new TH1D(Form("recoEff_pt_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
-    recoEff_pt_net[k] = new TH1D(Form("recoEff_pt_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
+    recoEff_pt_pass[k] = new TH1D(Form("recoEff_pt_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
+    recoEff_pt_net[k] = new TH1D(Form("recoEff_pt_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
     recoEff_y_pass[k] = new TH1D(Form("recoEff_y_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
     recoEff_y_net[k] = new TH1D(Form("recoEff_y_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
     recoEff_phi_pass[k] = new TH1D(Form("recoEff_phi_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",30,-TMath::Pi(),TMath::Pi());
@@ -315,7 +315,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
               recoEff_phi_net[k]->Fill( mom.Phi(), eventWeight);
 
               //for the last few pt bins, halve the y binning so we have better stats
-              if(mcMomPt->at(j) > s.zPtBins[s.nZPtBins - s.nPtBinsToRebinRapEff]){
+              if(mcMomPt->at(j) > s.zPtBins[s.nZPtBins4Eff - s.nPtBinsToRebinRapEff]){
                 int bin = recoEff_net[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
                 if( bin%2 ==1){
                   recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin+1), mcMomPt->at(j), eventWeight );
@@ -423,7 +423,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           for(int k = 0; k<nBins; k++){ 
             if(c.isInsideBin(hiBin,k)){
               //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
-              if( mom.Pt() < s.zPtBins[ s.nZPtBins-1 ] && TMath::Abs( mom.Rapidity() ) < s.maxZRap ){
+              if( mom.Pt() < s.zPtBins[ s.nZPtBins4Eff-1 ] && TMath::Abs( mom.Rapidity() ) < s.maxZRap ){
                 if(passesAco[0]){
 
                   //90%
@@ -451,7 +451,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   yReso[k]->Fill( Zcand.Rapidity() - mom.Rapidity() , eventWeight);            
           
                   //for the last few pt bins, halve the y binning so we have better stats
-                  if(mom.Pt()> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                  if(mom.Pt()> s.zPtBins[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
                     int bin = recoEff_pass[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
                     if( bin%2 ==1){
                       recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
@@ -468,7 +468,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                 }//aco if statement
                 if(passesAco[1]){
                   recoEff_photonU_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
-                  if(mom.Pt()> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                  if(mom.Pt()> s.zPtBins[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
                     int bin = recoEff_pass[k]->GetXaxis()->FindBin(mom.Rapidity()); 
                     if( bin%2 ==1){
                       recoEff_photonU_pass[k]->Fill( recoEff_photonU_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
@@ -479,7 +479,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                 }
                 if(passesAco[2]){
                   recoEff_photonD_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
-                  if(mom.Pt()> s.zPtBins[s.nZPtBins- s.nPtBinsToRebinRapEff]){
+                  if(mom.Pt()> s.zPtBins[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
                     int bin = recoEff_pass[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
                     if( bin%2 ==1){
                       recoEff_photonD_pass[k]->Fill( recoEff_photonD_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );

@@ -14,6 +14,7 @@
 #include "TTree.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TH3D.h"
 #include "TProfile.h"
 #include "TMath.h"
 #include "TComplex.h"
@@ -57,16 +58,21 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   TH1D * pTSS_withEff[nBins][5]; 
   TH1D * pTOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * pTOS_TauTau_withEff[nBins]; 
+  TH1D * pTOS_withEff_RelStatErr[nBins];
   
   TH1D * yOS_withEff[nBins][5]; 
   TH1D * ySS_withEff[nBins][5]; 
   TH1D * yOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * yOS_TauTau_withEff[nBins]; 
+  TH1D * yOS_withEff_RelStatErr[nBins];
   
   TH1D * yieldOS_withEff[nBins][5]; 
   TH1D * yieldSS_withEff[nBins][5]; 
   TH1D * yieldOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
-  TH1D * yieldOS_TauTau_withEff[nBins]; 
+  TH1D * yieldOS_TauTau_withEff[nBins];
+  TH1D * yieldOS_withEff_RelStatErr[nBins];
+
+  TH3D * candYVsPtForStat[nBins];
 
   TH1D * yields;
   TH1D * yieldsSS;
@@ -111,6 +117,10 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
 
   int hiBin;
   int hiBinZDC = 0;
+  const int cBins = 11;
+  double cBinsArray[cBins+1] = {0,10,20,40,60,80,100,120,140,160,180,200};
+  const int xBins = 16;
+  double xBinsArray[xBins+1] = {-2.4,-2.1,-1.8,-1.5,-1.2,-0.9,-0.6,-0.3,0.0,0.3,0.6,0.9,1.2,1.5,1.8,2.1,2.4};
 
   for(int i = 0; i<nBins; i++){
     massPeakOS[i] = new TH1D(Form("massPeakOS_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
@@ -132,6 +142,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       pTOS_ptLT0p5acoLT0p001_withEff[i][j] = new TH1D(Form("pTOS_ptLT0p5acoLT0p001_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     }
     pTOS_TauTau_withEff[i] = new TH1D(Form("pTOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    pTOS_withEff_RelStatErr[i] = new TH1D(Form("pTOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
 
     int nRapBins = 16;
     if(etaCut < 2.11) nRapBins = 14;
@@ -141,13 +152,17 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       yOS_ptLT0p5acoLT0p001_withEff[i][j] = new TH1D(Form("yOS_ptLT0p5acoLT0p001_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
     }
     yOS_TauTau_withEff[i] = new TH1D(Form("yOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);
-    
+    yOS_withEff_RelStatErr[i] = new TH1D(Form("yOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-etaCut,etaCut);   
+ 
     for(int j = 0; j < (isMC ? 1 : 5); j++){
       yieldOS_withEff[i][j] = new TH1D(Form("yieldOS_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
       yieldSS_withEff[i][j] = new TH1D(Form("yieldSS_withEff%s_%d_%d",h.variationName.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{#pm}#mu^{#pm}}",1,0,1);
       yieldOS_ptLT0p5acoLT0p001_withEff[i][j] = new TH1D(Form("yieldOS_ptLT0p5acoLT0p001_withEff%s_%d_%d",h.variationName.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
     }
     yieldOS_TauTau_withEff[i] = new TH1D(Form("yieldOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    yieldOS_withEff_RelStatErr[i] = new TH1D(Form("yieldOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+  
+    candYVsPtForStat[i] = new TH3D(Form("candYVsPtForStat_withEff2_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",xBins,xBinsArray,s.nZPtBins-1,s.zPtBins,cBins,cBinsArray);
     
     candPt[i] = new TH1D(Form("candPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     candPtFine[i] = new TH1D(Form("candPtFine_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",400,0,200);
@@ -274,6 +289,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
                   yOS_withEff[k][l]->Fill( v.y()[j], 1.0/efficiencyArray[l] * eventWeight );
                   yieldOS_withEff[k][l]->Fill( 0.5, 1.0/efficiencyArray[l] * eventWeight );
                 }
+                candYVsPtForStat[k]->Fill(v.y()[j], v.pT()[j], hiBin, eventWeight );
                
                 lepPt->Fill( v.pTD1()[j] ,eventWeight);
                 lepPt->Fill( v.pTD2()[j] ,eventWeight);
@@ -434,26 +450,6 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     }
   }
 
-  for(int i = 0; i<nBins; i++){
-    h.makeDifferential( candPt[i]);
-    h.makeDifferential( candEta[i]);
-    h.makeDifferential( candY[i]);
-
-    
-    for(int j = 0; j< (isMC ? 1 : 5); j++){
-      h.makeDifferential( pTOS_withEff[i][j]);
-      h.makeDifferential( pTSS_withEff[i][j]);
-      h.makeDifferential( pTOS_ptLT0p5acoLT0p001_withEff[i][j]);
-    }
-    h.makeDifferential( pTOS_TauTau_withEff[i]);
-
-    for(int j = 0; j< (isMC ? 1 : 5); j++){
-      h.makeDifferential( yOS_withEff[i][j]);
-      h.makeDifferential( ySS_withEff[i][j]);
-      h.makeDifferential( yOS_ptLT0p5acoLT0p001_withEff[i][j]);
-    }
-    h.makeDifferential( yOS_TauTau_withEff[i]);
-  }
 
   TFile * output;
   if(!isTest){
@@ -475,6 +471,55 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     entries = candPtFiner[i]->Integral();
     candPtFiner[i]->Scale(1.0/entries);
 
+    double errSum = 0.0;
+    double ptSum[50] = {0};
+    double ySum[50] = {0};
+    for(int x = 1; x<xBins+1; x++){
+      for(int y = 1; y<s.nZPtBins; y++){
+        for(int z = 1; z<cBins+1; z++){
+          float rap = candYVsPtForStat[i]->GetXaxis()->GetBinCenter(x);
+          float pt = candYVsPtForStat[i]->GetYaxis()->GetBinCenter(y);
+          float cent = candYVsPtForStat[i]->GetZaxis()->GetBinCenter(z);
+          errSum += TMath::Power( candYVsPtForStat[i]->GetBinContent( candYVsPtForStat[i]->GetBin(x,y,z) ) * zEff.getEfficiencyRelStatErr( rap , pt , cent ) / zEff.getEfficiency( rap , pt , cent ), 2);
+          ySum[x]  += TMath::Power( candYVsPtForStat[i]->GetBinContent( candYVsPtForStat[i]->GetBin(x,y,z) ) * zEff.getEfficiencyRelStatErr( rap , pt , cent ) / zEff.getEfficiency( rap , pt , cent ), 2); 
+          ptSum[y] += TMath::Power( candYVsPtForStat[i]->GetBinContent( candYVsPtForStat[i]->GetBin(x,y,z) ) * zEff.getEfficiencyRelStatErr( rap , pt , cent ) / zEff.getEfficiency( rap , pt , cent ), 2);
+        }
+      }
+    }
+    for(int x = 0; x < pTOS_withEff_RelStatErr[i]->GetSize(); x++){
+      float pt = pTOS_withEff_RelStatErr[i]->GetBinCenter(x);
+      pTOS_withEff_RelStatErr[i]->SetBinContent(x, TMath::Sqrt(ptSum[candYVsPtForStat[i]->GetYaxis()->FindBin(pt)])/pTOS_withEff[i][0]->GetBinContent(pTOS_withEff[i][0]->FindBin(pt)));
+    }
+    for(int x = 0; x < yOS_withEff_RelStatErr[i]->GetSize(); x++){
+      float rap = yOS_withEff_RelStatErr[i]->GetBinCenter(x);
+      yOS_withEff_RelStatErr[i]->SetBinContent(x, TMath::Sqrt(ySum[candYVsPtForStat[i]->GetXaxis()->FindBin(rap)])/yOS_withEff[i][0]->GetBinContent(yOS_withEff[i][0]->FindBin(rap)));
+    }
+    yieldOS_withEff_RelStatErr[i]->SetBinContent(1, TMath::Sqrt(errSum)/yieldOS_withEff[i][0]->GetBinContent(1) );
+
+    pTOS_withEff_RelStatErr[i]->Write(); 
+    yOS_withEff_RelStatErr[i]->Write();
+    yieldOS_withEff_RelStatErr[i]->Write();
+    candYVsPtForStat[i]->Write();
+    
+    h.makeDifferential( candPt[i]);
+    h.makeDifferential( candEta[i]);
+    h.makeDifferential( candY[i]);
+
+    
+    for(int j = 0; j< (isMC ? 1 : 5); j++){
+      h.makeDifferential( pTOS_withEff[i][j]);
+      h.makeDifferential( pTSS_withEff[i][j]);
+      h.makeDifferential( pTOS_ptLT0p5acoLT0p001_withEff[i][j]);
+    }
+    h.makeDifferential( pTOS_TauTau_withEff[i]);
+
+    for(int j = 0; j< (isMC ? 1 : 5); j++){
+      h.makeDifferential( yOS_withEff[i][j]);
+      h.makeDifferential( ySS_withEff[i][j]);
+      h.makeDifferential( yOS_ptLT0p5acoLT0p001_withEff[i][j]);
+    }
+    h.makeDifferential( yOS_TauTau_withEff[i]);
+   
     massPeakOS[i]->Write();
     massPeakSS[i]->Write();
     massPeakOS_withEff[i]->Write();
@@ -527,6 +572,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     candAcoVsPt[i]->Write();
     candAco[i]->Write();
     avgMassVsPt[i]->Write();
+    
+
   }
     
   lepPt->Write();
