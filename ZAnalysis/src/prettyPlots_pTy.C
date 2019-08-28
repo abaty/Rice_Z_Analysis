@@ -57,7 +57,8 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TH1D * efficiencyError_0_90[3][3];
   TH1D * emError_0_90[3][3];	
   TH1D * hfError_0_90[3][3];	
-  TH1D * ptSmearError_0_90[3][3];	
+  TH1D * ptSmearError_0_90[3][3];
+  TH1D * mcStatError_0_90[3][3];	
   TH1D * totalError_0_90[3][3];	
 
   TH1D * combo[3];
@@ -74,6 +75,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       emError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_emError_0_90",helper.name.at(j).c_str()));
       hfError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_hfError_0_90",helper.name.at(j).c_str()));
       if(j==1) ptSmearError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_ptSmearError_0_90",helper.name.at(j).c_str()));
+      mcStatError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_mcStatError_0_90",helper.name.at(j).c_str()));
       totalError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_totalError_0_90",helper.name.at(j).c_str()));
     }
   }
@@ -110,6 +112,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       float eEffErr = efficiencyError_0_90[0][j]->GetBinContent(i) * e;
       float eEmErr = emError_0_90[0][j]->GetBinContent(i) * e;
       float eHfErr = hfError_0_90[0][j]->GetBinContent(i) * e;
+      float eMCStatErr = mcStatError_0_90[0][j]->GetBinContent(i) * e;
       float ePtSmearErr = 0;
       if(j==1) ePtSmearErr = ptSmearError_0_90[0][j]->GetBinContent(i) * e;
       
@@ -118,6 +121,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       float muEffErr = efficiencyError_0_90[1][j]->GetBinContent(i) * mu;
       float muEmErr = emError_0_90[1][j]->GetBinContent(i) * mu;
       float muHfErr = hfError_0_90[1][j]->GetBinContent(i) * mu;
+      float muMCStatErr = mcStatError_0_90[1][j]->GetBinContent(i) * mu;
       float muPtSmearErr = 0;
       if(j==1) muPtSmearErr = ptSmearError_0_90[1][j]->GetBinContent(i) * mu;
 
@@ -129,6 +133,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       covariance.push_back( cp.getFullCorrMatrix(muEmErr*scaleFactor, eEmErr*scaleFactor) );//correlated
       covariance.push_back( cp.getFullCorrMatrix(muHfErr*scaleFactor, eHfErr*scaleFactor) );//correlated
       covariance.push_back( cp.getFullUncorrMatrix(muPtSmearErr*scaleFactor, ePtSmearErr*scaleFactor) );
+      covariance.push_back( cp.getFullUncorrMatrix(muMCStatErr * scaleFactor, eMCStatErr * scaleFactor) );
       std::vector<double> combined = cp.combine(mu*scaleFactor, e*scaleFactor, covariance);
 
       //calculate a weighted mean

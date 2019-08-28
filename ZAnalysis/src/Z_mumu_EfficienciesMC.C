@@ -50,6 +50,13 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
   int hiBin;
 
+  TH1D * accept_pt_pass;
+  TH1D * accept_y_pass;
+  TH1D * accept_yield_pass;
+  TH1D * accept_pt_net;
+  TH1D * accept_y_net;
+  TH1D * accept_yield_pass;
+
   TH1D * recoEff_pt_pass[nBins];
   TH1D * recoEff_pt_net[nBins];
   TH1D * recoEff_pt[nBins];  
@@ -146,6 +153,12 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
     yReso[k] = new TH1D(Form("yReso_%d_%d",c.getCentBinLow(k), c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.1,0.1);
   }
+  accept_pt_pass = new TH1D("accept_pt_pass","",s.nZPtBins-1,s.zPtBins);
+  accept_pt_net = new TH1D("accept_pt_net","",s.nZPtBins-1,s.zPtBins);
+  accept_y_pass = new TH1D("accept_y_pass","",s.nZRapBins,-s.maxZRap,s.maxZRap);
+  accept_y_net = new TH1D("accept_y_net","",s.nZRapBins,-s.maxZRap,s.maxZRap);
+  accept_yield_pass = new TH1D("accept_yield_pass","",1,0,1);
+  accept_yield_net = new TH1D("accept_yield_net","",1,0,1);
 
   //starting looping over the file
   for(unsigned int f = 0; f<files.size(); f++){
@@ -164,6 +177,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
       if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
       hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus() , v.HFsumETMinus() ,3);   
 
+      double acceptWeight = vzRW.reweightFactor( v.bestvtxZ() ) * (v.weightLHE_gen(1080)/10000.0);
       double eventWeight = vzRW.reweightFactor( v.bestvtxZ() ) * vzRW.reweightFactorCent(hiBin) * c.findNcoll( hiBin ) * (v.weightLHE_gen(1080)/10000.0);//1080 is EPPS16
 
       for(unsigned int j = 0; j<v.candSize_gen(); j++){
@@ -172,6 +186,12 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         if(v.PID_gen()[j] != 23) continue;
         if(v.DecayID_gen()[j] != 23) continue;
 
+        //rapidity cut and acceptance stuff
+        if(TMath::Abs( v.y_gen()[j] ) > s.maxZRap) continue;
+        accept_yields_net->Fill( 0.5, acceptWeight); 
+        accept_y_net->Fill( v.y_gen()[j], acceptWeight); 
+        accept_pt_net->Fill( v.pt_gen()[j], acceptWeight); 
+ 
         //require both legs to be in acceptance
         if( TMath::Abs( v.EtaD1_gen()[j] ) > s.maxZRap ) continue;
         if( TMath::Abs( v.EtaD2_gen()[j] ) > s.maxZRap ) continue;
@@ -179,6 +199,10 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         //require both muons to be > 20 GeV
         if( v.pTD1_gen()[j] < s.minMuonPt ) continue;
         if( v.pTD2_gen()[j] < s.minMuonPt ) continue;
+
+        accept_yields_pass->Fill(0.5, acceptWeight);
+        accept_y_pass->Fill(v.y_gen()[j], acceptWeight);
+        accept_pt_pass->Fill(v.pt_gen()[j], acceptWeight);
 
         //Fill denominator 
         for(int k = 0; k<nBins; k++){ 
@@ -348,7 +372,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_U_pass[i]->SetDirectory(0);
   }
   for(int i = 0; i<nBins; i++){
-    forceConsistency(recoEff_U_pass[i], recoEff_net[i]);
+    forceConsistency(recoEff_D_pass[i], recoEff_net[i]);
     recoEff_D[i] = (TH2D*)recoEff_D_pass[i]->Clone(Form("recoEff_D_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     recoEff_D[i]->Divide(recoEff_net[i]);
     recoEff_D[i]->SetDirectory(0);
@@ -570,6 +594,25 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
     yReso[i]->Write();
   }
+
+  TH1D * accept_yields_ratio = (TH1D*)accept_yields_pass->Clone("accept_yields_ratio");
+  accept_yields_ratio->Divide(accept_yields_net);
+  accept_yields_ratio->Write();
+  
+  TH1D * accept_y_ratio = (TH1D*)accept_y_pass->Clone("accept_y_ratio");
+  accept_y_ratio->Divide(accept_y_net);
+  accept_y_ratio->Write();
+  
+  TH1D * accept_pt_ratio = (TH1D*)accept_pt_pass->Clone("accept_pt_ratio");
+  accept_pt_ratio->Divide(accept_pt_net);
+  accept_pt_ratio->Write();
+
+  accept_yields_pass->Write();
+  accept_yields_net->Write();
+  accept_pt_pass->Write();
+  accept_pt_net->Write();
+  accept_y_pass->Write();
+  accept_y_net->Write();
 
   output->Close();
 

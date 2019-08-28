@@ -312,8 +312,20 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   }
   }
 
-  if(isMu)
-
+ 
+  //forwarding some histograms into the output 
+  TH1D * mcStatRelErr[nBins];
+  TH1D * mcStatRelErr_pt;
+  TH1D * mcStatRelErr_y;
+  for(int i = 0; i<nBins; i++){
+    mcStatRelErr[i] = (TH1D*) data->Get(Form("yieldOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    out->cd();
+    mcStatRelErr[i]->Write();
+  } 
+  mcStatRelErr_pt = (TH1D*)data->Get("pTOS_withEff_RelStatErr_0_90");
+  mcStatRelErr_pt->Write();
+  mcStatRelErr_y = (TH1D*)data->Get("yOS_withEff_RelStatErr_0_90");
+  mcStatRelErr_y->Write();
 
 
   out->Close();

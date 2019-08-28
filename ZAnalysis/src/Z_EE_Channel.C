@@ -1,3 +1,4 @@
+#include "include/ElectronTnP.h"
 #include "include/HistNameHelper.h"
 #include "include/MCReweight.h"
 #include "include/electronEnergyScale.h"
@@ -13,6 +14,7 @@
 #include "TTree.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TH3D.h"
 #include "TMath.h"
 #include "TComplex.h"
 #include "TProfile.h"
@@ -26,13 +28,13 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   timer.Start();
   timer.StartSplit("Start Up");
 
-
   HistNameHelper h = HistNameHelper();
   ElectronSelector eSel = ElectronSelector();
   ElectronTriggerMatcher matcher = ElectronTriggerMatcher();
   ElecTrigObject eTrig = ElecTrigObject();
   ElectronEnergyScale energyScale = ElectronEnergyScale("data");
   ElectronEnergyScale energyScaleMC = ElectronEnergyScale("MC");
+
   Settings s = Settings();
   
   ZEfficiency zEff = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root", isMC);
@@ -40,6 +42,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   ZEfficiency zEffD = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root", isMC, -1);
   ZEfficiency zEffphotonU = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root", isMC, 2);
   ZEfficiency zEffphotonD = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root", isMC, -2);
+  
+  ElectronTnP sfs = ElectronTnP();
   
   MCReweight * vzRW;
   if(isMC) vzRW = new MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
@@ -72,18 +76,23 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TH1D * pTOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * pTOS_TauTau_withEff[nBins]; 
   TH1D * pTSS_TauTau_withEff[nBins]; 
+  TH1D * pTOS_withEff_RelStatErr[nBins];
   
   TH1D * yOS_withEff[nBins][5]; 
   TH1D * ySS_withEff[nBins][5]; 
   TH1D * yOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * yOS_TauTau_withEff[nBins]; 
   TH1D * ySS_TauTau_withEff[nBins]; 
+  TH1D * yOS_withEff_RelStatErr[nBins];
   
   TH1D * yieldOS_withEff[nBins][5]; 
   TH1D * yieldSS_withEff[nBins][5]; 
   TH1D * yieldOS_ptLT0p5acoLT0p001_withEff[nBins][5]; 
   TH1D * yieldOS_TauTau_withEff[nBins]; 
   TH1D * yieldSS_TauTau_withEff[nBins]; 
+  TH1D * yieldOS_withEff_RelStatErr[nBins];
+  
+  TH3D * candYVsPtForStat[nBins];
   
   TProfile * v2Num[nBins];
   TProfile * v2NumVsCent[3];
@@ -119,6 +128,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TH1D * lepPt;  
   TH1D * lepEta;
   TH1D * lepPhi;  
+  
+  const int cBins = 11;
+  double cBinsArray[cBins+1] = {0,10,20,40,60,80,100,120,140,160,180,200};
+  const int xBins = 16;
+  double xBinsArray[xBins+1] = {-2.4,-2.1,-1.8,-1.5,-1.2,-0.9,-0.6,-0.3,0.0,0.3,0.6,0.9,1.2,1.5,1.8,2.1,2.4};
 
 
   for(int i = 0; i<nBins; i++){
@@ -142,6 +156,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     }
     pTOS_TauTau_withEff[i] = new TH1D(Form("pTOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     pTSS_TauTau_withEff[i] = new TH1D(Form("pTSS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    pTOS_withEff_RelStatErr[i] = new TH1D(Form("pTOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
 
     int nRapBins = 14;
     for(int j = 0; j < (isMC ? 1 : 5); j++){
@@ -151,6 +166,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     }
     yOS_TauTau_withEff[i] = new TH1D(Form("yOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);
     ySS_TauTau_withEff[i] = new TH1D(Form("ySS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);
+    yOS_withEff_RelStatErr[i] = new TH1D(Form("yOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);   
     
     for(int j = 0; j < (isMC ? 1 : 5); j++){
       yieldOS_withEff[i][j] = new TH1D(Form("yieldOS_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
@@ -159,6 +175,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     }
     yieldOS_TauTau_withEff[i] = new TH1D(Form("yieldOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
     yieldSS_TauTau_withEff[i] = new TH1D(Form("yieldSS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    yieldOS_withEff_RelStatErr[i] = new TH1D(Form("yieldOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    candYVsPtForStat[i] = new TH3D(Form("candYVsPtForStat_withEff2_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",xBins,xBinsArray,s.nZPtBins-1,s.zPtBins,cBins,cBinsArray);
 
     v2Num[i] = new TProfile(Form("v2Num_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     v2Denom[i] = new TProfile(Form("v2Denom_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
@@ -215,7 +233,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   int phfCoincFilter2Th4;
   int pclusterCompatibilityFilter;
 
-  int HLT_DoubleEle10;
+  //int HLT_DoubleEle10;
   int HLT_SingleEle20;
 
   std::vector< float > * elePt = 0;
@@ -255,7 +273,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     if(f%5 == 0)  std::cout << f << "/" << files.size() << std::endl;
 
     TTree * hltTree = (TTree*)in->Get("hltanalysis/HltTree");
-    hltTree->SetBranchAddress("HLT_HIDoubleEle10GsfMass50_v1",&HLT_DoubleEle10); 
+//    hltTree->SetBranchAddress("HLT_HIDoubleEle10GsfMass50_v1",&HLT_DoubleEle10); 
     hltTree->SetBranchAddress("HLT_HIEle20Gsf_v1",&HLT_SingleEle20); 
 
     TTree * eTree = (TTree*)in->Get("ggHiNtuplizerGED/EventTree");
@@ -306,9 +324,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     //L1Tree->SetBranchAddress("egEt", &(eTrig.L1egEt));
 
     TTree * ZDCTree;
-    ZDCTree = (TTree*)in->Get("rechitanalyzerpp/zdcrechit");
-    ZDCTree->SetBranchAddress("n",&ZDC_n);
-    ZDCTree->SetBranchAddress("e",ZDC_E);
+    if(!isMC){
+      ZDCTree = (TTree*)in->Get("rechitanalyzerpp/zdcrechit");
+      ZDCTree->SetBranchAddress("n",&ZDC_n);
+      ZDCTree->SetBranchAddress("e",ZDC_E);
+    }
 
     TTree * HLTObjTree;
     HLTObjTree = (TTree*)in->Get("hltobject/HLT_HIEle20Gsf_v");
@@ -316,6 +336,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     HLTObjTree->SetBranchAddress("phi",&(eTrig.HLTPhi));
     HLTObjTree->SetBranchAddress("pt",&(eTrig.HLTPt));
 
+    std::cout << "branches set" << std::endl;
     bool areAllEleBranchesOn = true;
     for(unsigned int i = 0; i < eTree->GetEntries(); i++){
       timer.StartSplit("Checking Evt Selections");
@@ -456,12 +477,20 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
                     yieldOS_withEff[k][l]->Fill( 0.5, 1.0/efficiencyArray[l] * eventWeight );
                   }
   
-                  lepPt->Fill( elePt->at(goodElectrons.at(j)) ,eventWeight);
-                  lepPt->Fill( elePt->at(goodElectrons.at(j2)) ,eventWeight);
-                  lepEta->Fill( eleEta->at(goodElectrons.at(j)) ,eventWeight);
-                  lepEta->Fill( eleEta->at(goodElectrons.at(j2)) ,eventWeight);
-                  lepPhi->Fill( elePhi->at(goodElectrons.at(j)) ,eventWeight);
-                  lepPhi->Fill( elePhi->at(goodElectrons.at(j2)) ,eventWeight);
+                  float scaleFactor1 = 1.0;
+                  float scaleFactor2 = 1.0;
+                  if(isMC){
+                    scaleFactor1 = sfs.getESF(hiBin, elePt->at(goodElectrons.at(j)), eleSCEta->at(goodElectrons.at(j)));
+                    scaleFactor2 = sfs.getESF(hiBin, elePt->at(goodElectrons.at(j2)), eleSCEta->at(goodElectrons.at(j2)));
+                  }
+                  lepPt->Fill( elePt->at(goodElectrons.at(j)) ,eventWeight * scaleFactor1);
+                  lepPt->Fill( elePt->at(goodElectrons.at(j2)) ,eventWeight * scaleFactor2);
+                  lepEta->Fill( eleEta->at(goodElectrons.at(j)) ,eventWeight * scaleFactor1);
+                  lepEta->Fill( eleEta->at(goodElectrons.at(j2)) ,eventWeight * scaleFactor2);
+                  lepPhi->Fill( elePhi->at(goodElectrons.at(j)) ,eventWeight * scaleFactor1);
+                  lepPhi->Fill( elePhi->at(goodElectrons.at(j2)) ,eventWeight * scaleFactor2);
+                 
+                  candYVsPtForStat[k]->Fill(Zcand.Rapidity(), Zcand.Pt(), hiBin, eventWeight );
               
                   yields->Fill(k,eventWeight/efficiency);
                   massVsPt[k]->Fill(Zcand.M(), Zcand.Pt()); 
@@ -628,11 +657,49 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     in->Close();
   }
   
+
+  TFile * output;
+  if(!isMC){
+    if(!doZDC) output = new TFile(Form("unmergedOutputs/Z2ee_%s_hiBin%d_%d_%d.root",outputTag.c_str(), hiBinVar, (int)isMC, jobNumber),"recreate");
+    else       output = new TFile(Form("unmergedOutputs/Z2ee_%s_hiBinZDC%d_%d_%d.root",outputTag.c_str(), hiBinVar, (int)isMC, jobNumber),"recreate");
+  }else{
+    output = new TFile(Form("unmergedOutputs/Z2ee_%s_%d_%d.root",outputTag.c_str(), (int)isMC, jobNumber),"recreate");
+  }
   for(int i = 0; i<nBins; i++){
     h.makeDifferential( candPt[i]);
     h.makeDifferential( candEta[i]);
     h.makeDifferential( candY[i]);
-  
+
+    double errSum = 0.0;
+    double ptSum[50] = {0};
+    double ySum[50] = {0};
+    for(int x = 1; x<xBins+1; x++){
+      for(int y = 1; y<s.nZPtBins; y++){
+        for(int z = 1; z<cBins+1; z++){
+          float rap = candYVsPtForStat[i]->GetXaxis()->GetBinCenter(x);
+          float pt = candYVsPtForStat[i]->GetYaxis()->GetBinCenter(y);
+          float cent = candYVsPtForStat[i]->GetZaxis()->GetBinCenter(z);
+          errSum += TMath::Power( candYVsPtForStat[i]->GetBinContent( candYVsPtForStat[i]->GetBin(x,y,z) ) * zEff.getEfficiencyRelStatErr( rap , pt , cent ) / zEff.getEfficiency( rap , pt , cent ), 2);
+          ySum[x]  += TMath::Power( candYVsPtForStat[i]->GetBinContent( candYVsPtForStat[i]->GetBin(x,y,z) ) * zEff.getEfficiencyRelStatErr( rap , pt , cent ) / zEff.getEfficiency( rap , pt , cent ), 2); 
+          ptSum[y] += TMath::Power( candYVsPtForStat[i]->GetBinContent( candYVsPtForStat[i]->GetBin(x,y,z) ) * zEff.getEfficiencyRelStatErr( rap , pt , cent ) / zEff.getEfficiency( rap , pt , cent ), 2);
+        }
+      }
+    }
+    for(int x = 0; x < pTOS_withEff_RelStatErr[i]->GetSize(); x++){
+      float pt = pTOS_withEff_RelStatErr[i]->GetBinCenter(x);
+      pTOS_withEff_RelStatErr[i]->SetBinContent(x, TMath::Sqrt(ptSum[candYVsPtForStat[i]->GetYaxis()->FindBin(pt)])/pTOS_withEff[i][0]->GetBinContent(pTOS_withEff[i][0]->FindBin(pt)));
+    }
+    for(int x = 0; x < yOS_withEff_RelStatErr[i]->GetSize(); x++){
+      float rap = yOS_withEff_RelStatErr[i]->GetBinCenter(x);
+      yOS_withEff_RelStatErr[i]->SetBinContent(x, TMath::Sqrt(ySum[candYVsPtForStat[i]->GetXaxis()->FindBin(rap)])/yOS_withEff[i][0]->GetBinContent(yOS_withEff[i][0]->FindBin(rap)));
+    }
+    yieldOS_withEff_RelStatErr[i]->SetBinContent(1, TMath::Sqrt(errSum)/yieldOS_withEff[i][0]->GetBinContent(1) );
+
+    pTOS_withEff_RelStatErr[i]->Write(); 
+    yOS_withEff_RelStatErr[i]->Write();
+    yieldOS_withEff_RelStatErr[i]->Write();
+    candYVsPtForStat[i]->Write();
+    
     for(int j = 0; j< (isMC ? 1 : 5); j++){
       h.makeDifferential( pTOS_withEff[i][j]);
       h.makeDifferential( pTSS_withEff[i][j]);
@@ -648,17 +715,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     }
     h.makeDifferential( yOS_TauTau_withEff[i]);
     h.makeDifferential( ySS_TauTau_withEff[i]);
-  }
-  
 
-  TFile * output;
-  if(!isMC){
-    if(!doZDC) output = new TFile(Form("unmergedOutputs/Z2ee_%s_hiBin%d_%d_%d.root",outputTag.c_str(), hiBinVar, (int)isMC, jobNumber),"recreate");
-    else       output = new TFile(Form("unmergedOutputs/Z2ee_%s_hiBinZDC%d_%d_%d.root",outputTag.c_str(), hiBinVar, (int)isMC, jobNumber),"recreate");
-  }else{
-    output = new TFile(Form("unmergedOutputs/Z2ee_%s_%d_%d.root",outputTag.c_str(), (int)isMC, jobNumber),"recreate");
-  }
-  for(int i = 0; i<nBins; i++){
     massPeakOS[i]->Write();
     massPeakSS[i]->Write();
     massPeakOS_withEff[i]->Write();
@@ -782,8 +839,8 @@ int main(int argc, const char* argv[])
   }
    
   doZ2EE(listOfFiles, job, isMC, outputTag, 0);
-  doZ2EE(listOfFiles, job, isMC, outputTag, 0, true);
   if(!isMC){
+    doZ2EE(listOfFiles, job, isMC, outputTag, 0, true);
     doZ2EE(listOfFiles, job, isMC, outputTag, 1);
     doZ2EE(listOfFiles, job, isMC, outputTag, 2);
   }

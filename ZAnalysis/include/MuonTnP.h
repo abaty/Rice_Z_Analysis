@@ -8,6 +8,7 @@ class MuonTnP{
 
 public:
  float getZSF(float pt1, float eta1, float pt2, float eta2, int idx);
+ float getMuonSF(float pt1, float eta1);
 
 private:
  inline float quad2(float x, float y);
@@ -26,6 +27,14 @@ inline float MuonTnP::quad2(float x, float y){
 
 inline float MuonTnP::quad(float x, float y){
   return TMath::Sqrt(quad2(x,y));
+}
+
+float MuonTnP::getMuonSF(float pt1, float eta1){
+  float trackSF = 1.0;
+  float idSF = tnp_weight_muid_pbpb(eta1, 0);
+  float hltSF = tnp_weight_trig_pbpb(pt1, eta1, 0);
+  return trackSF * idSF * hltSF;
+
 }
 
 float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int idx){

@@ -7,6 +7,7 @@
 #include "include/Settings.h"
 #include "include/ZEfficiency.h"
 #include "include/HistNameHelper.h"
+#include "include/MuonTnP.h"
 
 //ROOT stuff
 #include "TLorentzVector.h"
@@ -32,6 +33,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   ZEfficiency zEffD = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, -1);
   ZEfficiency zEffphotonU = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, 2);
   ZEfficiency zEffphotonD = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, -2);
+
+  MuonTnP sfs = MuonTnP();
 
   MCReweight * vzRW;
   if(isMC) vzRW = new MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
@@ -290,13 +293,18 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
                   yieldOS_withEff[k][l]->Fill( 0.5, 1.0/efficiencyArray[l] * eventWeight );
                 }
                 candYVsPtForStat[k]->Fill(v.y()[j], v.pT()[j], hiBin, eventWeight );
-               
-                lepPt->Fill( v.pTD1()[j] ,eventWeight);
-                lepPt->Fill( v.pTD2()[j] ,eventWeight);
-                lepEta->Fill( v.EtaD1()[j] ,eventWeight);
-                lepEta->Fill( v.EtaD2()[j] ,eventWeight);
-                lepPhi->Fill( v.PhiD1()[j] ,eventWeight);
-                lepPhi->Fill( v.PhiD2()[j] ,eventWeight);
+   
+                float scaleFactor1 = 1.0;
+                float scaleFactor2 = 1.0;
+                if(isMC) scaleFactor1 = sfs.getMuonSF(v.EtaD1()[j], v.pTD1()[j]);
+                if(isMC) scaleFactor2 = sfs.getMuonSF(v.EtaD2()[j], v.pTD2()[j]);
+                             
+                lepPt->Fill( v.pTD1()[j] ,eventWeight*scaleFactor1);
+                lepPt->Fill( v.pTD2()[j] ,eventWeight*scaleFactor2);
+                lepEta->Fill( v.EtaD1()[j] ,eventWeight*scaleFactor1);
+                lepEta->Fill( v.EtaD2()[j] ,eventWeight*scaleFactor2);
+                lepPhi->Fill( v.PhiD1()[j] ,eventWeight*scaleFactor1);
+                lepPhi->Fill( v.PhiD2()[j] ,eventWeight*scaleFactor2);
  
                 yields->Fill(k,1.0/efficiency * eventWeight);
                 candPt[k]->Fill(v.pT()[j]);
@@ -644,9 +652,9 @@ int main(int argc, const char* argv[])
    
   doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 0, job, nJobs);
   doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 0 , job, nJobs);
-  doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 0 , job, nJobs, true);//ZDC variation
 
   if(!isMC){
+    doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 0 , job, nJobs, true);//ZDC variation
     doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 1, job, nJobs);
     doZ2mumu(listOfFiles, s.maxZRapEle,isMC, s, outFile, isTest, 1 , job, nJobs);
     doZ2mumu(listOfFiles, s.maxZRap, isMC, s, outFile, isTest, 2, job, nJobs);

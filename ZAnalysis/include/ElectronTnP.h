@@ -13,6 +13,7 @@ public:
   ElectronTnP();
   ~ElectronTnP();
   float getZSF(int hiBin, float pt1, float eta, float pt2, float eta2, int idx);
+  float getESF(int hiBin, float pt1, float eta1);
 
 private:
 
@@ -53,6 +54,14 @@ inline float ElectronTnP::quad(float x, float y){
 
 inline float ElectronTnP::quad2(float x, float y){
   return x*x + y*y;
+}
+
+float ElectronTnP::getESF(int hiBin, float pt1, float eta1){
+  float recoSF1 = getSingleSF_Reco(hiBin, pt1, eta1);
+  float idSF1 = getSingleSF(hiBin, pt1, eta1);
+  float trigSF1 = getSingleSF_HLT(pt1, eta1, true)/getSingleSF_HLT(pt1, eta1, false);
+
+  return recoSF1 * idSF1 * trigSF1;
 }
 
 float ElectronTnP::getSFFromGraph(float x, TGraphAsymmErrors * g, int idx){

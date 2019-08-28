@@ -96,6 +96,16 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
     }
   }
 
+  std::cout << "MC stat uncertainties now!" << std::endl;
+  TH1D * mcStatRelErr[nBins];
+  TH1D * mcStatRelErr_pt;
+  TH1D * mcStatRelErr_y;
+  for(int i = 0; i<nBins; i++){
+    mcStatRelErr[i] = (TH1D*) inFile[0]->Get(Form("yieldOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+  } 
+  mcStatRelErr_pt = (TH1D*)inFile[0]->Get("pTOS_withEff_RelStatErr_0_90");
+  mcStatRelErr_y = (TH1D*)inFile[0]->Get("yOS_withEff_RelStatErr_0_90");
+
   //get pt smearing effect
   std::cout << "Pt Smearing now!" << std::endl;
   std::vector< std::string > label21;
@@ -119,6 +129,7 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   TH1D * wError[nBins][4];
   TH1D * ttbarError[nBins][4];
   TH1D * tauError[nBins][4];
+  TH1D * mcStatError[nBins][4];
   TH1D * totalError[nBins][4];
 
 
@@ -143,10 +154,19 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       wError[i][j] = (TH1D*) backgroundYields[i][j][0]->Clone(Form("%s_wError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
       ttbarError[i][j] = (TH1D*) backgroundYields[i][j][1]->Clone(Form("%s_ttbarError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
       tauError[i][j] = (TH1D*) backgroundYields[i][j][2]->Clone(Form("%s_tauError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
-     
+    
+      //MC Stats
+      if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j] = (TH1D*) mcStatRelErr_pt->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i))); 
+      if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j] = (TH1D*) mcStatRelErr_y->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i))); 
+      if(j==3) mcStatError[i][j] = (TH1D*) mcStatRelErr[i]->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
+
       totalError[i][j] = (TH1D*)effError[i][j]->Clone(Form("%s_totalError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
       if(j!=1) h.addInQuadrature3( totalError[i][j], acoError[i][j], hfError[i][j]);
       if(j==1) h.addInQuadrature4( totalError[i][j], acoError[i][j], hfError[i][j], ptSmearError[i][j]);
+      
+      if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
+      if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
+      if(j==3) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]);
     }        
   }
 
@@ -159,7 +179,8 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   TH1D * acoErrorByCent = new TH1D("acoErrorByCent","",9,0,9);
   TH1D * hfErrorByCent = new TH1D("hfErrorByCent","",9,0,9);
   TH1D * totalErrorByCent = new TH1D("totalErrorByCent","",9,0,9);
-  
+  TH1D * mcStatErrorByCent = new TH1D("mcStatErrorByCent","",9,0,9); 
+ 
   for(int i = 0; i<nBins; i++){
     for(int j = 1; j<4; j++){
       effError[i][j]->Write();
@@ -168,6 +189,9 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       hfUError[i][j]->Write();
       hfDError[i][j]->Write();
       if(j==1) ptSmearError[i][j]->Write();
+      if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j]->Write(); 
+      if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j]->Write(); 
+      if(j==3) mcStatError[i][j]->Write();
       wError[i][j]->Write();
       ttbarError[i][j]->Write();
       tauError[i][j]->Write();
@@ -183,6 +207,7 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
         effErrorByCent->SetBinContent( effErrorByCent->FindBin(binIdx) , effError[i][j]->GetBinContent(1));
         acoErrorByCent->SetBinContent( acoErrorByCent->FindBin(binIdx) , acoError[i][j]->GetBinContent(1));
         hfErrorByCent->SetBinContent( hfErrorByCent->FindBin(binIdx) , hfError[i][j]->GetBinContent(1));
+        mcStatErrorByCent->SetBinContent( mcStatErrorByCent->FindBin(binIdx), mcStatError[i][j]->GetBinContent(1));
         totalErrorByCent->SetBinContent( totalErrorByCent->FindBin(binIdx) , totalError[i][j]->GetBinContent(1));
       }
  
@@ -205,7 +230,12 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
         ptSmearError[i][j]->SetLineColor(kViolet);
         ptSmearError[i][j]->Draw("same");
       }
-    
+
+      if( ( (j==1 || j==2) && (c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) ) || j==3 ){
+        mcStatError[i][j]->SetLineColor(kOrange);
+        mcStatError[i][j]->Draw("same");
+      }     
+
       TLegend * leg = new TLegend(0.3,0.6,0.8,0.9);
       leg->SetFillStyle(0);
       leg->SetBorderSize(0);
@@ -218,6 +248,9 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       leg->AddEntry(acoError[i][j],"EM Background Cut","l");
       leg->AddEntry(hfError[i][j], "HF Uncert. (N_{MB} + centrality)","l");
       if(j==1) leg->AddEntry(ptSmearError[i][j], "p_{T} Smearing","l");
+      if( ( (j==1 || j==2) && (c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) ) || j==3 ){
+        leg->AddEntry(mcStatError[i][j],"MC eff stat uncertainty","l");
+      }
       leg->AddEntry((TObject*)0,"MC Background uncert negligible","");
       if(j==3) leg->AddEntry((TObject*)0,"Glauber Uncert not shown","");
       leg->Draw("same");
@@ -259,6 +292,8 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   acoErrorByCent->Draw("same");
   hfErrorByCent->SetLineColor(kGreen);
   hfErrorByCent->Draw("same");
+  mcStatErrorByCent->SetLineColor(kOrange);
+  mcStatErrorByCent->Draw("same");
   
   TLegend * leg = new TLegend(0.3,0.6,0.8,0.9);
   leg->SetFillStyle(0);
@@ -271,6 +306,7 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   leg->AddEntry(effErrorByCent, "Lepton Reco","l");
   leg->AddEntry(acoErrorByCent,"EM Background Cut","l");
   leg->AddEntry(hfErrorByCent, "HF Uncert. (N_{MB} + centrality)","l");
+  leg->AddEntry(mcStatErrorByCent,"MC eff stat uncertainty","l");
   leg->AddEntry((TObject*)0,"MC Background uncert negligible","");
   leg->AddEntry((TObject*)0,"Glauber Uncert not shown","");
   leg->Draw("same");
