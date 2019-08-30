@@ -53,12 +53,18 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
   int hiBin;
 
-  TH1D * accept_pt_pass[120];
-  TH1D * accept_y_pass[120];
-  TH1D * accept_yields_pass[120];
-  TH1D * accept_pt_net[120];
-  TH1D * accept_y_net[120];
-  TH1D * accept_yields_net[120];
+  TH1D * accept24_pt_pass[120];
+  TH1D * accept24_y_pass[120];
+  TH1D * accept24_yields_pass[120];
+  TH1D * accept24_pt_net[120];
+  TH1D * accept24_y_net[120];
+  TH1D * accept24_yields_net[120];
+  TH1D * accept21_pt_pass[120];
+  TH1D * accept21_y_pass[120];
+  TH1D * accept21_yields_pass[120];
+  TH1D * accept21_pt_net[120];
+  TH1D * accept21_y_net[120];
+  TH1D * accept21_yields_net[120];
 
   TH1D * recoEff_pt_pass[nBins];
   TH1D * recoEff_pt_net[nBins];
@@ -157,12 +163,18 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     yReso[k] = new TH1D(Form("yReso_%d_%d",c.getCentBinLow(k), c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.1,0.1);
   }
   for(int i = 0; i<weightHelper.getSize(); i++){
-    accept_pt_pass[i] = new TH1D(Form("accept_pt_pass_%d",i),"",s.nZPtBins-1,s.zPtBins);
-    accept_pt_net[i] = new TH1D(Form("accept_pt_net_%d",i),"",s.nZPtBins-1,s.zPtBins);
-    accept_y_pass[i] = new TH1D(Form("accept_y_pass_%d",i),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
-    accept_y_net[i] = new TH1D(Form("accept_y_net_%d",i),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
-    accept_yields_pass[i] = new TH1D(Form("accept_yields_pass_%d",i),"",1,0,1);
-    accept_yields_net[i] = new TH1D(Form("accept_yields_net_%d",i),"",1,0,1);
+    accept24_pt_pass[i] = new TH1D(Form("accept24_pt_pass_%d",i),"",s.nZPtBins-1,s.zPtBins);
+    accept24_pt_net[i] = new TH1D(Form("accept24_pt_net_%d",i),"",s.nZPtBins-1,s.zPtBins);
+    accept24_y_pass[i] = new TH1D(Form("accept24_y_pass_%d",i),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    accept24_y_net[i] = new TH1D(Form("accept24_y_net_%d",i),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    accept24_yields_pass[i] = new TH1D(Form("accept24_yields_pass_%d",i),"",1,0,1);
+    accept24_yields_net[i] = new TH1D(Form("accept24_yields_net_%d",i),"",1,0,1);
+    accept21_pt_pass[i] = new TH1D(Form("accept21_pt_pass_%d",i),"",s.nZPtBins-1,s.zPtBins);
+    accept21_pt_net[i] = new TH1D(Form("accept21_pt_net_%d",i),"",s.nZPtBins-1,s.zPtBins);
+    accept21_y_pass[i] = new TH1D(Form("accept21_y_pass_%d",i),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
+    accept21_y_net[i] = new TH1D(Form("accept21_y_net_%d",i),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
+    accept21_yields_pass[i] = new TH1D(Form("accept21_yields_pass_%d",i),"",1,0,1);
+    accept21_yields_net[i] = new TH1D(Form("accept21_yields_net_%d",i),"",1,0,1);
   }
 
   //starting looping over the file
@@ -198,9 +210,17 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         if(TMath::Abs( v.y_gen()[j] ) > s.maxZRap) continue;
 
         for(int w = 0; w<weightHelper.getSize(); w++){
-          accept_yields_net[w]->Fill( 0.5, acceptWeight[w]); 
-          accept_y_net[w]->Fill( v.y_gen()[j], acceptWeight[w]); 
-          accept_pt_net[w]->Fill( v.pT_gen()[j], acceptWeight[w]); 
+          accept24_yields_net[w]->Fill( 0.5, acceptWeight[w]); 
+          accept24_y_net[w]->Fill( v.y_gen()[j], acceptWeight[w]); 
+          accept24_pt_net[w]->Fill( v.pT_gen()[j], acceptWeight[w]); 
+        }
+        
+        if(TMath::Abs( v.y_gen()[j] ) < s.maxZRapEle){
+          for(int w = 0; w<weightHelper.getSize(); w++){
+            accept21_yields_net[w]->Fill( 0.5, acceptWeight[w]); 
+            accept21_y_net[w]->Fill( v.y_gen()[j], acceptWeight[w]); 
+            accept21_pt_net[w]->Fill( v.pT_gen()[j], acceptWeight[w]); 
+          }
         }
  
         //require both legs to be in acceptance
@@ -212,9 +232,17 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         if( v.pTD2_gen()[j] < s.minMuonPt ) continue;
 
         for(int w = 0; w<weightHelper.getSize(); w++){
-          accept_yields_pass[w]->Fill(0.5, acceptWeight[w]);
-          accept_y_pass[w]->Fill(v.y_gen()[j], acceptWeight[w]);
-          accept_pt_pass[w]->Fill(v.pT_gen()[j], acceptWeight[w]);
+          accept24_yields_pass[w]->Fill(0.5, acceptWeight[w]);
+          accept24_y_pass[w]->Fill(v.y_gen()[j], acceptWeight[w]);
+          accept24_pt_pass[w]->Fill(v.pT_gen()[j], acceptWeight[w]);
+        }
+
+        if( TMath::Abs( v.y_gen()[j] ) < s.maxZRapEle && TMath::Abs( v.EtaD1_gen()[j] ) < s.maxZRapEle && TMath::Abs( v.EtaD2_gen()[j] ) < s.maxZRapEle){
+          for(int w = 0; w<weightHelper.getSize(); w++){
+            accept21_yields_pass[w]->Fill(0.5, acceptWeight[w]);
+            accept21_y_pass[w]->Fill(v.y_gen()[j], acceptWeight[w]);
+            accept21_pt_pass[w]->Fill(v.pT_gen()[j], acceptWeight[w]);
+          }
         }
 
         //Fill denominator 
@@ -608,94 +636,262 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     yReso[i]->Write();
   }
 
-  TH1D * accept_yields_ratio[120];
-  TH1D * accept_y_ratio[120];
-  TH1D * accept_pt_ratio[120];
-  TH1D * accept_scaleVariation_yields_ratio[120];
-  TH1D * accept_scaleVariation_y_ratio[120];
-  TH1D * accept_scaleVariation_pt_ratio[120];
-  TH1D * accept_nPDFVariation_yields_ratio[120];
-  TH1D * accept_nPDFVariation_y_ratio[120];
-  TH1D * accept_nPDFVariation_pt_ratio[120];
-  TH1D * accept_nPDFVariationMax_yields_ratio;
-  TH1D * accept_nPDFVariationMax_y_ratio;
-  TH1D * accept_nPDFVariationMax_pt_ratio;
+  TH1D * accept24_yields_ratio[120];
+  TH1D * accept24_y_ratio[120];
+  TH1D * accept24_pt_ratio[120];
+  TH1D * accept24_scaleVariation_yields_ratio[120];
+  TH1D * accept24_scaleVariation_y_ratio[120];
+  TH1D * accept24_scaleVariation_pt_ratio[120];
+  TH1D * accept24_nPDFVariation_yields_ratio[120];
+  TH1D * accept24_nPDFVariation_y_ratio[120];
+  TH1D * accept24_nPDFVariation_pt_ratio[120];
+  TH1D * accept24_nPDFVariationMax_yields_ratio;
+  TH1D * accept24_nPDFVariationMax_y_ratio;
+  TH1D * accept24_nPDFVariationMax_pt_ratio;
   for(int w = 0; w<weightHelper.getSize(); w++){
-    accept_yields_ratio[w] = (TH1D*)accept_yields_pass[w]->Clone(Form("accept_yields_ratio_%d",w));
-    accept_yields_ratio[w]->Divide(accept_yields_net[w]);
-    accept_yields_ratio[w]->Write();
+    accept24_yields_ratio[w] = (TH1D*)accept24_yields_pass[w]->Clone(Form("accept24_yields_ratio_%d",w));
+    accept24_yields_ratio[w]->Divide(accept24_yields_net[w]);
+    accept24_yields_ratio[w]->Write();
     
-    accept_y_ratio[w] = (TH1D*)accept_y_pass[w]->Clone(Form("accept_y_ratio_%d",w));
-    accept_y_ratio[w]->Divide(accept_y_net[w]);
-    accept_y_ratio[w]->Write();
+    accept24_y_ratio[w] = (TH1D*)accept24_y_pass[w]->Clone(Form("accept24_y_ratio_%d",w));
+    accept24_y_ratio[w]->Divide(accept24_y_net[w]);
+    accept24_y_ratio[w]->Write();
     
-    accept_pt_ratio[w] = (TH1D*)accept_pt_pass[w]->Clone(Form("accept_pt_ratio_%d",w));
-    accept_pt_ratio[w]->Divide(accept_pt_net[w]);
-    accept_pt_ratio[w]->Write();
+    accept24_pt_ratio[w] = (TH1D*)accept24_pt_pass[w]->Clone(Form("accept24_pt_ratio_%d",w));
+    accept24_pt_ratio[w]->Divide(accept24_pt_net[w]);
+    accept24_pt_ratio[w]->Write();
 
-    accept_yields_pass[w]->Write();
-    accept_yields_net[w]->Write();
-    accept_pt_pass[w]->Write();
-    accept_pt_net[w]->Write();
-    accept_y_pass[w]->Write();
-    accept_y_net[w]->Write();
+    //accept24_yields_pass[w]->Write();
+    //accept24_yields_net[w]->Write();
+    //accept24_pt_pass[w]->Write();
+    //accept24_pt_net[w]->Write();
+    //accept24_y_pass[w]->Write();
+    //accept24_y_net[w]->Write();
 
     //scale variations
     if(w>=3 && w<=8){
-      accept_scaleVariation_yields_ratio[w] = (TH1D*) accept_yields_ratio[w]->Clone(Form("accept_scaleVariation_yields_%d",w));
-      accept_scaleVariation_yields_ratio[w]->Divide( accept_yields_ratio[2] );
-      accept_scaleVariation_yields_ratio[w]->Write();
-      accept_scaleVariation_y_ratio[w] = (TH1D*) accept_y_ratio[w]->Clone(Form("accept_scaleVariation_y_%d",w));
-      accept_scaleVariation_y_ratio[w]->Divide( accept_y_ratio[2] );
-      accept_scaleVariation_y_ratio[w]->Write();
-      accept_scaleVariation_pt_ratio[w] = (TH1D*) accept_pt_ratio[w]->Clone(Form("accept_scaleVariation_pt_%d",w));
-      accept_scaleVariation_pt_ratio[w]->Divide( accept_pt_ratio[2] );
-      accept_scaleVariation_pt_ratio[w]->Write();
+      accept24_scaleVariation_yields_ratio[w] = (TH1D*) accept24_yields_ratio[w]->Clone(Form("accept24_scaleVariation_yields_%d",w));
+      accept24_scaleVariation_yields_ratio[w]->Divide( accept24_yields_ratio[2] );
+      accept24_scaleVariation_yields_ratio[w]->Write();
+      accept24_scaleVariation_y_ratio[w] = (TH1D*) accept24_y_ratio[w]->Clone(Form("accept24_scaleVariation_y_%d",w));
+      accept24_scaleVariation_y_ratio[w]->Divide( accept24_y_ratio[2] );
+      accept24_scaleVariation_y_ratio[w]->Write();
+      accept24_scaleVariation_pt_ratio[w] = (TH1D*) accept24_pt_ratio[w]->Clone(Form("accept24_scaleVariation_pt_%d",w));
+      accept24_scaleVariation_pt_ratio[w]->Divide( accept24_pt_ratio[2] );
+      accept24_scaleVariation_pt_ratio[w]->Write();
     }
     if(w==1 || w==2 || w>8){
-      accept_nPDFVariation_yields_ratio[w] = (TH1D*) accept_yields_ratio[w]->Clone(Form("accept_nPDFVariation_yields_%d",w));
-      accept_nPDFVariation_yields_ratio[w]->Divide( accept_yields_ratio[0] );
-      accept_nPDFVariation_yields_ratio[w]->Write();
-      accept_nPDFVariation_y_ratio[w] = (TH1D*) accept_y_ratio[w]->Clone(Form("accept_nPDFVariation_y_%d",w));
-      accept_nPDFVariation_y_ratio[w]->Divide( accept_y_ratio[0] );
-      accept_nPDFVariation_y_ratio[w]->Write();
-      accept_nPDFVariation_pt_ratio[w] = (TH1D*) accept_pt_ratio[w]->Clone(Form("accept_nPDFVariation_pt_%d",w));
-      accept_nPDFVariation_pt_ratio[w]->Divide( accept_pt_ratio[0] );
-      accept_nPDFVariation_pt_ratio[w]->Write();
+      accept24_nPDFVariation_yields_ratio[w] = (TH1D*) accept24_yields_ratio[w]->Clone(Form("accept24_nPDFVariation_yields_%d",w));
+      accept24_nPDFVariation_yields_ratio[w]->Divide( accept24_yields_ratio[0] );
+      accept24_nPDFVariation_yields_ratio[w]->Write();
+      accept24_nPDFVariation_y_ratio[w] = (TH1D*) accept24_y_ratio[w]->Clone(Form("accept24_nPDFVariation_y_%d",w));
+      accept24_nPDFVariation_y_ratio[w]->Divide( accept24_y_ratio[0] );
+      accept24_nPDFVariation_y_ratio[w]->Write();
+      accept24_nPDFVariation_pt_ratio[w] = (TH1D*) accept24_pt_ratio[w]->Clone(Form("accept24_nPDFVariation_pt_%d",w));
+      accept24_nPDFVariation_pt_ratio[w]->Divide( accept24_pt_ratio[0] );
+      accept24_nPDFVariation_pt_ratio[w]->Write();
  
       if(w>8){
         if(w==9){
-          accept_nPDFVariationMax_yields_ratio = (TH1D*) accept_nPDFVariation_yields_ratio[w]->Clone("accept_nPDFVariationMax_yields_ratio");
-          accept_nPDFVariationMax_yields_ratio->Reset();
-          accept_nPDFVariationMax_y_ratio = (TH1D*) accept_nPDFVariation_y_ratio[w]->Clone("accept_nPDFVariationMax_y_ratio");
-          accept_nPDFVariationMax_y_ratio->Reset();
-          accept_nPDFVariationMax_pt_ratio = (TH1D*) accept_nPDFVariation_pt_ratio[w]->Clone("accept_nPDFVariationMax_pt_ratio");
-          accept_nPDFVariationMax_pt_ratio->Reset();
+          accept24_nPDFVariationMax_yields_ratio = (TH1D*) accept24_nPDFVariation_yields_ratio[w]->Clone("accept24_nPDFVariationMax_yields_ratio");
+          accept24_nPDFVariationMax_yields_ratio->Reset();
+          accept24_nPDFVariationMax_y_ratio = (TH1D*) accept24_nPDFVariation_y_ratio[w]->Clone("accept24_nPDFVariationMax_y_ratio");
+          accept24_nPDFVariationMax_y_ratio->Reset();
+          accept24_nPDFVariationMax_pt_ratio = (TH1D*) accept24_nPDFVariation_pt_ratio[w]->Clone("accept24_nPDFVariationMax_pt_ratio");
+          accept24_nPDFVariationMax_pt_ratio->Reset();
         }
-        for(int bin = 0; bin<accept_nPDFVariation_yields_ratio[w]->GetSize(); bin++){
-          float content = TMath::Abs( 1 - accept_nPDFVariation_yields_ratio[w]->GetBinContent(bin) );
-          if(1 + content > accept_nPDFVariationMax_yields_ratio->GetBinContent(bin)){
-            accept_nPDFVariationMax_yields_ratio->SetBinContent(bin, 1+content);
+        for(int bin = 0; bin<accept24_nPDFVariation_yields_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept24_nPDFVariation_yields_ratio[w]->GetBinContent(bin) );
+          if( content > accept24_nPDFVariationMax_yields_ratio->GetBinContent(bin)){
+            accept24_nPDFVariationMax_yields_ratio->SetBinContent(bin, content);
           }
         }
-        for(int bin = 0; bin<accept_nPDFVariation_y_ratio[w]->GetSize(); bin++){
-          float content = TMath::Abs( 1 - accept_nPDFVariation_y_ratio[w]->GetBinContent(bin) );
-          if(1 + content > accept_nPDFVariationMax_y_ratio->GetBinContent(bin)){
-            accept_nPDFVariationMax_y_ratio->SetBinContent(bin, 1+content);
+        for(int bin = 0; bin<accept24_nPDFVariation_y_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept24_nPDFVariation_y_ratio[w]->GetBinContent(bin) );
+          if( content > accept24_nPDFVariationMax_y_ratio->GetBinContent(bin)){
+            accept24_nPDFVariationMax_y_ratio->SetBinContent(bin, content);
           }
         }
-        for(int bin = 0; bin<accept_nPDFVariation_pt_ratio[w]->GetSize(); bin++){
-          float content = TMath::Abs( 1 - accept_nPDFVariation_pt_ratio[w]->GetBinContent(bin) );
-          if(1 + content > accept_nPDFVariationMax_pt_ratio->GetBinContent(bin)){
-            accept_nPDFVariationMax_pt_ratio->SetBinContent(bin, 1+content);
+        for(int bin = 0; bin<accept24_nPDFVariation_pt_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept24_nPDFVariation_pt_ratio[w]->GetBinContent(bin) );
+          if( content > accept24_nPDFVariationMax_pt_ratio->GetBinContent(bin)){
+            accept24_nPDFVariationMax_pt_ratio->SetBinContent(bin, content);
           }
         }
       }
     }
   }
-  accept_nPDFVariationMax_yields_ratio->Write();
-  accept_nPDFVariationMax_y_ratio->Write();
-  accept_nPDFVariationMax_pt_ratio->Write();
+  accept24_nPDFVariationMax_yields_ratio->Scale(1.0/1.645);//envelope gives 90%, scale down to 68% coverage
+  accept24_nPDFVariationMax_y_ratio->Scale(1.0/1.645);
+  accept24_nPDFVariationMax_pt_ratio->Scale(1.0/1.645);
+  accept24_nPDFVariationMax_yields_ratio->Write();
+  accept24_nPDFVariationMax_y_ratio->Write();
+  accept24_nPDFVariationMax_pt_ratio->Write();
+
+  TH1D * accept24_pdfTypeVariation_yields_ratio = (TH1D*) accept24_nPDFVariation_yields_ratio[1]->Clone("accept24_pdfTypeVariation_yields_ratio");
+  TH1D * accept24_totalUncert_yields = (TH1D*) accept24_nPDFVariationMax_yields_ratio->Clone("accept24_totalUncert_yields");
+  for(int bin = 0; bin<accept24_pdfTypeVariation_yields_ratio->GetSize(); bin++){
+    float content = TMath::Abs( 1 - accept24_pdfTypeVariation_yields_ratio->GetBinContent(bin) );
+    accept24_pdfTypeVariation_yields_ratio->SetBinContent(bin, content);
+
+    float content2 = accept24_totalUncert_yields->GetBinContent(bin);
+    accept24_totalUncert_yields->SetBinContent(bin, TMath::Sqrt(content* content + content2 * content2));
+  }
+  accept24_pdfTypeVariation_yields_ratio->Write();
+  accept24_totalUncert_yields->Write();
+  
+  TH1D * accept24_pdfTypeVariation_y_ratio = (TH1D*) accept24_nPDFVariation_y_ratio[1]->Clone("accept24_pdfTypeVariation_y_ratio");
+  TH1D * accept24_totalUncert_y = (TH1D*) accept24_nPDFVariationMax_y_ratio->Clone("accept24_totalUncert_y");
+  for(int bin = 0; bin<accept24_pdfTypeVariation_y_ratio->GetSize(); bin++){
+    float content = TMath::Abs( 1 - accept24_pdfTypeVariation_y_ratio->GetBinContent(bin) );
+    accept24_pdfTypeVariation_y_ratio->SetBinContent(bin, content);
+    
+    float content2 = accept24_totalUncert_y->GetBinContent(bin);
+    accept24_totalUncert_y->SetBinContent(bin, TMath::Sqrt(content* content + content2 * content2));
+  }
+  accept24_pdfTypeVariation_y_ratio->Write();
+  accept24_totalUncert_y->Write();  
+
+  TH1D * accept24_pdfTypeVariation_pt_ratio = (TH1D*) accept24_nPDFVariation_pt_ratio[1]->Clone("accept24_pdfTypeVariation_pt_ratio");
+  TH1D * accept24_totalUncert_pt = (TH1D*) accept24_nPDFVariationMax_pt_ratio->Clone("accept24_totalUncert_pt");
+  for(int bin = 0; bin<accept24_pdfTypeVariation_pt_ratio->GetSize(); bin++){
+    float content = TMath::Abs( 1 - accept24_pdfTypeVariation_pt_ratio->GetBinContent(bin) );
+    accept24_pdfTypeVariation_pt_ratio->SetBinContent(bin, content);
+    
+    float content2 = accept24_totalUncert_pt->GetBinContent(bin);
+    accept24_totalUncert_pt->SetBinContent(bin, TMath::Sqrt(content* content + content2 * content2));
+  }
+  accept24_pdfTypeVariation_pt_ratio->Write();
+  accept24_totalUncert_pt->Write();
+
+  
+  TH1D * accept21_yields_ratio[120];
+  TH1D * accept21_y_ratio[120];
+  TH1D * accept21_pt_ratio[120];
+  TH1D * accept21_scaleVariation_yields_ratio[120];
+  TH1D * accept21_scaleVariation_y_ratio[120];
+  TH1D * accept21_scaleVariation_pt_ratio[120];
+  TH1D * accept21_nPDFVariation_yields_ratio[120];
+  TH1D * accept21_nPDFVariation_y_ratio[120];
+  TH1D * accept21_nPDFVariation_pt_ratio[120];
+  TH1D * accept21_nPDFVariationMax_yields_ratio;
+  TH1D * accept21_nPDFVariationMax_y_ratio;
+  TH1D * accept21_nPDFVariationMax_pt_ratio;
+  for(int w = 0; w<weightHelper.getSize(); w++){
+    accept21_yields_ratio[w] = (TH1D*)accept21_yields_pass[w]->Clone(Form("accept21_yields_ratio_%d",w));
+    accept21_yields_ratio[w]->Divide(accept21_yields_net[w]);
+    accept21_yields_ratio[w]->Write();
+    
+    accept21_y_ratio[w] = (TH1D*)accept21_y_pass[w]->Clone(Form("accept21_y_ratio_%d",w));
+    accept21_y_ratio[w]->Divide(accept21_y_net[w]);
+    accept21_y_ratio[w]->Write();
+    
+    accept21_pt_ratio[w] = (TH1D*)accept21_pt_pass[w]->Clone(Form("accept21_pt_ratio_%d",w));
+    accept21_pt_ratio[w]->Divide(accept21_pt_net[w]);
+    accept21_pt_ratio[w]->Write();
+
+    //accept21_yields_pass[w]->Write();
+    //accept21_yields_net[w]->Write();
+    //accept21_pt_pass[w]->Write();
+    //accept21_pt_net[w]->Write();
+    //accept21_y_pass[w]->Write();
+    //accept21_y_net[w]->Write();
+
+    //scale variations
+    if(w>=3 && w<=8){
+      accept21_scaleVariation_yields_ratio[w] = (TH1D*) accept21_yields_ratio[w]->Clone(Form("accept21_scaleVariation_yields_%d",w));
+      accept21_scaleVariation_yields_ratio[w]->Divide( accept21_yields_ratio[2] );
+      accept21_scaleVariation_yields_ratio[w]->Write();
+      accept21_scaleVariation_y_ratio[w] = (TH1D*) accept21_y_ratio[w]->Clone(Form("accept21_scaleVariation_y_%d",w));
+      accept21_scaleVariation_y_ratio[w]->Divide( accept21_y_ratio[2] );
+      accept21_scaleVariation_y_ratio[w]->Write();
+      accept21_scaleVariation_pt_ratio[w] = (TH1D*) accept21_pt_ratio[w]->Clone(Form("accept21_scaleVariation_pt_%d",w));
+      accept21_scaleVariation_pt_ratio[w]->Divide( accept21_pt_ratio[2] );
+      accept21_scaleVariation_pt_ratio[w]->Write();
+    }
+    if(w==1 || w==2 || w>8){
+      accept21_nPDFVariation_yields_ratio[w] = (TH1D*) accept21_yields_ratio[w]->Clone(Form("accept21_nPDFVariation_yields_%d",w));
+      accept21_nPDFVariation_yields_ratio[w]->Divide( accept21_yields_ratio[0] );
+      accept21_nPDFVariation_yields_ratio[w]->Write();
+      accept21_nPDFVariation_y_ratio[w] = (TH1D*) accept21_y_ratio[w]->Clone(Form("accept21_nPDFVariation_y_%d",w));
+      accept21_nPDFVariation_y_ratio[w]->Divide( accept21_y_ratio[0] );
+      accept21_nPDFVariation_y_ratio[w]->Write();
+      accept21_nPDFVariation_pt_ratio[w] = (TH1D*) accept21_pt_ratio[w]->Clone(Form("accept21_nPDFVariation_pt_%d",w));
+      accept21_nPDFVariation_pt_ratio[w]->Divide( accept21_pt_ratio[0] );
+      accept21_nPDFVariation_pt_ratio[w]->Write();
+ 
+      if(w>8){
+        if(w==9){
+          accept21_nPDFVariationMax_yields_ratio = (TH1D*) accept21_nPDFVariation_yields_ratio[w]->Clone("accept21_nPDFVariationMax_yields_ratio");
+          accept21_nPDFVariationMax_yields_ratio->Reset();
+          accept21_nPDFVariationMax_y_ratio = (TH1D*) accept21_nPDFVariation_y_ratio[w]->Clone("accept21_nPDFVariationMax_y_ratio");
+          accept21_nPDFVariationMax_y_ratio->Reset();
+          accept21_nPDFVariationMax_pt_ratio = (TH1D*) accept21_nPDFVariation_pt_ratio[w]->Clone("accept21_nPDFVariationMax_pt_ratio");
+          accept21_nPDFVariationMax_pt_ratio->Reset();
+        }
+        for(int bin = 0; bin<accept21_nPDFVariation_yields_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept21_nPDFVariation_yields_ratio[w]->GetBinContent(bin) );
+          if( content > accept21_nPDFVariationMax_yields_ratio->GetBinContent(bin)){
+            accept21_nPDFVariationMax_yields_ratio->SetBinContent(bin, content);
+          }
+        }
+        for(int bin = 0; bin<accept21_nPDFVariation_y_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept21_nPDFVariation_y_ratio[w]->GetBinContent(bin) );
+          if( content > accept21_nPDFVariationMax_y_ratio->GetBinContent(bin)){
+            accept21_nPDFVariationMax_y_ratio->SetBinContent(bin, content);
+          }
+        }
+        for(int bin = 0; bin<accept21_nPDFVariation_pt_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept21_nPDFVariation_pt_ratio[w]->GetBinContent(bin) );
+          if( content > accept21_nPDFVariationMax_pt_ratio->GetBinContent(bin)){
+            accept21_nPDFVariationMax_pt_ratio->SetBinContent(bin, content);
+          }
+        }
+      }
+    }
+  }
+  accept21_nPDFVariationMax_yields_ratio->Scale(1.0/1.645);//envelope gives 90%, scale down to 68% coverage
+  accept21_nPDFVariationMax_y_ratio->Scale(1.0/1.645);
+  accept21_nPDFVariationMax_pt_ratio->Scale(1.0/1.645);
+  accept21_nPDFVariationMax_yields_ratio->Write();
+  accept21_nPDFVariationMax_y_ratio->Write();
+  accept21_nPDFVariationMax_pt_ratio->Write();
+  
+  TH1D * accept21_pdfTypeVariation_yields_ratio = (TH1D*) accept21_nPDFVariation_yields_ratio[1]->Clone("accept21_pdfTypeVariation_yields_ratio");
+  TH1D * accept21_totalUncert_yields = (TH1D*) accept21_nPDFVariationMax_yields_ratio->Clone("accept21_totalUncert_yields");
+  for(int bin = 0; bin<accept21_pdfTypeVariation_yields_ratio->GetSize(); bin++){
+    float content = TMath::Abs( 1 - accept21_pdfTypeVariation_yields_ratio->GetBinContent(bin) );
+    accept21_pdfTypeVariation_yields_ratio->SetBinContent(bin, content);
+
+    float content2 = accept21_totalUncert_yields->GetBinContent(bin);
+    accept21_totalUncert_yields->SetBinContent(bin, TMath::Sqrt(content* content + content2 * content2));
+  }
+  accept21_pdfTypeVariation_yields_ratio->Write();
+  accept21_totalUncert_yields->Write();
+  
+  TH1D * accept21_pdfTypeVariation_y_ratio = (TH1D*) accept21_nPDFVariation_y_ratio[1]->Clone("accept21_pdfTypeVariation_y_ratio");
+  TH1D * accept21_totalUncert_y = (TH1D*) accept21_nPDFVariationMax_y_ratio->Clone("accept21_totalUncert_y");
+  for(int bin = 0; bin<accept21_pdfTypeVariation_y_ratio->GetSize(); bin++){
+    float content = TMath::Abs( 1 - accept21_pdfTypeVariation_y_ratio->GetBinContent(bin) );
+    accept21_pdfTypeVariation_y_ratio->SetBinContent(bin, content);
+    
+    float content2 = accept21_totalUncert_y->GetBinContent(bin);
+    accept21_totalUncert_y->SetBinContent(bin, TMath::Sqrt(content* content + content2 * content2));
+  }
+  accept21_pdfTypeVariation_y_ratio->Write();
+  accept21_totalUncert_y->Write();  
+
+  TH1D * accept21_pdfTypeVariation_pt_ratio = (TH1D*) accept21_nPDFVariation_pt_ratio[1]->Clone("accept21_pdfTypeVariation_pt_ratio");
+  TH1D * accept21_totalUncert_pt = (TH1D*) accept21_nPDFVariationMax_pt_ratio->Clone("accept21_totalUncert_pt");
+  for(int bin = 0; bin<accept21_pdfTypeVariation_pt_ratio->GetSize(); bin++){
+    float content = TMath::Abs( 1 - accept21_pdfTypeVariation_pt_ratio->GetBinContent(bin) );
+    accept21_pdfTypeVariation_pt_ratio->SetBinContent(bin, content);
+    
+    float content2 = accept21_totalUncert_pt->GetBinContent(bin);
+    accept21_totalUncert_pt->SetBinContent(bin, TMath::Sqrt(content* content + content2 * content2));
+  }
+  accept21_pdfTypeVariation_pt_ratio->Write();
+  accept21_totalUncert_pt->Write();
 
   output->Close();
 

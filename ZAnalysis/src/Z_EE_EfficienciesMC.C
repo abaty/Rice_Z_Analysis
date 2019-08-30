@@ -1,4 +1,5 @@
 #include "include/centralityBin.h"
+#include "include/MCWeightHelper.h"
 #include "include/electronEnergyScale.h"
 #include "include/forceConsistency.h"
 #include "include/electronSelector.h"
@@ -35,6 +36,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   ElectronTnP eTnP = ElectronTnP();  
 
   MCReweight vzRW = MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
+  MCWeightHelper weightHelper = MCWeightHelper();
   
   Settings s = Settings();
 
@@ -43,6 +45,12 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   const int nBins = c.getNCentBins();
   
   TRandom3 * r = new TRandom3();
+  TH1D * accept21_pt_pass[120];
+  TH1D * accept21_y_pass[120];
+  TH1D * accept21_yields_pass[120];
+  TH1D * accept21_pt_net[120];
+  TH1D * accept21_y_net[120];
+  TH1D * accept21_yields_net[120];
   
   TH1D * massPeakOS[nBins]; 
   TH1D * massPeakOS_noSF[nBins]; 
@@ -142,6 +150,14 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_ptReso[k] = new TH1D(Form("recoEff_ptReso_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.2,0.2);
     
     yReso[k] = new TH1D(Form("yReso_%d_%d",c.getCentBinLow(k), c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.1,0.1);
+  }
+  for(int i = 0; i<weightHelper.getSize(); i++){
+    accept21_pt_pass[i] = new TH1D(Form("accept21_pt_pass_%d",i),"",s.nZPtBins-1,s.zPtBins);
+    accept21_pt_net[i] = new TH1D(Form("accept21_pt_net_%d",i),"",s.nZPtBins-1,s.zPtBins);
+    accept21_y_pass[i] = new TH1D(Form("accept21_y_pass_%d",i),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
+    accept21_y_net[i] = new TH1D(Form("accept21_y_net_%d",i),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
+    accept21_yields_pass[i] = new TH1D(Form("accept21_yields_pass_%d",i),"",1,0,1);
+    accept21_yields_net[i] = new TH1D(Form("accept21_yields_net_%d",i),"",1,0,1);
   }
   yReco = new TH1D("yReco",";y_{reco}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
   yGen = new TH1D("yGen",";y_{gen}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
@@ -270,6 +286,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
       if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
       
       hiBin = cb.getHiBinFromhiHF(hiHF,3);
+      double acceptWeight[120];
+      for(int w = 0; w<weightHelper.getSize(); w++){
+        acceptWeight[w] = vzRW.reweightFactor( vz ) * (ttbar_w->at(weightHelper.getIndx(w))/10000.0);
+      }
       double eventWeight = vzRW.reweightFactor( vz ) * vzRW.reweightFactorCent(hiBin) * c.findNcoll( hiBin ) * (ttbar_w->at(1080)/10000.0);//1080 is EEPS16NLO+CT14;
       
       timer.StartSplit("Loading GEN electron tree");
@@ -291,7 +311,21 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
         if( TMath::Abs(mcPID->at(j)) == 13) break;       
    
         //make sure it's an electron
-        if( TMath::Abs(mcPID->at(j)) != 11) continue;       
+        if( TMath::Abs(mcPID->at(j)) != 11) continue;
+          
+        //make sure it's in our rapidity range
+        TLorentzVector tempMom = TLorentzVector();
+        tempMom.SetPtEtaPhiM( mcMomPt->at(j), mcMomEta->at(j), mcMomPhi->at(j), mcMomMass->at(j));
+        if(TMath::Abs( tempMom.Rapidity()) > s.maxZRapEle ) break;
+
+        //there is a good Z here, let's fill the acceptance histogram
+        if(nGenElectronsFound==0){
+          for(int w = 0; w<weightHelper.getSize(); w++){
+            accept21_yields_net[w]->Fill( 0.5, acceptWeight[w]); 
+            accept21_y_net[w]->Fill( tempMom.Rapidity(), acceptWeight[w]); 
+            accept21_pt_net[w]->Fill( tempMom.Pt(), acceptWeight[w]); 
+          } 
+        }     
         nGenElectronsFound++;
 
         //if they are not in our acceptance, break out
@@ -305,6 +339,13 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           //Fill denominator
           foundGen = true; 
           mom.SetPtEtaPhiM( mcMomPt->at(j), mcMomEta->at(j), mcMomPhi->at(j), mcMomMass->at(j));
+          
+          for(int w = 0; w<weightHelper.getSize(); w++){
+            accept21_yields_pass[w]->Fill(0.5, acceptWeight[w]);
+            accept21_y_pass[w]->Fill(tempMom.Rapidity(), acceptWeight[w]);
+            accept21_pt_pass[w]->Fill(tempMom.Pt(), acceptWeight[w]);
+          }
+          
           for(int k = 0; k<nBins; k++){ 
             if(c.isInsideBin(hiBin,k)){
               recoEff_net[k]->Fill( mom.Rapidity(), mcMomPt->at(j), eventWeight );
@@ -754,7 +795,135 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   yRatio = (TH1D*)yReco->Clone("yRatio");
   yRatio->Divide(yGen);
   yRatio->Write();
+  
+  TH1D * accept21_yields_ratio[120];
+  TH1D * accept21_y_ratio[120];
+  TH1D * accept21_pt_ratio[120];
+  TH1D * accept21_scaleVariation_yields_ratio[120];
+  TH1D * accept21_scaleVariation_y_ratio[120];
+  TH1D * accept21_scaleVariation_pt_ratio[120];
+  TH1D * accept21_nPDFVariation_yields_ratio[120];
+  TH1D * accept21_nPDFVariation_y_ratio[120];
+  TH1D * accept21_nPDFVariation_pt_ratio[120];
+  TH1D * accept21_nPDFVariationMax_yields_ratio;
+  TH1D * accept21_nPDFVariationMax_y_ratio;
+  TH1D * accept21_nPDFVariationMax_pt_ratio;
+  for(int w = 0; w<weightHelper.getSize(); w++){
+    accept21_yields_ratio[w] = (TH1D*)accept21_yields_pass[w]->Clone(Form("accept21_yields_ratio_%d",w));
+    accept21_yields_ratio[w]->Divide(accept21_yields_net[w]);
+    accept21_yields_ratio[w]->Write();
+    
+    accept21_y_ratio[w] = (TH1D*)accept21_y_pass[w]->Clone(Form("accept21_y_ratio_%d",w));
+    accept21_y_ratio[w]->Divide(accept21_y_net[w]);
+    accept21_y_ratio[w]->Write();
+    
+    accept21_pt_ratio[w] = (TH1D*)accept21_pt_pass[w]->Clone(Form("accept21_pt_ratio_%d",w));
+    accept21_pt_ratio[w]->Divide(accept21_pt_net[w]);
+    accept21_pt_ratio[w]->Write();
+
+    //accept21_yields_pass[w]->Write();
+    //accept21_yields_net[w]->Write();
+    //accept21_pt_pass[w]->Write();
+    //accept21_pt_net[w]->Write();
+    //accept21_y_pass[w]->Write();
+    //accept21_y_net[w]->Write();
+
+    //scale variations
+    if(w>=3 && w<=8){
+      accept21_scaleVariation_yields_ratio[w] = (TH1D*) accept21_yields_ratio[w]->Clone(Form("accept21_scaleVariation_yields_%d",w));
+      accept21_scaleVariation_yields_ratio[w]->Divide( accept21_yields_ratio[2] );
+      accept21_scaleVariation_yields_ratio[w]->Write();
+      accept21_scaleVariation_y_ratio[w] = (TH1D*) accept21_y_ratio[w]->Clone(Form("accept21_scaleVariation_y_%d",w));
+      accept21_scaleVariation_y_ratio[w]->Divide( accept21_y_ratio[2] );
+      accept21_scaleVariation_y_ratio[w]->Write();
+      accept21_scaleVariation_pt_ratio[w] = (TH1D*) accept21_pt_ratio[w]->Clone(Form("accept21_scaleVariation_pt_%d",w));
+      accept21_scaleVariation_pt_ratio[w]->Divide( accept21_pt_ratio[2] );
+      accept21_scaleVariation_pt_ratio[w]->Write();
+    }
+    if(w==1 || w==2 || w>8){
+      accept21_nPDFVariation_yields_ratio[w] = (TH1D*) accept21_yields_ratio[w]->Clone(Form("accept21_nPDFVariation_yields_%d",w));
+      accept21_nPDFVariation_yields_ratio[w]->Divide( accept21_yields_ratio[0] );
+      accept21_nPDFVariation_yields_ratio[w]->Write();
+      accept21_nPDFVariation_y_ratio[w] = (TH1D*) accept21_y_ratio[w]->Clone(Form("accept21_nPDFVariation_y_%d",w));
+      accept21_nPDFVariation_y_ratio[w]->Divide( accept21_y_ratio[0] );
+      accept21_nPDFVariation_y_ratio[w]->Write();
+      accept21_nPDFVariation_pt_ratio[w] = (TH1D*) accept21_pt_ratio[w]->Clone(Form("accept21_nPDFVariation_pt_%d",w));
+      accept21_nPDFVariation_pt_ratio[w]->Divide( accept21_pt_ratio[0] );
+      accept21_nPDFVariation_pt_ratio[w]->Write();
  
+      if(w>8){
+        if(w==9){
+          accept21_nPDFVariationMax_yields_ratio = (TH1D*) accept21_nPDFVariation_yields_ratio[w]->Clone("accept21_nPDFVariationMax_yields_ratio");
+          accept21_nPDFVariationMax_yields_ratio->Reset();
+          accept21_nPDFVariationMax_y_ratio = (TH1D*) accept21_nPDFVariation_y_ratio[w]->Clone("accept21_nPDFVariationMax_y_ratio");
+          accept21_nPDFVariationMax_y_ratio->Reset();
+          accept21_nPDFVariationMax_pt_ratio = (TH1D*) accept21_nPDFVariation_pt_ratio[w]->Clone("accept21_nPDFVariationMax_pt_ratio");
+          accept21_nPDFVariationMax_pt_ratio->Reset();
+        }
+        for(int bin = 0; bin<accept21_nPDFVariation_yields_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept21_nPDFVariation_yields_ratio[w]->GetBinContent(bin) );
+          if( content > accept21_nPDFVariationMax_yields_ratio->GetBinContent(bin)){
+            accept21_nPDFVariationMax_yields_ratio->SetBinContent(bin, content);
+          }
+        }
+        for(int bin = 0; bin<accept21_nPDFVariation_y_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept21_nPDFVariation_y_ratio[w]->GetBinContent(bin) );
+          if( content > accept21_nPDFVariationMax_y_ratio->GetBinContent(bin)){
+            accept21_nPDFVariationMax_y_ratio->SetBinContent(bin, content);
+          }
+        }
+        for(int bin = 0; bin<accept21_nPDFVariation_pt_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept21_nPDFVariation_pt_ratio[w]->GetBinContent(bin) );
+          if( content > accept21_nPDFVariationMax_pt_ratio->GetBinContent(bin)){
+            accept21_nPDFVariationMax_pt_ratio->SetBinContent(bin, content);
+          }
+        }
+      }
+    }
+  }
+  accept21_nPDFVariationMax_yields_ratio->Scale(1.0/1.645);//envelope gives 90%, scale down to 68% coverage
+  accept21_nPDFVariationMax_y_ratio->Scale(1.0/1.645);
+  accept21_nPDFVariationMax_pt_ratio->Scale(1.0/1.645);
+  accept21_nPDFVariationMax_yields_ratio->Write();
+  accept21_nPDFVariationMax_y_ratio->Write();
+  accept21_nPDFVariationMax_pt_ratio->Write();
+  
+  TH1D * accept21_pdfTypeVariation_yields_ratio = (TH1D*) accept21_nPDFVariation_yields_ratio[1]->Clone("accept21_pdfTypeVariation_yields_ratio");
+  TH1D * accept21_totalUncert_yields = (TH1D*) accept21_nPDFVariationMax_yields_ratio->Clone("accept21_totalUncert_yields");
+  for(int bin = 0; bin<accept21_pdfTypeVariation_yields_ratio->GetSize(); bin++){
+    float content = TMath::Abs( 1 - accept21_pdfTypeVariation_yields_ratio->GetBinContent(bin) );
+    accept21_pdfTypeVariation_yields_ratio->SetBinContent(bin, content);
+
+    float content2 = accept21_totalUncert_yields->GetBinContent(bin);
+    accept21_totalUncert_yields->SetBinContent(bin, TMath::Sqrt(content* content + content2 * content2));
+  }
+  accept21_pdfTypeVariation_yields_ratio->Write();
+  accept21_totalUncert_yields->Write(); 
+ 
+  TH1D * accept21_pdfTypeVariation_y_ratio = (TH1D*) accept21_nPDFVariation_y_ratio[1]->Clone("accept21_pdfTypeVariation_y_ratio");
+  TH1D * accept21_totalUncert_y = (TH1D*) accept21_nPDFVariationMax_y_ratio->Clone("accept21_totalUncert_y");
+  for(int bin = 0; bin<accept21_pdfTypeVariation_y_ratio->GetSize(); bin++){
+    float content = TMath::Abs( 1 - accept21_pdfTypeVariation_y_ratio->GetBinContent(bin) );
+    accept21_pdfTypeVariation_y_ratio->SetBinContent(bin, content);
+    
+    float content2 = accept21_totalUncert_y->GetBinContent(bin);
+    accept21_totalUncert_y->SetBinContent(bin, TMath::Sqrt(content* content + content2 * content2));
+  }
+  accept21_pdfTypeVariation_y_ratio->Write();
+  accept21_totalUncert_y->Write();  
+
+  TH1D * accept21_pdfTypeVariation_pt_ratio = (TH1D*) accept21_nPDFVariation_pt_ratio[1]->Clone("accept21_pdfTypeVariation_pt_ratio");
+  TH1D * accept21_totalUncert_pt = (TH1D*) accept21_nPDFVariationMax_pt_ratio->Clone("accept21_totalUncert_pt");
+  for(int bin = 0; bin<accept21_pdfTypeVariation_pt_ratio->GetSize(); bin++){
+    float content = TMath::Abs( 1 - accept21_pdfTypeVariation_pt_ratio->GetBinContent(bin) );
+    accept21_pdfTypeVariation_pt_ratio->SetBinContent(bin, content);
+    
+    float content2 = accept21_totalUncert_pt->GetBinContent(bin);
+    accept21_totalUncert_pt->SetBinContent(bin, TMath::Sqrt(content* content + content2 * content2));
+  }
+  accept21_pdfTypeVariation_pt_ratio->Write();
+  accept21_totalUncert_pt->Write(); 
+
   output->Close();
 
   timer.Stop();
