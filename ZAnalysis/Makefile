@@ -27,7 +27,7 @@ bin/Z_mumu_Channel_STARLIGHT.exe: src/Z_mumu_Channel_STARLIGHT.C
 	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/Z_mumu_Channel_STARLIGHT.exe src/Z_mumu_Channel_STARLIGHT.C
 
 bin/Z_mumu_EfficienciesMC.exe: src/Z_mumu_EfficienciesMC.C
-	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/Z_mumu_EfficienciesMC.exe src/Z_mumu_EfficienciesMC.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/Z_mumu_EfficienciesMC.exe src/Z_mumu_EfficienciesMC.C
 
 bin/Z_EE_EfficienciesMC.exe: src/Z_EE_EfficienciesMC.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/Z_EE_EfficienciesMC.exe src/Z_EE_EfficienciesMC.C

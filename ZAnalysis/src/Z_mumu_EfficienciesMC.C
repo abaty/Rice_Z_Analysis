@@ -6,6 +6,7 @@
 #include "include/Settings.h"
 #include "include/MCReweight.h"
 #include "include/MuonTnP.h"
+#include "include/MCWeightHelper.h"
 
 //ROOT stuff
 #include "TRandom3.h"
@@ -46,16 +47,18 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
 
+  MCWeightHelper weightHelper = MCWeightHelper();
+
   TRandom3 * r = new TRandom3();
 
   int hiBin;
 
-  TH1D * accept_pt_pass;
-  TH1D * accept_y_pass;
-  TH1D * accept_yield_pass;
-  TH1D * accept_pt_net;
-  TH1D * accept_y_net;
-  TH1D * accept_yield_pass;
+  TH1D * accept_pt_pass[120];
+  TH1D * accept_y_pass[120];
+  TH1D * accept_yields_pass[120];
+  TH1D * accept_pt_net[120];
+  TH1D * accept_y_net[120];
+  TH1D * accept_yields_net[120];
 
   TH1D * recoEff_pt_pass[nBins];
   TH1D * recoEff_pt_net[nBins];
@@ -153,12 +156,14 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
     yReso[k] = new TH1D(Form("yReso_%d_%d",c.getCentBinLow(k), c.getCentBinHigh(k)),";#frac{p_{T}^{reco}-p_{T}^{gen}}{p_{T}^{gen}}",40,-0.1,0.1);
   }
-  accept_pt_pass = new TH1D("accept_pt_pass","",s.nZPtBins-1,s.zPtBins);
-  accept_pt_net = new TH1D("accept_pt_net","",s.nZPtBins-1,s.zPtBins);
-  accept_y_pass = new TH1D("accept_y_pass","",s.nZRapBins,-s.maxZRap,s.maxZRap);
-  accept_y_net = new TH1D("accept_y_net","",s.nZRapBins,-s.maxZRap,s.maxZRap);
-  accept_yield_pass = new TH1D("accept_yield_pass","",1,0,1);
-  accept_yield_net = new TH1D("accept_yield_net","",1,0,1);
+  for(int i = 0; i<weightHelper.getSize(); i++){
+    accept_pt_pass[i] = new TH1D(Form("accept_pt_pass_%d",i),"",s.nZPtBins-1,s.zPtBins);
+    accept_pt_net[i] = new TH1D(Form("accept_pt_net_%d",i),"",s.nZPtBins-1,s.zPtBins);
+    accept_y_pass[i] = new TH1D(Form("accept_y_pass_%d",i),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    accept_y_net[i] = new TH1D(Form("accept_y_net_%d",i),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    accept_yields_pass[i] = new TH1D(Form("accept_yields_pass_%d",i),"",1,0,1);
+    accept_yields_net[i] = new TH1D(Form("accept_yields_net_%d",i),"",1,0,1);
+  }
 
   //starting looping over the file
   for(unsigned int f = 0; f<files.size(); f++){
@@ -177,7 +182,10 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
       if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
       hiBin = cb.getHiBinFromhiHFSides(v.HFsumETPlus() , v.HFsumETMinus() ,3);   
 
-      double acceptWeight = vzRW.reweightFactor( v.bestvtxZ() ) * (v.weightLHE_gen(1080)/10000.0);
+      double acceptWeight[120];
+      for(int w = 0; w<weightHelper.getSize(); w++){
+        acceptWeight[w] = vzRW.reweightFactor( v.bestvtxZ() ) * (v.weightLHE_gen(weightHelper.getIndx(w))/10000.0);
+      }
       double eventWeight = vzRW.reweightFactor( v.bestvtxZ() ) * vzRW.reweightFactorCent(hiBin) * c.findNcoll( hiBin ) * (v.weightLHE_gen(1080)/10000.0);//1080 is EPPS16
 
       for(unsigned int j = 0; j<v.candSize_gen(); j++){
@@ -188,9 +196,12 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
         //rapidity cut and acceptance stuff
         if(TMath::Abs( v.y_gen()[j] ) > s.maxZRap) continue;
-        accept_yields_net->Fill( 0.5, acceptWeight); 
-        accept_y_net->Fill( v.y_gen()[j], acceptWeight); 
-        accept_pt_net->Fill( v.pt_gen()[j], acceptWeight); 
+
+        for(int w = 0; w<weightHelper.getSize(); w++){
+          accept_yields_net[w]->Fill( 0.5, acceptWeight[w]); 
+          accept_y_net[w]->Fill( v.y_gen()[j], acceptWeight[w]); 
+          accept_pt_net[w]->Fill( v.pT_gen()[j], acceptWeight[w]); 
+        }
  
         //require both legs to be in acceptance
         if( TMath::Abs( v.EtaD1_gen()[j] ) > s.maxZRap ) continue;
@@ -200,9 +211,11 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         if( v.pTD1_gen()[j] < s.minMuonPt ) continue;
         if( v.pTD2_gen()[j] < s.minMuonPt ) continue;
 
-        accept_yields_pass->Fill(0.5, acceptWeight);
-        accept_y_pass->Fill(v.y_gen()[j], acceptWeight);
-        accept_pt_pass->Fill(v.pt_gen()[j], acceptWeight);
+        for(int w = 0; w<weightHelper.getSize(); w++){
+          accept_yields_pass[w]->Fill(0.5, acceptWeight[w]);
+          accept_y_pass[w]->Fill(v.y_gen()[j], acceptWeight[w]);
+          accept_pt_pass[w]->Fill(v.pT_gen()[j], acceptWeight[w]);
+        }
 
         //Fill denominator 
         for(int k = 0; k<nBins; k++){ 
@@ -595,24 +608,94 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     yReso[i]->Write();
   }
 
-  TH1D * accept_yields_ratio = (TH1D*)accept_yields_pass->Clone("accept_yields_ratio");
-  accept_yields_ratio->Divide(accept_yields_net);
-  accept_yields_ratio->Write();
-  
-  TH1D * accept_y_ratio = (TH1D*)accept_y_pass->Clone("accept_y_ratio");
-  accept_y_ratio->Divide(accept_y_net);
-  accept_y_ratio->Write();
-  
-  TH1D * accept_pt_ratio = (TH1D*)accept_pt_pass->Clone("accept_pt_ratio");
-  accept_pt_ratio->Divide(accept_pt_net);
-  accept_pt_ratio->Write();
+  TH1D * accept_yields_ratio[120];
+  TH1D * accept_y_ratio[120];
+  TH1D * accept_pt_ratio[120];
+  TH1D * accept_scaleVariation_yields_ratio[120];
+  TH1D * accept_scaleVariation_y_ratio[120];
+  TH1D * accept_scaleVariation_pt_ratio[120];
+  TH1D * accept_nPDFVariation_yields_ratio[120];
+  TH1D * accept_nPDFVariation_y_ratio[120];
+  TH1D * accept_nPDFVariation_pt_ratio[120];
+  TH1D * accept_nPDFVariationMax_yields_ratio;
+  TH1D * accept_nPDFVariationMax_y_ratio;
+  TH1D * accept_nPDFVariationMax_pt_ratio;
+  for(int w = 0; w<weightHelper.getSize(); w++){
+    accept_yields_ratio[w] = (TH1D*)accept_yields_pass[w]->Clone(Form("accept_yields_ratio_%d",w));
+    accept_yields_ratio[w]->Divide(accept_yields_net[w]);
+    accept_yields_ratio[w]->Write();
+    
+    accept_y_ratio[w] = (TH1D*)accept_y_pass[w]->Clone(Form("accept_y_ratio_%d",w));
+    accept_y_ratio[w]->Divide(accept_y_net[w]);
+    accept_y_ratio[w]->Write();
+    
+    accept_pt_ratio[w] = (TH1D*)accept_pt_pass[w]->Clone(Form("accept_pt_ratio_%d",w));
+    accept_pt_ratio[w]->Divide(accept_pt_net[w]);
+    accept_pt_ratio[w]->Write();
 
-  accept_yields_pass->Write();
-  accept_yields_net->Write();
-  accept_pt_pass->Write();
-  accept_pt_net->Write();
-  accept_y_pass->Write();
-  accept_y_net->Write();
+    accept_yields_pass[w]->Write();
+    accept_yields_net[w]->Write();
+    accept_pt_pass[w]->Write();
+    accept_pt_net[w]->Write();
+    accept_y_pass[w]->Write();
+    accept_y_net[w]->Write();
+
+    //scale variations
+    if(w>=3 && w<=8){
+      accept_scaleVariation_yields_ratio[w] = (TH1D*) accept_yields_ratio[w]->Clone(Form("accept_scaleVariation_yields_%d",w));
+      accept_scaleVariation_yields_ratio[w]->Divide( accept_yields_ratio[2] );
+      accept_scaleVariation_yields_ratio[w]->Write();
+      accept_scaleVariation_y_ratio[w] = (TH1D*) accept_y_ratio[w]->Clone(Form("accept_scaleVariation_y_%d",w));
+      accept_scaleVariation_y_ratio[w]->Divide( accept_y_ratio[2] );
+      accept_scaleVariation_y_ratio[w]->Write();
+      accept_scaleVariation_pt_ratio[w] = (TH1D*) accept_pt_ratio[w]->Clone(Form("accept_scaleVariation_pt_%d",w));
+      accept_scaleVariation_pt_ratio[w]->Divide( accept_pt_ratio[2] );
+      accept_scaleVariation_pt_ratio[w]->Write();
+    }
+    if(w==1 || w==2 || w>8){
+      accept_nPDFVariation_yields_ratio[w] = (TH1D*) accept_yields_ratio[w]->Clone(Form("accept_nPDFVariation_yields_%d",w));
+      accept_nPDFVariation_yields_ratio[w]->Divide( accept_yields_ratio[0] );
+      accept_nPDFVariation_yields_ratio[w]->Write();
+      accept_nPDFVariation_y_ratio[w] = (TH1D*) accept_y_ratio[w]->Clone(Form("accept_nPDFVariation_y_%d",w));
+      accept_nPDFVariation_y_ratio[w]->Divide( accept_y_ratio[0] );
+      accept_nPDFVariation_y_ratio[w]->Write();
+      accept_nPDFVariation_pt_ratio[w] = (TH1D*) accept_pt_ratio[w]->Clone(Form("accept_nPDFVariation_pt_%d",w));
+      accept_nPDFVariation_pt_ratio[w]->Divide( accept_pt_ratio[0] );
+      accept_nPDFVariation_pt_ratio[w]->Write();
+ 
+      if(w>8){
+        if(w==9){
+          accept_nPDFVariationMax_yields_ratio = (TH1D*) accept_nPDFVariation_yields_ratio[w]->Clone("accept_nPDFVariationMax_yields_ratio");
+          accept_nPDFVariationMax_yields_ratio->Reset();
+          accept_nPDFVariationMax_y_ratio = (TH1D*) accept_nPDFVariation_y_ratio[w]->Clone("accept_nPDFVariationMax_y_ratio");
+          accept_nPDFVariationMax_y_ratio->Reset();
+          accept_nPDFVariationMax_pt_ratio = (TH1D*) accept_nPDFVariation_pt_ratio[w]->Clone("accept_nPDFVariationMax_pt_ratio");
+          accept_nPDFVariationMax_pt_ratio->Reset();
+        }
+        for(int bin = 0; bin<accept_nPDFVariation_yields_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept_nPDFVariation_yields_ratio[w]->GetBinContent(bin) );
+          if(1 + content > accept_nPDFVariationMax_yields_ratio->GetBinContent(bin)){
+            accept_nPDFVariationMax_yields_ratio->SetBinContent(bin, 1+content);
+          }
+        }
+        for(int bin = 0; bin<accept_nPDFVariation_y_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept_nPDFVariation_y_ratio[w]->GetBinContent(bin) );
+          if(1 + content > accept_nPDFVariationMax_y_ratio->GetBinContent(bin)){
+            accept_nPDFVariationMax_y_ratio->SetBinContent(bin, 1+content);
+          }
+        }
+        for(int bin = 0; bin<accept_nPDFVariation_pt_ratio[w]->GetSize(); bin++){
+          float content = TMath::Abs( 1 - accept_nPDFVariation_pt_ratio[w]->GetBinContent(bin) );
+          if(1 + content > accept_nPDFVariationMax_pt_ratio->GetBinContent(bin)){
+            accept_nPDFVariationMax_pt_ratio->SetBinContent(bin, 1+content);
+          }
+        }
+      }
+    }
+  }
+  accept_nPDFVariationMax_yields_ratio->Write();
+  accept_nPDFVariationMax_y_ratio->Write();
+  accept_nPDFVariationMax_pt_ratio->Write();
 
   output->Close();
 
