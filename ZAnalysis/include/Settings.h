@@ -23,9 +23,9 @@ public:
   static const int nZPtBins = 14;
   double zPtBins[nZPtBins] = {0,1.0,3.0,5.0,10.0,20.0,30.0,40.0,50.0,70.0,90.0,120.0,150.0,200.0};
   
-  static const int nZPtBins4Eff = 10;
-  double zPtBins4Eff[nZPtBins4Eff] = {0,1.0,3.0,5.0,10.0,20.0,40.0,70.0,120.0,200.0};
-  int nPtBinsToRebinRapEff = 4;
+  static const int nZPtBins4Eff = 9;
+  double zPtBins4Eff[nZPtBins4Eff] = {0,1.0,3.0,5.0,10.0,20.0,40.0,70.0,200.0};
+  int nPtBinsToRebinRapEff = 3;
 
   static const int nZRapBins = 16;
   double maxZRap = 2.4;

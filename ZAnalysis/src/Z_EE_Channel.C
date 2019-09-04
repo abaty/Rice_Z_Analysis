@@ -93,6 +93,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TH1D * yieldOS_withEff_RelStatErr[nBins];
   
   TH3D * candYVsPtForStat[nBins];
+  TH2D * effVsPt;
   
   TProfile * v2Num[nBins];
   TProfile * v2NumVsCent[3];
@@ -114,6 +115,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TProfile * v2EleQ2MidVsCent;
 
   TH1D * candPt[nBins];
+  TH1D * candPt_withSF[nBins];
+  TH1D * candPt_withSFwithEvtWeight[nBins];
   TH1D * candPtFine[nBins];
   TH1D * candPtFiner[nBins];
   TH1D * candPt_unnormalized[nBins];
@@ -189,6 +192,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     v2EleQ2Mid[i] = new TProfile(Form("v2EleQ2Mid_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
     
     candPt[i] = new TH1D(Form("candPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    candPt_withSF[i] = new TH1D(Form("candPt_withSF_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    candPt_withSFwithEvtWeight[i] = new TH1D(Form("candPt_withSFwithEvtWeight_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     candPtFine[i] = new TH1D(Form("candPtFine_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",400,0,200);
     candPtFiner[i] = new TH1D(Form("candPtFiner_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",800,0,200);
     candPt_unnormalized[i] = new TH1D(Form("candPt_unnormalized_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
@@ -206,6 +211,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   lepPt = new TH1D("lepPt",";p_{T}",s.nZPtBins-1,s.zPtBins);
   lepEta = new TH1D("lepEta",";p_{T}",20,-s.maxZRap,s.maxZRap);
   lepPhi = new TH1D("lepPhi",";p_{T}",20,-TMath::Pi(),TMath::Pi());
+
+  effVsPt = new TH2D("effVsPt","",25,0,1,s.nZPtBins-1,s.zPtBins);
 
   for(int i = 0; i<3; i++){ 
     v2AvgEffVsCent[i] = new TProfile(Form("v2AvgEffVsCent%s",h.variationName.at(i).c_str()),"",nBins,0,nBins);
@@ -491,10 +498,15 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
                   lepPhi->Fill( elePhi->at(goodElectrons.at(j2)) ,eventWeight * scaleFactor2);
                  
                   candYVsPtForStat[k]->Fill(Zcand.Rapidity(), Zcand.Pt(), hiBin, eventWeight );
-              
+                  if( k==25 ) effVsPt->Fill(efficiency, Zcand.Pt(), eventWeight);           
+   
                   yields->Fill(k,eventWeight/efficiency);
                   massVsPt[k]->Fill(Zcand.M(), Zcand.Pt()); 
                   candPt[k]->Fill(Zcand.Pt());
+                  float ZscaleFactor = 1.0;
+                  if(isMC) ZscaleFactor = sfs.getZSF(hiBin, elePt->at(goodElectrons.at(j)), eleSCEta->at(goodElectrons.at(j)), elePt->at(goodElectrons.at(j2)), eleSCEta->at(goodElectrons.at(j2)),0);
+                  candPt_withSF[k]->Fill(Zcand.Pt(), ZscaleFactor);
+                  candPt_withSFwithEvtWeight[k]->Fill(Zcand.Pt(), ZscaleFactor * eventWeight);
                   candPt_unnormalized[k]->Fill(Zcand.Pt());
                   candPtFine[k]->Fill(Zcand.Pt());
                   candPtFiner[k]->Fill(Zcand.Pt());
@@ -667,6 +679,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   }
   for(int i = 0; i<nBins; i++){
     h.makeDifferential( candPt[i]);
+    h.makeDifferential( candPt_withSF[i]);
+    h.makeDifferential( candPt_withSFwithEvtWeight[i]);
     h.makeDifferential( candEta[i]);
     h.makeDifferential( candY[i]);
 
@@ -753,6 +767,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
 
     massVsPt[i]->Write();
     candPt[i]->Write();
+    candPt_withSF[i]->Write();
+    candPt_withSFwithEvtWeight[i]->Write();
     candPt_unnormalized[i]->Write();
     candPtFine[i]->Write();
     candPtFiner[i]->Write();
@@ -793,6 +809,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   lepPt->Write();
   lepEta->Write();
   lepPhi->Write();
+
+  effVsPt->Write();
     
   output->Close();
 

@@ -256,7 +256,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
             recoEff_phi_net[k]->Fill( getPhi( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.PhiD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], v.PhiD2_gen()[j] ), eventWeight);
 
             //for the last few pt bins, halve the y binning so we have better stats
-            if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins4Eff - s.nPtBinsToRebinRapEff]){
+            if(v.pT_gen()[j]> s.zPtBins4Eff[s.nZPtBins4Eff - s.nPtBinsToRebinRapEff]){
               int bin = recoEff_net[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
               if( bin%2 ==1){
                 recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight );
@@ -306,7 +306,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         for(int k = 0; k<nBins; k++){ 
           if(c.isInsideBin( hiBin ,k)){
             //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
-            if( v.pT_gen()[j] < s.zPtBins[ s.nZPtBins4Eff-1 ] && TMath::Abs( v.y_gen()[j] ) < s.maxZRap ){
+            if( v.pT_gen()[j] < s.zPtBins4Eff[ s.nZPtBins4Eff-1 ] && TMath::Abs( v.y_gen()[j] ) < s.maxZRap ){
               if(passesAco[0]){
                 recoEff_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
                 recoEff_U_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactorU );
@@ -331,7 +331,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
                 }        
    
                 //for the last few pt bins, halve the y binning so we have better stats
-                if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
+                if(v.pT_gen()[j]> s.zPtBins4Eff[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
                   int bin = recoEff_pass[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
                   if( bin%2 ==1){
                     recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactor );
@@ -348,7 +348,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
               }//passes aco if statement here
               if(passesAco[1]){
                 recoEff_photonU_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
-                if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
+                if(v.pT_gen()[j]> s.zPtBins4Eff[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
                   int bin = recoEff_pass[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
                   if( bin%2 ==1){
                     recoEff_photonU_pass[k]->Fill( recoEff_photonU_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactor );
@@ -359,7 +359,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
               }
               if(passesAco[2]){
                 recoEff_photonD_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactor );
-                if(v.pT_gen()[j]> s.zPtBins[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
+                if(v.pT_gen()[j]> s.zPtBins4Eff[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
                   int bin = recoEff_pass[k]->GetXaxis()->FindBin(v.y_gen()[j]); 
                   if( bin%2 ==1){
                     recoEff_photonD_pass[k]->Fill( recoEff_photonD_pass[k]->GetXaxis()->GetBinCenter(bin+1), v.pT_gen()[j], eventWeight * scaleFactor );

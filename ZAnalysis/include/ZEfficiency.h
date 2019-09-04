@@ -12,8 +12,8 @@ class ZEfficiency{
 
   ZEfficiency(std::string inputFile, bool isMC_ = false, int variationIndex_ = 0);
   ~ZEfficiency();
-  double getEfficiency( double y, double pt, double hiBin);
-  double getEfficiencyRelStatErr( double y, double pt, double hiBin);
+  double getEfficiency( double y, double pt, int hiBin);
+  double getEfficiencyRelStatErr( double y, double pt, int hiBin);
 
   private:
 
@@ -24,7 +24,7 @@ class ZEfficiency{
 
 };
 
-double ZEfficiency::getEfficiencyRelStatErr(double y, double pt, double hiBin){
+double ZEfficiency::getEfficiencyRelStatErr(double y, double pt, int hiBin){
   double originalPt = pt;
   if(pt>=200){
     std::cout << "Very High-Pt Z (>200) detected. Pt = " << originalPt << " I am pretending it's pt is 199.9 for efficiency purposes!" << std::endl;
@@ -42,7 +42,7 @@ double ZEfficiency::getEfficiencyRelStatErr(double y, double pt, double hiBin){
   float efficiencyD =  e[indx]->GetEfficiencyErrorLow(bin);
   float effRelError = TMath::Max(efficiencyU, efficiencyD)/efficiency;
 
-  if(efficiency >=0 && efficiency <=1) return effRelError;
+  if(efficiency >0 && efficiency <=1) return effRelError;
   else{
     std::cout << "efficiency not in the range [0,1], returning error of 0!" << std::endl;
     std::cout << "Rapidity: " << y << " Pt: " << originalPt << std::endl;
@@ -50,7 +50,7 @@ double ZEfficiency::getEfficiencyRelStatErr(double y, double pt, double hiBin){
   }
 }
 
-double ZEfficiency::getEfficiency(double y, double pt, double hiBin){
+double ZEfficiency::getEfficiency(double y, double pt, int hiBin){
   double originalPt = pt;
   if(pt>=200){
     std::cout << "Very High-Pt Z (>200) detected. Pt = " << originalPt << " I am pretending it's pt is 199.9 for efficiency purposes!" << std::endl;
@@ -65,7 +65,7 @@ double ZEfficiency::getEfficiency(double y, double pt, double hiBin){
   int bin = e[indx]->FindFixBin(y, pt);
   float efficiency =  e[indx]->GetEfficiency(bin);
 
-  if(efficiency >=0 && efficiency <=1) return efficiency;
+  if(efficiency >0 && efficiency <=1) return efficiency;
   else{
     std::cout << "efficiency not in the range [0,1], returning 1!" << std::endl;
     std::cout << "Rapidity: " << y << " Pt: " << originalPt << std::endl;

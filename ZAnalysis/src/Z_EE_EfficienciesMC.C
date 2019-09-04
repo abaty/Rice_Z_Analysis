@@ -207,7 +207,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   std::vector< float > * mcMomMass = 0;
 
   unsigned int nFiles = files.size();
-  if(isTest) nFiles = 5;
+  if(isTest) nFiles = 25;
   for(unsigned int f = 0; f<nFiles; f++){
     timer.StartSplit("Opening Files");
 
@@ -356,14 +356,14 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
               recoEff_phi_net[k]->Fill( mom.Phi(), eventWeight);
 
               //for the last few pt bins, halve the y binning so we have better stats
-              if(mcMomPt->at(j) > s.zPtBins[s.nZPtBins4Eff - s.nPtBinsToRebinRapEff]){
+              if(mcMomPt->at(j) > s.zPtBins4Eff[s.nZPtBins4Eff - s.nPtBinsToRebinRapEff]){
                 int bin = recoEff_net[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
                 if( bin%2 ==1){
                   recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin+1), mcMomPt->at(j), eventWeight );
-                  recoEff_noSF_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin+1), mcMomPt->at(j), eventWeight );
+                  recoEff_noSF_net[k]->Fill( recoEff_noSF_net[k]->GetXaxis()->GetBinCenter(bin+1), mcMomPt->at(j), eventWeight );
                 } else {
                   recoEff_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin-1), mcMomPt->at(j), eventWeight );
-                  recoEff_noSF_net[k]->Fill( recoEff_net[k]->GetXaxis()->GetBinCenter(bin-1), mcMomPt->at(j), eventWeight );
+                  recoEff_noSF_net[k]->Fill( recoEff_noSF_net[k]->GetXaxis()->GetBinCenter(bin-1), mcMomPt->at(j), eventWeight );
                 }
               }
             }
@@ -464,7 +464,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           for(int k = 0; k<nBins; k++){ 
             if(c.isInsideBin(hiBin,k)){
               //make sure this is in our fiducial histogram range otherwise CheckConsistency can freak out
-              if( mom.Pt() < s.zPtBins[ s.nZPtBins4Eff-1 ] && TMath::Abs( mom.Rapidity() ) < s.maxZRap ){
+              if( mom.Pt() < s.zPtBins4Eff[ s.nZPtBins4Eff-1 ] && TMath::Abs( mom.Rapidity() ) < s.maxZRap ){
                 if(passesAco[0]){
 
                   //90%
@@ -477,6 +477,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   massPeakOS[k]->Fill(Zcand.M(), eventWeight*scaleFactor);
                   massPeakOS_noSF[k]->Fill(Zcand.M(), eventWeight);
                   recoEff_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
+                  recoEff_noSF_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
                   recoEff_U_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorU );
                   recoEff_D_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorD );
                   recoEff_pt_pass[k]->Fill( mom.Pt(), eventWeight * scaleFactor);
@@ -492,7 +493,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   yReso[k]->Fill( Zcand.Rapidity() - mom.Rapidity() , eventWeight);            
           
                   //for the last few pt bins, halve the y binning so we have better stats
-                  if(mom.Pt()> s.zPtBins[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
+                  if(mom.Pt()> s.zPtBins4Eff[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
                     int bin = recoEff_pass[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
                     if( bin%2 ==1){
                       recoEff_pass[k]->Fill( recoEff_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
@@ -509,7 +510,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                 }//aco if statement
                 if(passesAco[1]){
                   recoEff_photonU_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
-                  if(mom.Pt()> s.zPtBins[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
+                  if(mom.Pt()> s.zPtBins4Eff[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
                     int bin = recoEff_pass[k]->GetXaxis()->FindBin(mom.Rapidity()); 
                     if( bin%2 ==1){
                       recoEff_photonU_pass[k]->Fill( recoEff_photonU_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );
@@ -520,7 +521,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                 }
                 if(passesAco[2]){
                   recoEff_photonD_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
-                  if(mom.Pt()> s.zPtBins[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
+                  if(mom.Pt()> s.zPtBins4Eff[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
                     int bin = recoEff_pass[k]->GetXaxis()->FindBin( mom.Rapidity() ); 
                     if( bin%2 ==1){
                       recoEff_photonD_pass[k]->Fill( recoEff_photonD_pass[k]->GetXaxis()->GetBinCenter(bin+1), mom.Pt(), eventWeight * scaleFactor );

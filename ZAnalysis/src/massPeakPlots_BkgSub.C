@@ -217,7 +217,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     if(j==2) massPeakOS[i][j][0]->GetYaxis()->SetTitle("#frac{dN_{Z}}{dy}");
     massPeakOS[i][j][0]->GetXaxis()->CenterTitle();
     massPeakOS[i][j][0]->GetYaxis()->CenterTitle();
-    massPeakOS[i][j][0]->SetFillColor(kWhite);
+    massPeakOS[i][j][0]->SetFillColor(kOrange+1);
     massPeakOS[i][j][0]->SetMarkerStyle(8);
     massPeakOS[i][j][0]->SetMarkerColor(kBlack);
     massPeakOS[i][j][0]->SetLineColor(kBlack);
@@ -260,7 +260,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     float dataIntegral = massPeakOS[i][j][0]->Integral() - massPeakSS_ChargeFlipCorrected[i][j][0]->Integral();
     massPeakOS_DYsignalMinusPhoton[i][j]->Scale(dataIntegral/integralDYSignal);
     massPeakOS_DYsignalMinusPhoton[i][j]->Add(massPeakSS_ChargeFlipCorrected[i][j][0]);
-    massPeakOS_DYsignalMinusPhoton[i][j]->SetFillColor(kWhite);
+    massPeakOS_DYsignalMinusPhoton[i][j]->SetFillColor(kOrange+1);
     massPeakOS_DYsignalMinusPhoton[i][j]->SetLineColor(kBlack);
 
     massPeakOS_DYsignalMinusPhoton[i][j]->Draw("HIST same");
