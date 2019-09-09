@@ -56,6 +56,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
 
   TH2D * dEtaVsdEtaSeed = new TH2D("dEtaVsdEtaSeed","dEtaVsdEtaSeed",50,0,0.01,50,0,0.01);
 
+  TH1D * conversionTagVsY;
+  TH1D * conversionTagVsY_all;
+  TH1D * missHitsVsY;
+  TH1D * missHitsVsY_all;
+
   TH1D * massPeakOS[nBins]; 
   TH1D * massPeakSS[nBins]; 
   TH1D * massPeakOS_withEff[nBins]; 
@@ -203,7 +208,12 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     candPtVsM[i] = new TH2D(Form("candPtVsM_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",40,0,10,60,60,120);
     candAcoVsM[i] = new TH2D(Form("candAcoVsM_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",50,0,0.005,60,60,120); 
     candAcoVsPt[i] = new TH2D(Form("candAcoVsPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",50,0,0.005,50,0,5);
-    candAco[i] = new TH1D(Form("candAco_%d_%d",c.getCentBinLow(i), c.getCentBinHigh(i)),"",50,0,0.005); 
+    candAco[i] = new TH1D(Form("candAco_%d_%d",c.getCentBinLow(i), c.getCentBinHigh(i)),"",50,0,0.005);
+
+    conversionTagVsY = new TH1D("conversionTagVsY","",14,-s.maxZRapEle,s.maxZRapEle); 
+    conversionTagVsY_all = new TH1D("conversionTagVsY_all","",14,-s.maxZRapEle,s.maxZRapEle); 
+    missHitsVsY = new TH1D("missHitsVsY","",14,-s.maxZRapEle,s.maxZRapEle); 
+    missHitsVsY_all = new TH1D("missHitsVsY_all","",14,-s.maxZRapEle,s.maxZRapEle); 
   }  
   yields = new TH1D("yields","yields",nBins,0,nBins);  
   yieldsSS = new TH1D("yieldsSS","yieldsSS",nBins,0,nBins);  
@@ -259,6 +269,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   //std::vector< float > * eleDz = 0;
   std::vector< float > * eleIP3D = 0;
   std::vector< float > * eleEoverPInv = 0;
+  std::vector< int > * eleConvVeto = 0;
 
   int nMC;
   std::vector< int > * mcPID = 0;
@@ -301,7 +312,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     //eTree->SetBranchAddress("eleDz",&eleDz);
     eTree->SetBranchAddress("eleIP3D",&eleIP3D);
     eTree->SetBranchAddress("eleEoverPInv",&eleEoverPInv);
-    
+    eTree->SetBranchAddress("eleConvVeto",&eleConvVeto);    
+
     if(isMC){
       eTree->SetBranchAddress("nMC",&nMC);
       eTree->SetBranchAddress("mcPID",&mcPID);
@@ -519,6 +531,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
                   candAcoVsPt[k]->Fill(acoplanarity ,Zcand.Pt());
                   candAco[k]->Fill(acoplanarity);
                 
+                  if(eleConvVeto->at(goodElectrons.at(j))==0 || eleConvVeto->at(goodElectrons.at(j2))==0)  conversionTagVsY->Fill(Zcand.Rapidity());
+                  conversionTagVsY_all->Fill(Zcand.Rapidity());
+                  if(eleMissHits->at(goodElectrons.at(j))==1 || eleMissHits->at(goodElectrons.at(j2))==1)  missHitsVsY->Fill(Zcand.Rapidity());
+                  missHitsVsY_all->Fill(Zcand.Rapidity());
+
                   //we have 3 different aco cuts for variations
                   bool passesAco[3] = {1 , 1, 1};
                   if(Zcand.Pt() < s.minPtCutForPhotons_ELE && acoplanarity < s.acoCutForPhotons_ELE) passesAco[0] = false;
@@ -810,6 +827,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   lepEta->Write();
   lepPhi->Write();
 
+  conversionTagVsY->Write();
+  conversionTagVsY_all->Write();
+  missHitsVsY->Write();
+  missHitsVsY_all->Write();
   effVsPt->Write();
     
   output->Close();

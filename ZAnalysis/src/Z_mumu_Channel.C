@@ -92,6 +92,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   TProfile * v2AvgEffVsCent[3];
   
   TH1D * candPt[nBins];
+  TH1D * candPt_withSFwithEvtWeight[nBins];
   TH1D * candPtFine[nBins];
   TH1D * candPtFiner[nBins];
   TH1D * candPt_unnormalized[nBins];
@@ -168,6 +169,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     candYVsPtForStat[i] = new TH3D(Form("candYVsPtForStat_withEff2_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",xBins,xBinsArray,s.nZPtBins-1,s.zPtBins,cBins,cBinsArray);
     
     candPt[i] = new TH1D(Form("candPt_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    candPt_withSFwithEvtWeight[i] = new TH1D(Form("candPt_withSFwithEvtWeight_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     candPtFine[i] = new TH1D(Form("candPtFine_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",400,0,200);
     candPtFiner[i] = new TH1D(Form("candPtFiner_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",800,0,200);
     candPt_unnormalized[i] = new TH1D(Form("candPt_unnormalized_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
@@ -308,6 +310,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
  
                 yields->Fill(k,1.0/efficiency * eventWeight);
                 candPt[k]->Fill(v.pT()[j]);
+                candPt_withSFwithEvtWeight[k]->Fill(v.pT()[j], eventWeight * sfs.getZSF(v.pTD1()[j], v.EtaD1()[j], v.pTD2()[j], v.EtaD2()[j], 0) );
                 candPtFine[k]->Fill(v.pT()[j]);
                 candPtFiner[k]->Fill(v.pT()[j]);
                 candPt_unnormalized[k]->Fill(v.pT()[j]);
@@ -510,6 +513,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     candYVsPtForStat[i]->Write();
     
     h.makeDifferential( candPt[i]);
+    h.makeDifferential( candPt_withSFwithEvtWeight[i]);
     h.makeDifferential( candEta[i]);
     h.makeDifferential( candY[i]);
 
@@ -560,6 +564,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
     yieldOS_TauTau_withEff[i]->Write();
 
     candPt[i]->Write();
+    candPt_withSFwithEvtWeight[i]->Write();
     candPtFine[i]->Write();
     candPtFiner[i]->Write();
     candPt_unnormalized[i]->Write();

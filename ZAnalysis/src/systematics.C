@@ -106,6 +106,7 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   mcStatRelErr_pt = (TH1D*)inFile[0]->Get("pTOS_withEff_RelStatErr_0_90");
   mcStatRelErr_y = (TH1D*)inFile[0]->Get("yOS_withEff_RelStatErr_0_90");
 
+
   //get pt smearing effect
   std::cout << "Pt Smearing now!" << std::endl;
   std::vector< std::string > label21;
@@ -116,6 +117,11 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   for(int i = 0; i<nBins; i++){
     reso[i] = (TH1D*) eff->Get(Form("recoEff_pt_pass_forReso_Ratio_SmearedToNominal%s_%d_%d", isMu21 ? label21[0].c_str() : label21[1].c_str() ,c.getCentBinLow(i),c.getCentBinHigh(i)));
   }
+  
+  TH1D * accept[4];
+  accept[1] = (TH1D*)eff->Get(Form("accept%d_totalUncert_pt", (isMu21 || isEE) ? 21 : 24));
+  accept[2] = (TH1D*)eff->Get(Form("accept%d_totalUncert_y", (isMu21 || isEE) ? 21 : 24 ));
+  accept[3] = (TH1D*)eff->Get(Form("accept%d_totalUncert_yields", (isMu21 || isEE) ? 21 : 24 ));
 
   std::cout << "Opening Output File." << std::endl;
   TFile * output = TFile::Open(Form("systematics_%s_isMu21%d.root",outputTag.c_str(),(int)isMu21),"recreate");
@@ -130,6 +136,8 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   TH1D * ttbarError[nBins][4];
   TH1D * tauError[nBins][4];
   TH1D * mcStatError[nBins][4];
+  TH1D * chargeSwapError[nBins][4];
+  TH1D * acceptError[nBins][4];
   TH1D * totalError[nBins][4];
 
 
@@ -154,7 +162,23 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       wError[i][j] = (TH1D*) backgroundYields[i][j][0]->Clone(Form("%s_wError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
       ttbarError[i][j] = (TH1D*) backgroundYields[i][j][1]->Clone(Form("%s_ttbarError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
       tauError[i][j] = (TH1D*) backgroundYields[i][j][2]->Clone(Form("%s_tauError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
-    
+      
+      //charge Swapping
+      if(isEE){
+        chargeSwapError[i][j] = (TH1D*)backgroundYields[i][j][0]->Clone(Form("%s_chargeSwapError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
+        chargeSwapError[i][j]->Reset();
+        for(int k = 0; k<chargeSwapError[i][j]->GetSize(); k++){
+          chargeSwapError[i][j]->SetBinContent(k,0.005);
+        }
+      }   
+
+      //acceptance
+      acceptError[i][j] = (TH1D*) effError[i][j]->Clone(Form("%s_acceptError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i), c.getCentBinHigh(i)));
+      acceptError[i][j]->Reset();
+      for(int k = 0; k<acceptError[i][j]->GetSize(); k++){
+        acceptError[i][j]->SetBinContent(k, accept[j]->GetBinContent( accept[j]->FindBin( acceptError[i][j]->GetBinCenter(k) ) ) );
+      } 
+
       //MC Stats
       if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j] = (TH1D*) mcStatRelErr_pt->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i))); 
       if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j] = (TH1D*) mcStatRelErr_y->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i))); 
@@ -167,6 +191,10 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
       if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
       if(j==3) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]);
+      
+      h.addInQuadrature2(totalError[i][j], acceptError[i][j]);
+
+      if(isEE) h.addInQuadrature2( totalError[i][j], chargeSwapError[i][j]);
     }        
   }
 
@@ -179,7 +207,9 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   TH1D * acoErrorByCent = new TH1D("acoErrorByCent","",9,0,9);
   TH1D * hfErrorByCent = new TH1D("hfErrorByCent","",9,0,9);
   TH1D * totalErrorByCent = new TH1D("totalErrorByCent","",9,0,9);
-  TH1D * mcStatErrorByCent = new TH1D("mcStatErrorByCent","",9,0,9); 
+  TH1D * mcStatErrorByCent = new TH1D("mcStatErrorByCent","",9,0,9);
+  TH1D * chargeSwapErrorByCent = new TH1D("chargeSwapErrorByCent","",9,0,9); 
+  TH1D * acceptErrorByCent = new TH1D("acceptErrorByCent","",9,0,9);
  
   for(int i = 0; i<nBins; i++){
     for(int j = 1; j<4; j++){
@@ -195,6 +225,8 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       wError[i][j]->Write();
       ttbarError[i][j]->Write();
       tauError[i][j]->Write();
+      acceptError[i][j]->Write();
+      if(isEE) chargeSwapError[i][j]->Write();
       totalError[i][j]->Write();
 
       int binIdx = -1;
@@ -208,6 +240,8 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
         acoErrorByCent->SetBinContent( acoErrorByCent->FindBin(binIdx) , acoError[i][j]->GetBinContent(1));
         hfErrorByCent->SetBinContent( hfErrorByCent->FindBin(binIdx) , hfError[i][j]->GetBinContent(1));
         mcStatErrorByCent->SetBinContent( mcStatErrorByCent->FindBin(binIdx), mcStatError[i][j]->GetBinContent(1));
+        acceptErrorByCent->SetBinContent( acceptErrorByCent->FindBin(binIdx), acceptError[i][j]->GetBinContent(1));
+        if(isEE) chargeSwapErrorByCent->SetBinContent(chargeSwapErrorByCent->FindBin(binIdx), chargeSwapError[i][j]->GetBinContent(1));
         totalErrorByCent->SetBinContent( totalErrorByCent->FindBin(binIdx) , totalError[i][j]->GetBinContent(1));
       }
  
@@ -236,6 +270,15 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
         mcStatError[i][j]->Draw("same");
       }     
 
+      if(isEE){
+        chargeSwapError[i][j]->SetLineColor(kGray);
+        chargeSwapError[i][j]->Draw("same");
+      }
+
+      acceptError[i][j]->SetLineColor(kRed);
+      acceptError[i][j]->SetLineStyle(10);
+      acceptError[i][j]->Draw("same");
+
       TLegend * leg = new TLegend(0.3,0.6,0.8,0.9);
       leg->SetFillStyle(0);
       leg->SetBorderSize(0);
@@ -249,8 +292,10 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       leg->AddEntry(hfError[i][j], "HF Uncert. (N_{MB} + centrality)","l");
       if(j==1) leg->AddEntry(ptSmearError[i][j], "p_{T} Smearing","l");
       if( ( (j==1 || j==2) && (c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) ) || j==3 ){
-        leg->AddEntry(mcStatError[i][j],"MC eff stat uncertainty","l");
+        leg->AddEntry(mcStatError[i][j],"MC stat uncertainty","l");
       }
+      if(isEE) leg->AddEntry(chargeSwapError[i][j],"Charge Swapping","l");
+      leg->AddEntry(acceptError[i][j], "Acceptance","l");
       leg->AddEntry((TObject*)0,"MC Background uncert negligible","");
       if(j==3) leg->AddEntry((TObject*)0,"Glauber Uncert not shown","");
       leg->Draw("same");
@@ -272,7 +317,9 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   effErrorByCent->Print("All");
   effErrorByCent->Write();   
   acoErrorByCent->Write();   
-  hfErrorByCent->Write();    
+  hfErrorByCent->Write();  
+  acceptErrorByCent->Write(); 
+  if(isEE) chargeSwapErrorByCent->Write(); 
   totalErrorByCent->Write();
 
   TCanvas * c1 = new TCanvas("","",800,800);
@@ -294,7 +341,12 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   hfErrorByCent->Draw("same");
   mcStatErrorByCent->SetLineColor(kOrange);
   mcStatErrorByCent->Draw("same");
-  
+  chargeSwapErrorByCent->SetLineColor(kGray);
+  if(isEE) chargeSwapErrorByCent->Draw("same"); 
+  acceptErrorByCent->SetLineColor(kRed);
+  acceptErrorByCent->SetLineStyle(10);
+  acceptErrorByCent->Draw("same");
+ 
   TLegend * leg = new TLegend(0.3,0.6,0.8,0.9);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
@@ -306,7 +358,9 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   leg->AddEntry(effErrorByCent, "Lepton Reco","l");
   leg->AddEntry(acoErrorByCent,"EM Background Cut","l");
   leg->AddEntry(hfErrorByCent, "HF Uncert. (N_{MB} + centrality)","l");
-  leg->AddEntry(mcStatErrorByCent,"MC eff stat uncertainty","l");
+  leg->AddEntry(mcStatErrorByCent,"MC stat uncertainty","l");
+  if(isEE) leg->AddEntry(chargeSwapErrorByCent,"Charge Swapping","l");
+  leg->AddEntry(acceptErrorByCent,"Acceptance","l");
   leg->AddEntry((TObject*)0,"MC Background uncert negligible","");
   leg->AddEntry((TObject*)0,"Glauber Uncert not shown","");
   leg->Draw("same");

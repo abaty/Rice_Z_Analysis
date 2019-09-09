@@ -15,7 +15,7 @@
 #include <fstream>
 #include <string>
 
-void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, std::string ZeeSyst, std::string Zmumu21Syst, std::string Zmumu24Syst){
+void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, std::string ZeeSyst, std::string Zmumu21Syst, std::string Zmumu24Syst, bool doAccept){
   Settings s = Settings();
 
   CentralityTool c = CentralityTool();
@@ -23,6 +23,23 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 
   CombinePoints cp = CombinePoints();
   HistNameHelper helper = HistNameHelper();
+ 
+  TH1D * acceptE[1];
+  TH1D * acceptMu21[1];
+  TH1D * acceptMu24[1];
+  if(doAccept){
+    TFile * f_acceptE = TFile::Open("resources/Z2ee_EfficiencyMC_0.root");
+    acceptE[0] = (TH1D*) f_acceptE->Get("accept21_yields_ratio_0");
+    TFile * f_acceptMu = TFile::Open("resources/Z2mumu_Efficiencies.root");
+    acceptMu21[0] = (TH1D*) f_acceptMu->Get("accept21_yields_ratio_0");
+    acceptMu24[0] = (TH1D*) f_acceptMu->Get("accept24_yields_ratio_0");
+
+    for(int i = 0; i<1; i++){
+      for(int j = 0; j<acceptE[i]->GetSize(); j++)  acceptE[i]->SetBinError(j,0);
+      for(int j = 0; j<acceptMu21[i]->GetSize(); j++)  acceptMu21[i]->SetBinError(j,0);
+      for(int j = 0; j<acceptMu24[i]->GetSize(); j++)  acceptMu24[i]->SetBinError(j,0);
+    }
+  }
 
   gStyle->SetErrorX(0);
   gStyle->SetPadTickX(1);
@@ -43,6 +60,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   TH1D * efficiencyError[nBins][3];
   TH1D * emError[nBins][3];	
   TH1D * hfError[nBins][3];	
+  TH1D * acceptError[nBins][3];
   TH1D * totalError[nBins][3];	
   
   TH1D * combo[nBins];
@@ -59,6 +77,10 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
     efficiencyError[i][0] = (TH1D*)fZeeSyst->Get(Form("yield_efficiencyError_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     efficiencyError[i][1] = (TH1D*)fZmumu21Syst->Get(Form("yield_efficiencyError_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     efficiencyError[i][2] = (TH1D*)fZmumu24Syst->Get(Form("yield_efficiencyError_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    
+    acceptError[i][0] = (TH1D*)fZeeSyst->Get(Form("yield_acceptError_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    acceptError[i][1] = (TH1D*)fZmumu21Syst->Get(Form("yield_acceptError_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    acceptError[i][2] = (TH1D*)fZmumu24Syst->Get(Form("yield_acceptError_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     
     emError[i][0] = (TH1D*)fZeeSyst->Get(Form("yield_emError_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     emError[i][1] = (TH1D*)fZmumu21Syst->Get(Form("yield_emError_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
@@ -78,6 +100,14 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
     e[i]->Scale(s.netLumi/(s.eLumi * s.Nmb));
   }
 
+  if(doAccept){
+    for(int i = 0; i<nBins; i++){
+      e[i]->Divide(acceptE[0]);
+      mu21[i]->Divide(acceptMu21[0]);
+      mu24[i]->Divide(acceptMu24[0]);
+    }
+  }
+
   //combination
   for(int j = 0; j<nBins; j++){
     TH1D * tempHistE, *tempHistMu;
@@ -93,18 +123,23 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
       float eEffErr = efficiencyError[j][0]->GetBinContent(i) * e;
       float eEmErr = emError[j][0]->GetBinContent(i) * e;
       float eHfErr = hfError[j][0]->GetBinContent(i) * e;
+      float eChargeSwapErr = 0.005 * e;
+      float eAcceptErr = acceptError[j][0]->GetBinContent(i) * e;
       
       float mu = tempHistMu->GetBinContent(i);
       float muStatErr = tempHistMu->GetBinError(i);
       float muEffErr = efficiencyError[j][1]->GetBinContent(i) * mu;
       float muEmErr = emError[j][1]->GetBinContent(i) * mu;
       float muHfErr = hfError[j][1]->GetBinContent(i) * mu;
+      float muAcceptErr = acceptError[j][1]->GetBinContent(i) * mu;
 
       double scaleFactor = 10000000;     
  
       std::vector< TMatrixD > covariance;
       covariance.push_back( cp.getFullUncorrMatrix(muStatErr*scaleFactor, eStatErr*scaleFactor) );
+      covariance.push_back( cp.getFullUncorrMatrix(0, eChargeSwapErr*scaleFactor) );
       covariance.push_back( cp.getFullUncorrMatrix(muEffErr*scaleFactor, eEffErr*scaleFactor) );
+      covariance.push_back( cp.getFullCorrMatrix(muAcceptErr*scaleFactor, eAcceptErr * scaleFactor) );
       covariance.push_back( cp.getFullCorrMatrix(muEmErr*scaleFactor, eEmErr*scaleFactor) );//correlated
       covariance.push_back( cp.getFullCorrMatrix(muHfErr*scaleFactor, eHfErr*scaleFactor) );//correlated
       std::vector<double> combined = cp.combine(mu*scaleFactor, e*scaleFactor, covariance);
@@ -239,6 +274,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   yieldPlot_mumu->SetLineWidth(2);
   yieldPlot_mumu->GetYaxis()->SetTitle("#frac{1}{N_{evt}} #frac{1}{T_{AA}} N_{Z} (mb)");
   yieldPlot_mumu->GetYaxis()->SetRangeUser(0.15*TMath::Power(10,-6),0.45*TMath::Power(10,-6));
+  if(doAccept) yieldPlot_mumu->GetYaxis()->SetRangeUser(0.15*TMath::Power(10,-6)*1.6,0.45*TMath::Power(10,-6)*1.6);
 
   yieldPlot_ee->SetMarkerStyle(21);
   yieldPlot_ee->SetMarkerSize(1.5);
@@ -261,7 +297,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   yieldPlot_mumu24->Draw("same");
   yieldPlot_ee->Draw("same");
   yieldCombo->Draw("same");
-  ATLAS->Draw("same"); 
+  if(!doAccept) ATLAS->Draw("same"); 
   
 
   TBox * eBox[40];
@@ -305,7 +341,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   glauberDummy->SetLineColor(kGray+2);
  
   //ATLAS point error    
-  helper.drawBoxAbsolute(ATLAS, 1 , ATLASBox, 0.00787*TMath::Power(10,-6) ,width,(Color_t)kGreen+1); 
+  if(!doAccept) helper.drawBoxAbsolute(ATLAS, 1 , ATLASBox, 0.00787*TMath::Power(10,-6) ,width,(Color_t)kGreen+1); 
   
   yieldPlot_mumu->Draw("same");
   yieldPlot_mumu24->Draw("same");
@@ -320,21 +356,33 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
   leg->AddEntry((TObject*)0,"2018 PbPb, p_{T}^{l} > 20 GeV","");
-  leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |#eta^{l}| < 2.4","p");
-  leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-} |#eta^{l}| < 2.1","p");
-  leg->AddEntry(yieldPlot_ee,"e^{+}e^{-} |#eta^{l}| < 2.1 ","p");
-  leg->AddEntry(yieldCombo,"Combined |#eta^{l}| < 2.1","p");
+  if(!doAccept){
+    leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |#eta^{l}| < 2.4","p");
+    leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-} |#eta^{l}| < 2.1","p");
+    leg->AddEntry(yieldPlot_ee,"e^{+}e^{-} |#eta^{l}| < 2.1 ","p");
+    leg->AddEntry(yieldCombo,"Combined |#eta^{l}| < 2.1","p");
+  } else {
+    leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |y_{Z}| < 2.4","p");
+    leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-} |y_{Z}| < 2.1","p");
+    leg->AddEntry(yieldPlot_ee,"e^{+}e^{-} |y_{Z}| < 2.1 ","p");
+    leg->AddEntry(yieldCombo,"Combined |y_{Z}| < 2.1","p");
+  }
   leg->AddEntry(glauberDummy,"Glauber Uncertainties","l");
-  leg->AddEntry(ATLAS,"ATLAS pp |#eta^{l}| < 2.5","p");
+  if(!doAccept) leg->AddEntry(ATLAS,"ATLAS pp |#eta^{l}| < 2.5","p");
 
   leg->Draw("same");
   c1->RedrawAxis();
   CMS_lumi(c1,0,10);
-
-  c1->SaveAs("plots/prettyPlots/yields_Pretty.png");
-  c1->SaveAs("plots/prettyPlots/yields_Pretty.pdf");
-  c1->SaveAs("plots/prettyPlots/yields_Pretty.C");
-
+  
+  if(!doAccept){
+    c1->SaveAs("plots/prettyPlots/yields_Pretty.png");
+    c1->SaveAs("plots/prettyPlots/yields_Pretty.pdf");
+    c1->SaveAs("plots/prettyPlots/yields_Pretty.C");
+  }else{
+    c1->SaveAs("plots/prettyPlots/yields_Pretty_withAccept.png");
+    c1->SaveAs("plots/prettyPlots/yields_Pretty_withAccept.pdf");
+    c1->SaveAs("plots/prettyPlots/yields_Pretty_withAccept.C");
+  }
 
   return;
 }
@@ -354,6 +402,7 @@ int main(int argc, const char* argv[])
   std::string Zmumu21Syst = argv[5];
   std::string Zmumu24Syst = argv[6];
    
-  plotMassPeaks(Zee, Zmumu21, Zmumu24, ZeeSyst, Zmumu21Syst, Zmumu24Syst);
+  plotMassPeaks(Zee, Zmumu21, Zmumu24, ZeeSyst, Zmumu21Syst, Zmumu24Syst, false);
+  plotMassPeaks(Zee, Zmumu21, Zmumu24, ZeeSyst, Zmumu21Syst, Zmumu24Syst, true);
   return 0; 
 }

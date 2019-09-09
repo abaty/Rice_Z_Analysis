@@ -716,6 +716,22 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_cent_net[i]->SetDirectory(0);
   }
 
+  forceConsistency(accept21_yields_pass[0], accept21_yields_net[0]);
+  TEfficiency * accept_yields_TEff = new TEfficiency(*(accept21_yields_pass[0]), *(accept21_yields_net[0]));
+  accept_yields_TEff->SetStatisticOption(TEfficiency::kBJeffrey);
+  accept_yields_TEff->SetName("accept21_yields_TEff");
+  accept_yields_TEff->SetDirectory(0);
+  forceConsistency(accept21_y_pass[0], accept21_y_net[0]);
+  TEfficiency * accept_y_TEff = new TEfficiency(*(accept21_y_pass[0]), *(accept21_y_net[0]));
+  accept_y_TEff->SetStatisticOption(TEfficiency::kBJeffrey);
+  accept_y_TEff->SetName("accept21_y_TEff");
+  accept_y_TEff->SetDirectory(0);
+  forceConsistency(accept21_pt_pass[0], accept21_pt_net[0]);
+  TEfficiency * accept_pt_TEff = new TEfficiency(*(accept21_pt_pass[0]), *(accept21_pt_net[0]));
+  accept_pt_TEff->SetStatisticOption(TEfficiency::kBJeffrey);
+  accept_pt_TEff->SetName("accept21_pt_TEff");
+  accept_pt_TEff->SetDirectory(0);
+
   TFile * output;
   if(!isTest) output = new TFile(Form("resources/Z2ee_EfficiencyMC_%d.root",jobNumber),"recreate");
   else        output = new TFile(Form("resources/Z2ee_EfficiencyMC_%d_TEST.root",jobNumber),"recreate");
@@ -924,6 +940,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   }
   accept21_pdfTypeVariation_pt_ratio->Write();
   accept21_totalUncert_pt->Write(); 
+
+  accept_yields_TEff->Write();
+  accept_y_TEff->Write();
+  accept_pt_TEff->Write();
 
   output->Close();
 

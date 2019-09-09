@@ -550,6 +550,37 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_cent_pass[i]->SetDirectory(0);
     recoEff_cent_net[i]->SetDirectory(0);
   }
+  
+  forceConsistency(accept21_yields_pass[0], accept21_yields_net[0]);
+  TEfficiency * accept_yields_TEff = new TEfficiency(*(accept21_yields_pass[0]), *(accept21_yields_net[0]));
+  accept_yields_TEff->SetStatisticOption(TEfficiency::kBJeffrey);
+  accept_yields_TEff->SetName("accept21_yields_TEff");
+  accept_yields_TEff->SetDirectory(0);
+  forceConsistency(accept21_y_pass[0], accept21_y_net[0]);
+  TEfficiency * accept_y_TEff = new TEfficiency(*(accept21_y_pass[0]), *(accept21_y_net[0]));
+  accept_y_TEff->SetStatisticOption(TEfficiency::kBJeffrey);
+  accept_y_TEff->SetName("accept21_y_TEff");
+  accept_y_TEff->SetDirectory(0);
+  forceConsistency(accept21_pt_pass[0], accept21_pt_net[0]);
+  TEfficiency * accept_pt_TEff = new TEfficiency(*(accept21_pt_pass[0]), *(accept21_pt_net[0]));
+  accept_pt_TEff->SetStatisticOption(TEfficiency::kBJeffrey);
+  accept_pt_TEff->SetName("accept21_pt_TEff");
+  accept_pt_TEff->SetDirectory(0);
+  forceConsistency(accept24_yields_pass[0], accept24_yields_net[0]);
+  TEfficiency * accept_yields_TEff24 = new TEfficiency(*(accept24_yields_pass[0]), *(accept24_yields_net[0]));
+  accept_yields_TEff24->SetStatisticOption(TEfficiency::kBJeffrey);
+  accept_yields_TEff24->SetName("accept24_yields_TEff");
+  accept_yields_TEff24->SetDirectory(0);
+  forceConsistency(accept24_y_pass[0], accept24_y_net[0]);
+  TEfficiency * accept_y_TEff24 = new TEfficiency(*(accept24_y_pass[0]), *(accept24_y_net[0]));
+  accept_y_TEff24->SetStatisticOption(TEfficiency::kBJeffrey);
+  accept_y_TEff24->SetName("accept24_y_TEff");
+  accept_y_TEff24->SetDirectory(0);
+  forceConsistency(accept24_pt_pass[0], accept24_pt_net[0]);
+  TEfficiency * accept_pt_TEff24 = new TEfficiency(*(accept24_pt_pass[0]), *(accept24_pt_net[0]));
+  accept_pt_TEff24->SetStatisticOption(TEfficiency::kBJeffrey);
+  accept_pt_TEff24->SetName("accept24_pt_TEff");
+  accept_pt_TEff24->SetDirectory(0);
 
   TFile * output;
   if(isTest) output = new TFile("resources/Z2mumu_Efficiencies_TEST.root","recreate");
@@ -892,6 +923,13 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   }
   accept21_pdfTypeVariation_pt_ratio->Write();
   accept21_totalUncert_pt->Write();
+  
+  accept_yields_TEff->Write();
+  accept_y_TEff->Write();
+  accept_pt_TEff->Write();
+  accept_yields_TEff24->Write();
+  accept_y_TEff24->Write();
+  accept_pt_TEff24->Write();
 
   output->Close();
 

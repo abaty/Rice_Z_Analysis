@@ -16,12 +16,32 @@
 #include <fstream>
 #include <string>
 
-void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std::string ZeeSyst, std::string Zmumu21Syst, std::string Zmumu24Syst){
+void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std::string ZeeSyst, std::string Zmumu21Syst, std::string Zmumu24Syst, bool doAccept){
   Settings s = Settings();
   CombinePoints cp = CombinePoints();
   HistNameHelper helper = HistNameHelper();
 
   ptCorrector ptCorr = ptCorrector("resources/Z2mumu_Efficiencies.root","resources/Z2ee_EfficiencyMC_0.root");
+
+  TH1D * acceptE[2];
+  TH1D * acceptMu21[2];
+  TH1D * acceptMu24[2];
+  if(doAccept){
+    TFile * f_acceptE = TFile::Open("resources/Z2ee_EfficiencyMC_0.root");
+    acceptE[0] = (TH1D*) f_acceptE->Get("accept21_pt_ratio_0");
+    acceptE[1] = (TH1D*) f_acceptE->Get("accept21_y_ratio_0");
+    TFile * f_acceptMu = TFile::Open("resources/Z2mumu_Efficiencies.root");
+    acceptMu21[0] = (TH1D*) f_acceptMu->Get("accept21_pt_ratio_0");
+    acceptMu21[1] = (TH1D*) f_acceptMu->Get("accept21_y_ratio_0");
+    acceptMu24[0] = (TH1D*) f_acceptMu->Get("accept24_pt_ratio_0");
+    acceptMu24[1] = (TH1D*) f_acceptMu->Get("accept24_y_ratio_0");
+
+    for(int i = 0; i<2; i++){
+      for(int j = 0; j<acceptE[i]->GetSize(); j++)  acceptE[i]->SetBinError(j,0);
+      for(int j = 0; j<acceptMu21[i]->GetSize(); j++)  acceptMu21[i]->SetBinError(j,0);
+      for(int j = 0; j<acceptMu24[i]->GetSize(); j++)  acceptMu24[i]->SetBinError(j,0);
+    }
+  }
 
   gStyle->SetErrorX(0);
   gStyle->SetPadTickX(1);
@@ -60,6 +80,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TH1D * ptSmearError_0_90[3][3];
   TH1D * mcStatError_0_90[3][3];	
   TH1D * totalError_0_90[3][3];	
+  TH1D * acceptError_0_90[3][3];
 
   TH1D * combo[3];
   combo[1] = (TH1D*) pt_e->Clone("combined_pT_0_90"); 
@@ -76,6 +97,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       hfError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_hfError_0_90",helper.name.at(j).c_str()));
       if(j==1) ptSmearError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_ptSmearError_0_90",helper.name.at(j).c_str()));
       mcStatError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_mcStatError_0_90",helper.name.at(j).c_str()));
+      acceptError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_acceptError_0_90",helper.name.at(j).c_str()));
       totalError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_totalError_0_90",helper.name.at(j).c_str()));
     }
   }
@@ -90,6 +112,14 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   pt_mu21->Scale(s.netLumi/(s.muLumi * s.Nmb));
   pt_e->Scale(s.netLumi/(s.eLumi * s.Nmb));
 
+  if(doAccept){
+    pt_e->Divide(acceptE[0]);
+    pt_mu21->Divide(acceptMu21[0]);
+    pt_mu24->Divide(acceptMu24[0]);
+    y_e->Divide(acceptE[1]);
+    y_mu21->Divide(acceptMu21[1]);
+    y_mu24->Divide(acceptMu24[1]);
+  }
 
   //combination
   for(int j = 1; j<3; j++){
@@ -115,6 +145,9 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       float eMCStatErr = mcStatError_0_90[0][j]->GetBinContent(i) * e;
       float ePtSmearErr = 0;
       if(j==1) ePtSmearErr = ptSmearError_0_90[0][j]->GetBinContent(i) * e;
+      float eChargeSwapErr = 0.005 * e;
+      float eAcceptErr = acceptError_0_90[0][j]->GetBinContent(i) * e;
+
       
       float mu = tempHistMu->GetBinContent(i);
       float muStatErr = tempHistMu->GetBinError(i);
@@ -124,12 +157,15 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       float muMCStatErr = mcStatError_0_90[1][j]->GetBinContent(i) * mu;
       float muPtSmearErr = 0;
       if(j==1) muPtSmearErr = ptSmearError_0_90[1][j]->GetBinContent(i) * mu;
+      float muAcceptErr = acceptError_0_90[1][j]->GetBinContent(i) * mu;
 
       double scaleFactor = 10000000;     
  
       std::vector< TMatrixD > covariance;
       covariance.push_back( cp.getFullUncorrMatrix(muStatErr*scaleFactor, eStatErr*scaleFactor) );
+      covariance.push_back( cp.getFullUncorrMatrix(0.0, eChargeSwapErr*scaleFactor) );
       covariance.push_back( cp.getFullUncorrMatrix(muEffErr*scaleFactor, eEffErr*scaleFactor) );
+      covariance.push_back( cp.getFullCorrMatrix(muAcceptErr * scaleFactor, eAcceptErr * scaleFactor) );
       covariance.push_back( cp.getFullCorrMatrix(muEmErr*scaleFactor, eEmErr*scaleFactor) );//correlated
       covariance.push_back( cp.getFullCorrMatrix(muHfErr*scaleFactor, eHfErr*scaleFactor) );//correlated
       covariance.push_back( cp.getFullUncorrMatrix(muPtSmearErr*scaleFactor, ePtSmearErr*scaleFactor) );
@@ -204,18 +240,32 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ly->SetBorderSize(0);
   ly->SetFillStyle(0);
   ly->AddEntry((TObject*)0,"PbPb (0-90%)","");
-  ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
-  ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
-  ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
-  ly->AddEntry(combo[2],"Combined (|#eta_{l}|<2.1)","p");
+  if(!doAccept){
+    ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
+    ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
+    ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
+    ly->AddEntry(combo[2],"Combined (|#eta_{l}|<2.1)","p");
+  }else{
+    ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.4)","p");
+    ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
+    ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|y_{Z}|<2.1)","p");
+    ly->AddEntry(combo[2],"Combined (|y_{Z}|<2.1)","p");
+  }
   ly->Draw("same");
   
   c1->RedrawAxis();
   CMS_lumi(c1,0,10);
-  
-  c1->SaveAs("plots/prettyPlots/rapidity_Pretty.png"); 
-  c1->SaveAs("plots/prettyPlots/rapidity_Pretty.pdf"); 
-  c1->SaveAs("plots/prettyPlots/rapidity_Pretty.C"); 
+ 
+  if(!doAccept){ 
+    c1->SaveAs("plots/prettyPlots/rapidity_Pretty.png"); 
+    c1->SaveAs("plots/prettyPlots/rapidity_Pretty.pdf"); 
+    c1->SaveAs("plots/prettyPlots/rapidity_Pretty.C"); 
+  }
+  else{
+    c1->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept.png"); 
+    c1->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept.pdf"); 
+    c1->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept.C"); 
+  }
   
   //make pt plot
   pt_e->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dp_{T}} (GeV^{-1})");
@@ -277,19 +327,33 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   lpt->SetBorderSize(0);
   lpt->SetFillStyle(0);
   lpt->AddEntry((TObject*)0,"PbPb (0-90%)","");
-  lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
-  lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
-  lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
-  lpt->AddEntry(combo[1],"Combined (|#eta_{l}|<2.1)","p");
+  if(!doAccept){
+    lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
+    lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
+    lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
+    lpt->AddEntry(combo[1],"Combined (|#eta_{l}|<2.1)","p");
+  }else{
+    lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.4)","p");
+    lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
+    lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-} (|y_{Z}|<2.1)","p");
+    lpt->AddEntry(combo[1],"Combined (|y_{Z}|<2.1)","p");
+  }
   lpt->Draw("same");
   
 
   c1->RedrawAxis();
   CMS_lumi(c1,0,10);
 
-  c1->SaveAs("plots/prettyPlots/pt_Pretty.png"); 
-  c1->SaveAs("plots/prettyPlots/pt_Pretty.pdf"); 
-  c1->SaveAs("plots/prettyPlots/pt_Pretty.C"); 
+  if(!doAccept){
+    c1->SaveAs("plots/prettyPlots/pt_Pretty.png"); 
+    c1->SaveAs("plots/prettyPlots/pt_Pretty.pdf"); 
+    c1->SaveAs("plots/prettyPlots/pt_Pretty.C"); 
+  }
+  else{
+    c1->SaveAs("plots/prettyPlots/pt_Pretty_withAccept.png"); 
+    c1->SaveAs("plots/prettyPlots/pt_Pretty_withAccept.pdf"); 
+    c1->SaveAs("plots/prettyPlots/pt_Pretty_withAccept.C"); 
+  }
 
 
   return;
@@ -310,6 +374,7 @@ int main(int argc, const char* argv[])
   std::string Zmumu21Syst = argv[5];
   std::string Zmumu24Syst = argv[6];
    
-  prettyPlots(Zee, Zmumu21, Zmumu24, ZeeSyst, Zmumu21Syst, Zmumu24Syst);
+  prettyPlots(Zee, Zmumu21, Zmumu24, ZeeSyst, Zmumu21Syst, Zmumu24Syst, false);
+  prettyPlots(Zee, Zmumu21, Zmumu24, ZeeSyst, Zmumu21Syst, Zmumu24Syst, true);
   return 0; 
 }
