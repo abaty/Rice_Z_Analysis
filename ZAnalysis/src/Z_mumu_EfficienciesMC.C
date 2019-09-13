@@ -7,6 +7,7 @@
 #include "include/MCReweight.h"
 #include "include/MuonTnP.h"
 #include "include/MCWeightHelper.h"
+#include "include/PtReweightSpectrum.h"
 
 //ROOT stuff
 #include "TRandom3.h"
@@ -48,6 +49,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   const int nBins = c.getNCentBins();
 
   MCWeightHelper weightHelper = MCWeightHelper();
+  PtReweightSpectrum spectrumRW = PtReweightSpectrum("resources/ptSpectrumReweighting.root");
 
   TRandom3 * r = new TRandom3();
 
@@ -198,8 +200,9 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
       for(int w = 0; w<weightHelper.getSize(); w++){
         acceptWeight[w] = vzRW.reweightFactor( v.bestvtxZ() ) * (v.weightLHE_gen(weightHelper.getIndx(w))/10000.0);
       }
+      
       double eventWeight = vzRW.reweightFactor( v.bestvtxZ() ) * vzRW.reweightFactorCent(hiBin) * c.findNcoll( hiBin ) * (v.weightLHE_gen(1080)/10000.0);//1080 is EPPS16
-
+     
       for(unsigned int j = 0; j<v.candSize_gen(); j++){
 
         //only look at gen Z's
@@ -230,6 +233,10 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         //require both muons to be > 20 GeV
         if( v.pTD1_gen()[j] < s.minMuonPt ) continue;
         if( v.pTD2_gen()[j] < s.minMuonPt ) continue;
+
+        //adjust the event weight based on the gen pT so that the pT spectrum is reweighted to data
+        double ptWeight = spectrumRW.getReweightFactorMuon(v.pT_gen()[j]);
+        eventWeight *= ptWeight;
 
         for(int w = 0; w<weightHelper.getSize(); w++){
           accept24_yields_pass[w]->Fill(0.5, acceptWeight[w]);
