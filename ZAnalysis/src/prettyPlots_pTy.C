@@ -166,7 +166,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       covariance.push_back( cp.getFullUncorrMatrix(0.0, eChargeSwapErr*scaleFactor) );
       covariance.push_back( cp.getFullUncorrMatrix(muEffErr*scaleFactor, eEffErr*scaleFactor) );
       covariance.push_back( cp.getFullCorrMatrix(muAcceptErr * scaleFactor, eAcceptErr * scaleFactor) );
-      covariance.push_back( cp.getFullCorrMatrix(muEmErr*scaleFactor, eEmErr*scaleFactor) );//correlated
+      covariance.push_back( cp.getFullUncorrMatrix(muEmErr*scaleFactor, eEmErr*scaleFactor) );//correlated
       covariance.push_back( cp.getFullCorrMatrix(muHfErr*scaleFactor, eHfErr*scaleFactor) );//correlated
       covariance.push_back( cp.getFullUncorrMatrix(muPtSmearErr*scaleFactor, ePtSmearErr*scaleFactor) );
       covariance.push_back( cp.getFullUncorrMatrix(muMCStatErr * scaleFactor, eMCStatErr * scaleFactor) );

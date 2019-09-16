@@ -8,6 +8,7 @@
 #include "include/ZEfficiency.h"
 #include "include/HistNameHelper.h"
 #include "include/MuonTnP.h"
+#include "include/ptReweightSpectrum.h"
 
 //ROOT stuff
 #include "TLorentzVector.h"
@@ -35,6 +36,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
   ZEfficiency zEffphotonD = ZEfficiency("resources/Z2mumu_Efficiencies.root", isMC, -2);
 
   MuonTnP sfs = MuonTnP();
+  PtReweightSpectrum spectrumRW = PtReweightSpectrum("resources/ptSpectrumReweighting.root");
 
   MCReweight * vzRW;
   if(isMC) vzRW = new MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
@@ -249,6 +251,9 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       if(isMC){
         for(unsigned int k = 0; k<v.candSize_gen(); k++){
           if( TMath::Abs(v.DecayID_gen()[k]) == 23 ){
+            //adjust the event weight based on the gen pT so that the pT spectrum is reweighted to data in DY MC only
+            double ptWeight = spectrumRW.getReweightFactorMuon(v.pT_gen()[k]);
+            eventWeight *= ptWeight;
             isTau = false;
             break;
           }

@@ -1,4 +1,5 @@
 #include "include/centralityBin.h"
+#include "include/ptReweightSpectrum.h"
 #include "include/MCWeightHelper.h"
 #include "include/electronEnergyScale.h"
 #include "include/forceConsistency.h"
@@ -38,6 +39,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   MCReweight vzRW = MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
   MCWeightHelper weightHelper = MCWeightHelper();
   
+  PtReweightSpectrum spectrumRW = PtReweightSpectrum("resources/ptSpectrumReweighting.root");
+  
   Settings s = Settings();
 
   CentralityBin cb = CentralityBin();
@@ -52,6 +55,13 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D * accept21_y_net[120];
   TH1D * accept21_yields_net[120];
   
+  TH1D * accept21_pt_noPtWeight_pass;
+  TH1D * accept21_y_noPtWeight_pass;
+  TH1D * accept21_yields_noPtWeight_pass;
+  TH1D * accept21_pt_noPtWeight_net;
+  TH1D * accept21_y_noPtWeight_net;
+  TH1D * accept21_yields_noPtWeight_net;
+  
   TH1D * massPeakOS[nBins]; 
   TH1D * massPeakOS_noSF[nBins]; 
   TH1D * massPeakSS[nBins]; 
@@ -60,6 +70,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D * recoEff_pt_net[nBins];
   TH1D * recoEff_pt[nBins];  
   TEfficiency * eff_pt[nBins];
+  
+  TH1D * recoEff_pt_noPtWeight_pass[nBins];
+  TH1D * recoEff_pt_noPtWeight_net[nBins];
+  TH1D * recoEff_pt_noPtWeight[nBins];  
+  TEfficiency * eff_pt_noPtWeight[nBins];
   
   TH1D * recoEff_y_pass[nBins];
   TH1D * recoEff_y_net[nBins];
@@ -136,6 +151,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     
     recoEff_pt_pass[k] = new TH1D(Form("recoEff_pt_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
     recoEff_pt_net[k] = new TH1D(Form("recoEff_pt_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
+    recoEff_pt_noPtWeight_pass[k] = new TH1D(Form("recoEff_pt_noPtWeight_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
+    recoEff_pt_noPtWeight_net[k] = new TH1D(Form("recoEff_pt_noPtWeight_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
     recoEff_y_pass[k] = new TH1D(Form("recoEff_y_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
     recoEff_y_net[k] = new TH1D(Form("recoEff_y_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
     recoEff_phi_pass[k] = new TH1D(Form("recoEff_phi_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",30,-TMath::Pi(),TMath::Pi());
@@ -159,6 +176,12 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     accept21_yields_pass[i] = new TH1D(Form("accept21_yields_pass_%d",i),"",1,0,1);
     accept21_yields_net[i] = new TH1D(Form("accept21_yields_net_%d",i),"",1,0,1);
   }
+  accept21_pt_noPtWeight_pass = new TH1D(Form("accept21_pt_noPtWeight_pass_%d",0),"",s.nZPtBins-1,s.zPtBins);
+  accept21_pt_noPtWeight_net = new TH1D(Form("accept21_pt_noPtWeight_net_%d",0),"",s.nZPtBins-1,s.zPtBins);
+  accept21_y_noPtWeight_pass = new TH1D(Form("accept21_y_noPtWeight_pass_%d",0),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
+  accept21_y_noPtWeight_net = new TH1D(Form("accept21_y_noPtWeight_net_%d",0),"",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
+  accept21_yields_noPtWeight_pass = new TH1D(Form("accept21_yields_noPtWeight_pass_%d",0),"",1,0,1);
+  accept21_yields_noPtWeight_net = new TH1D(Form("accept21_yields_noPtWeight_net_%d",0),"",1,0,1);
   yReco = new TH1D("yReco",";y_{reco}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
   yGen = new TH1D("yGen",";y_{gen}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
   yResponse = new TH2D("yResponse","y_{reco};y_{gen}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
@@ -312,7 +335,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
    
         //make sure it's an electron
         if( TMath::Abs(mcPID->at(j)) != 11) continue;
-          
+     
         //make sure it's in our rapidity range
         TLorentzVector tempMom = TLorentzVector();
         tempMom.SetPtEtaPhiM( mcMomPt->at(j), mcMomEta->at(j), mcMomPhi->at(j), mcMomMass->at(j));
@@ -320,11 +343,15 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
 
         //there is a good Z here, let's fill the acceptance histogram
         if(nGenElectronsFound==0){
+          double ptWeight = spectrumRW.getReweightFactorElectron(mcMomPt->at(j));
           for(int w = 0; w<weightHelper.getSize(); w++){
-            accept21_yields_net[w]->Fill( 0.5, acceptWeight[w]); 
-            accept21_y_net[w]->Fill( tempMom.Rapidity(), acceptWeight[w]); 
-            accept21_pt_net[w]->Fill( tempMom.Pt(), acceptWeight[w]); 
+            accept21_yields_net[w]->Fill( 0.5, acceptWeight[w]*ptWeight); 
+            accept21_y_net[w]->Fill( tempMom.Rapidity(), acceptWeight[w]*ptWeight); 
+            accept21_pt_net[w]->Fill( tempMom.Pt(), acceptWeight[w]*ptWeight); 
           } 
+          accept21_yields_noPtWeight_net->Fill( 0.5, acceptWeight[0]); 
+          accept21_y_noPtWeight_net->Fill( tempMom.Rapidity(), acceptWeight[0]); 
+          accept21_pt_noPtWeight_net->Fill( tempMom.Pt(), acceptWeight[0]); 
         }     
         nGenElectronsFound++;
 
@@ -339,18 +366,26 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           //Fill denominator
           foundGen = true; 
           mom.SetPtEtaPhiM( mcMomPt->at(j), mcMomEta->at(j), mcMomPhi->at(j), mcMomMass->at(j));
-          
+                
+          //adjust the event weight based on the gen pT so that the pT spectrum is reweighted to data
+          double ptWeight = spectrumRW.getReweightFactorElectron(mcMomPt->at(j));
+          eventWeight *= ptWeight;
+   
           for(int w = 0; w<weightHelper.getSize(); w++){
-            accept21_yields_pass[w]->Fill(0.5, acceptWeight[w]);
-            accept21_y_pass[w]->Fill(tempMom.Rapidity(), acceptWeight[w]);
-            accept21_pt_pass[w]->Fill(tempMom.Pt(), acceptWeight[w]);
+            accept21_yields_pass[w]->Fill(0.5, acceptWeight[w] * ptWeight);
+            accept21_y_pass[w]->Fill(tempMom.Rapidity(), acceptWeight[w] * ptWeight);
+            accept21_pt_pass[w]->Fill(tempMom.Pt(), acceptWeight[w] * ptWeight);
           }
+          accept21_yields_noPtWeight_pass->Fill(0.5, acceptWeight[0]);
+          accept21_y_noPtWeight_pass->Fill(tempMom.Rapidity(), acceptWeight[0]);
+          accept21_pt_noPtWeight_pass->Fill(tempMom.Pt(), acceptWeight[0]);
           
           for(int k = 0; k<nBins; k++){ 
             if(c.isInsideBin(hiBin,k)){
               recoEff_net[k]->Fill( mom.Rapidity(), mcMomPt->at(j), eventWeight );
               recoEff_noSF_net[k]->Fill( mom.Rapidity(), mcMomPt->at(j), eventWeight );
               recoEff_pt_net[k]->Fill( mom.Pt(), eventWeight);
+              recoEff_pt_noPtWeight_net[k]->Fill( mom.Pt(), eventWeight/ptWeight);
               recoEff_y_net[k]->Fill( mom.Rapidity(), eventWeight);
               recoEff_cent_net[k]->Fill( hiBin/2.0, eventWeight);
               recoEff_phi_net[k]->Fill( mom.Phi(), eventWeight);
@@ -474,6 +509,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                     yResponse->Fill(Zcand.Rapidity(), mom.Rapidity(), eventWeight);
                   }
 
+
                   massPeakOS[k]->Fill(Zcand.M(), eventWeight*scaleFactor);
                   massPeakOS_noSF[k]->Fill(Zcand.M(), eventWeight);
                   recoEff_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactor );
@@ -481,6 +517,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   recoEff_U_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorU );
                   recoEff_D_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorD );
                   recoEff_pt_pass[k]->Fill( mom.Pt(), eventWeight * scaleFactor);
+                  double ptWeight = spectrumRW.getReweightFactorElectron(mom.Pt());
+                  recoEff_pt_noPtWeight_pass[k]->Fill(  mom.Pt(), eventWeight/ptWeight * scaleFactor );
                   recoEff_y_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
                   recoEff_cent_pass[k]->Fill( hiBin/2.0, eventWeight * scaleFactor);
                   recoEff_phi_pass[k]->Fill( mom.Phi(), eventWeight * scaleFactor);
@@ -659,6 +697,25 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_pt_net[i]->SetDirectory(0);
   }
   for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_pt_noPtWeight_pass[i], recoEff_pt_noPtWeight_net[i]);
+    recoEff_pt_noPtWeight[i] = (TH1D*)recoEff_pt_noPtWeight_pass[i]->Clone(Form("recoEff_pt_noPtWeight_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_noPtWeight[i]->Divide(recoEff_pt_noPtWeight_net[i]);
+    recoEff_pt_noPtWeight[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_pt_noPtWeight_pass[i]), *(recoEff_pt_noPtWeight_net[i]),"w") ){
+      eff_pt_noPtWeight[i] = new TEfficiency(*(recoEff_pt_noPtWeight_pass[i]), *(recoEff_pt_noPtWeight_net[i]));
+      eff_pt_noPtWeight[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_pt_noPtWeight[i]->SetName(Form("eff_pt_noPtWeight_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_pt_noPtWeight[i]->SetDirectory(0);
+    }
+    else{
+      std::cout << "Warning, these histograms are not consistent!" << std::endl;
+    }
+
+    recoEff_pt_noPtWeight_pass[i]->SetDirectory(0);
+    recoEff_pt_noPtWeight_net[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
     forceConsistency(recoEff_y_pass[i], recoEff_y_net[i]);
     recoEff_y[i] = (TH1D*)recoEff_y_pass[i]->Clone(Form("recoEff_y_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     recoEff_y[i]->Divide(recoEff_y_net[i]);
@@ -768,6 +825,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_pt_net[i]->Write();
     eff_pt[i]->Write();
     
+    recoEff_pt_noPtWeight[i]->Write();
+    recoEff_pt_noPtWeight_pass[i]->Write();
+    recoEff_pt_noPtWeight_net[i]->Write();
+    eff_pt_noPtWeight[i]->Write();
+    
     recoEff_y[i]->Write();
     recoEff_y_pass[i]->Write();
     recoEff_y_net[i]->Write();
@@ -825,6 +887,12 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D * accept21_nPDFVariationMax_yields_ratio;
   TH1D * accept21_nPDFVariationMax_y_ratio;
   TH1D * accept21_nPDFVariationMax_pt_ratio;
+  accept21_yields_noPtWeight_pass->Write();
+  accept21_yields_noPtWeight_net->Write();
+  accept21_pt_noPtWeight_pass->Write();
+  accept21_pt_noPtWeight_net->Write();
+  accept21_y_noPtWeight_pass->Write();
+  accept21_y_noPtWeight_net->Write();
   for(int w = 0; w<weightHelper.getSize(); w++){
     accept21_yields_ratio[w] = (TH1D*)accept21_yields_pass[w]->Clone(Form("accept21_yields_ratio_%d",w));
     accept21_yields_ratio[w]->Divide(accept21_yields_net[w]);

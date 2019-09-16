@@ -90,7 +90,7 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   for(int i = 0; i<nBins; i++){
     for(int j = 1; j<4; j++){
       for(int k = 0; k<3; k++){//3 backgrounds here
-        backgroundYields[i][j][k]->Scale(0.1);//we assume they vary by 10\%
+        backgroundYields[i][j][k]->Scale(0.2);//we assume they vary by 10\%
         backgroundYields[i][j][k]->Divide(result[i][j][0][0]);
       }     
     }

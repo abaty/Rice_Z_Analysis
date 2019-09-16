@@ -1,4 +1,5 @@
 #include "include/ElectronTnP.h"
+#include "include/ptReweightSpectrum.h"
 #include "include/HistNameHelper.h"
 #include "include/MCReweight.h"
 #include "include/electronEnergyScale.h"
@@ -34,6 +35,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   ElecTrigObject eTrig = ElecTrigObject();
   ElectronEnergyScale energyScale = ElectronEnergyScale("data");
   ElectronEnergyScale energyScaleMC = ElectronEnergyScale("MC");
+  PtReweightSpectrum spectrumRW = PtReweightSpectrum("resources/ptSpectrumReweighting.root");
 
   Settings s = Settings();
   
@@ -275,7 +277,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   std::vector< int > * mcPID = 0;
   std::vector< int > * mcMomPID = 0;
   std::vector< int > * mcGMomPID = 0;
-  
+  std::vector< float > * mcMomPt = 0;  
 
   int ZDC_n = 0;
   float ZDC_E[100];
@@ -317,6 +319,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     if(isMC){
       eTree->SetBranchAddress("nMC",&nMC);
       eTree->SetBranchAddress("mcPID",&mcPID);
+      eTree->SetBranchAddress("mcMomPt",&mcMomPt);
       eTree->SetBranchAddress("mcMomPID",&mcMomPID);
       eTree->SetBranchAddress("mcGMomPID",&mcGMomPID);
     }
@@ -441,9 +444,16 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
             break; 
           }
           //only look for electrons coming directly from a Z
-          if( TMath::Abs(mcMomPID->at(j)) != 23) continue;  
-          //if it decays to muons or electrons, break out
-          if( TMath::Abs(mcPID->at(j)) == 13 || TMath::Abs(mcPID->at(j) == 11)) break;       
+          if( TMath::Abs(mcMomPID->at(j)) != 23) continue; 
+
+          
+ 
+          //if it decays to muons or electrons, break out after weighting event accordingly
+          if( TMath::Abs(mcPID->at(j)) == 13 || TMath::Abs(mcPID->at(j) == 11)){
+            double ptWeight = spectrumRW.getReweightFactorElectron(mcMomPt->at(j));
+            eventWeight *= ptWeight;
+            break;       
+          }
         }
       }
 

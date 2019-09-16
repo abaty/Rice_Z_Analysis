@@ -7,7 +7,7 @@
 #include "include/MCReweight.h"
 #include "include/MuonTnP.h"
 #include "include/MCWeightHelper.h"
-#include "include/PtReweightSpectrum.h"
+#include "include/ptReweightSpectrum.h"
 
 //ROOT stuff
 #include "TRandom3.h"
@@ -67,11 +67,24 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   TH1D * accept21_pt_net[120];
   TH1D * accept21_y_net[120];
   TH1D * accept21_yields_net[120];
+  
+  TH1D * accept24_pt_noPtWeight_pass;
+  TH1D * accept24_y_noPtWeight_pass;
+  TH1D * accept24_yields_noPtWeight_pass;
+  TH1D * accept24_pt_noPtWeight_net;
+  TH1D * accept24_y_noPtWeight_net;
+  TH1D * accept24_yields_noPtWeight_net;
+
 
   TH1D * recoEff_pt_pass[nBins];
   TH1D * recoEff_pt_net[nBins];
   TH1D * recoEff_pt[nBins];  
   TEfficiency * eff_pt[nBins];
+  
+  TH1D * recoEff_pt_noPtWeight_pass[nBins];
+  TH1D * recoEff_pt_noPtWeight_net[nBins];
+  TH1D * recoEff_pt_noPtWeight[nBins];  
+  TEfficiency * eff_pt_noPtWeight[nBins];
   
   TH1D * recoEff_y_pass[nBins];
   TH1D * recoEff_y_net[nBins];
@@ -145,6 +158,8 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     
     recoEff_pt_pass[k] = new TH1D(Form("recoEff_pt_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
     recoEff_pt_net[k] = new TH1D(Form("recoEff_pt_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
+    recoEff_pt_noPtWeight_pass[k] = new TH1D(Form("recoEff_pt_noPtWeight_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
+    recoEff_pt_noPtWeight_net[k] = new TH1D(Form("recoEff_pt_noPtWeight_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
     recoEff_y_pass[k] = new TH1D(Form("recoEff_y_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
     recoEff_y_net[k] = new TH1D(Form("recoEff_y_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
     recoEff_phi_pass[k] = new TH1D(Form("recoEff_phi_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",30,-TMath::Pi(),TMath::Pi());
@@ -178,6 +193,12 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     accept21_yields_pass[i] = new TH1D(Form("accept21_yields_pass_%d",i),"",1,0,1);
     accept21_yields_net[i] = new TH1D(Form("accept21_yields_net_%d",i),"",1,0,1);
   }
+  accept24_pt_noPtWeight_pass = new TH1D(Form("accept24_pt_noPtWeight_pass_%d",0),"",s.nZPtBins-1,s.zPtBins);
+  accept24_pt_noPtWeight_net = new TH1D(Form("accept24_pt_noPtWeight_net_%d",0),"",s.nZPtBins-1,s.zPtBins);
+  accept24_y_noPtWeight_pass = new TH1D(Form("accept24_y_noPtWeight_pass_%d",0),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+  accept24_y_noPtWeight_net = new TH1D(Form("accept24_y_noPtWeight_net_%d",0),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+  accept24_yields_noPtWeight_pass = new TH1D(Form("accept24_yields_noPtWeight_pass_%d",0),"",1,0,1);
+  accept24_yields_noPtWeight_net = new TH1D(Form("accept24_yields_noPtWeight_net_%d",0),"",1,0,1);
 
   //starting looping over the file
   for(unsigned int f = 0; f<files.size(); f++){
@@ -211,18 +232,25 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
         //rapidity cut and acceptance stuff
         if(TMath::Abs( v.y_gen()[j] ) > s.maxZRap) continue;
+        
+        //adjust the event weight based on the gen pT so that the pT spectrum is reweighted to data
+        double ptWeight = spectrumRW.getReweightFactorMuon(v.pT_gen()[j]);
+        eventWeight *= ptWeight;
 
         for(int w = 0; w<weightHelper.getSize(); w++){
-          accept24_yields_net[w]->Fill( 0.5, acceptWeight[w]); 
-          accept24_y_net[w]->Fill( v.y_gen()[j], acceptWeight[w]); 
-          accept24_pt_net[w]->Fill( v.pT_gen()[j], acceptWeight[w]); 
+          accept24_yields_net[w]->Fill( 0.5, acceptWeight[w] * ptWeight); 
+          accept24_y_net[w]->Fill( v.y_gen()[j], acceptWeight[w] * ptWeight); 
+          accept24_pt_net[w]->Fill( v.pT_gen()[j], acceptWeight[w] * ptWeight); 
         }
+        accept24_yields_noPtWeight_net->Fill( 0.5, acceptWeight[0]); 
+        accept24_y_noPtWeight_net->Fill( v.y_gen()[j], acceptWeight[0]); 
+        accept24_pt_noPtWeight_net->Fill( v.pT_gen()[j], acceptWeight[0]); 
         
         if(TMath::Abs( v.y_gen()[j] ) < s.maxZRapEle){
           for(int w = 0; w<weightHelper.getSize(); w++){
-            accept21_yields_net[w]->Fill( 0.5, acceptWeight[w]); 
-            accept21_y_net[w]->Fill( v.y_gen()[j], acceptWeight[w]); 
-            accept21_pt_net[w]->Fill( v.pT_gen()[j], acceptWeight[w]); 
+            accept21_yields_net[w]->Fill( 0.5, acceptWeight[w] * ptWeight); 
+            accept21_y_net[w]->Fill( v.y_gen()[j], acceptWeight[w] * ptWeight); 
+            accept21_pt_net[w]->Fill( v.pT_gen()[j], acceptWeight[w] * ptWeight); 
           }
         }
  
@@ -234,21 +262,20 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         if( v.pTD1_gen()[j] < s.minMuonPt ) continue;
         if( v.pTD2_gen()[j] < s.minMuonPt ) continue;
 
-        //adjust the event weight based on the gen pT so that the pT spectrum is reweighted to data
-        double ptWeight = spectrumRW.getReweightFactorMuon(v.pT_gen()[j]);
-        eventWeight *= ptWeight;
-
         for(int w = 0; w<weightHelper.getSize(); w++){
-          accept24_yields_pass[w]->Fill(0.5, acceptWeight[w]);
-          accept24_y_pass[w]->Fill(v.y_gen()[j], acceptWeight[w]);
-          accept24_pt_pass[w]->Fill(v.pT_gen()[j], acceptWeight[w]);
+          accept24_yields_pass[w]->Fill(0.5, acceptWeight[w] * ptWeight);
+          accept24_y_pass[w]->Fill(v.y_gen()[j], acceptWeight[w] * ptWeight);
+          accept24_pt_pass[w]->Fill(v.pT_gen()[j], acceptWeight[w] * ptWeight);
         }
+        accept24_yields_noPtWeight_pass->Fill(0.5, acceptWeight[0]);
+        accept24_y_noPtWeight_pass->Fill(v.y_gen()[j], acceptWeight[0]);
+        accept24_pt_noPtWeight_pass->Fill(v.pT_gen()[j], acceptWeight[0]);
 
         if( TMath::Abs( v.y_gen()[j] ) < s.maxZRapEle && TMath::Abs( v.EtaD1_gen()[j] ) < s.maxZRapEle && TMath::Abs( v.EtaD2_gen()[j] ) < s.maxZRapEle){
           for(int w = 0; w<weightHelper.getSize(); w++){
-            accept21_yields_pass[w]->Fill(0.5, acceptWeight[w]);
-            accept21_y_pass[w]->Fill(v.y_gen()[j], acceptWeight[w]);
-            accept21_pt_pass[w]->Fill(v.pT_gen()[j], acceptWeight[w]);
+            accept21_yields_pass[w]->Fill(0.5, acceptWeight[w] * ptWeight);
+            accept21_y_pass[w]->Fill(v.y_gen()[j], acceptWeight[w] * ptWeight);
+            accept21_pt_pass[w]->Fill(v.pT_gen()[j], acceptWeight[w] * ptWeight);
           }
         }
 
@@ -258,6 +285,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
             recoEff_net[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight );
             recoEff_noSF_net[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight );
             recoEff_pt_net[k]->Fill( v.pT_gen()[j], eventWeight);
+            recoEff_pt_noPtWeight_net[k]->Fill( v.pT_gen()[j], eventWeight/ptWeight);
             recoEff_y_net[k]->Fill( v.y_gen()[j], eventWeight);
             recoEff_cent_net[k]->Fill( hiBin/2.0 , eventWeight);
             recoEff_phi_net[k]->Fill( getPhi( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.PhiD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], v.PhiD2_gen()[j] ), eventWeight);
@@ -320,6 +348,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
                 recoEff_D_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight * scaleFactorD );
                 recoEff_noSF_pass[k]->Fill( v.y_gen()[j], v.pT_gen()[j], eventWeight  );
                 recoEff_pt_pass[k]->Fill(v.pT_gen()[j], eventWeight * scaleFactor);         
+                recoEff_pt_noPtWeight_pass[k]->Fill(v.pT_gen()[j], eventWeight/ptWeight * scaleFactor);         
                 recoEff_y_pass[k]->Fill(v.y_gen()[j], eventWeight * scaleFactor);         
                 recoEff_cent_pass[k]->Fill( hiBin /2.0, eventWeight * scaleFactor);         
                 recoEff_phi_pass[k]->Fill(getPhi( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.PhiD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], v.PhiD2_gen()[j] ), eventWeight * scaleFactor);         
@@ -501,6 +530,25 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_pt_net[i]->SetDirectory(0);
   }
   for(int i = 0; i<nBins; i++){
+    forceConsistency(recoEff_pt_noPtWeight_pass[i], recoEff_pt_noPtWeight_net[i]);
+    recoEff_pt_noPtWeight[i] = (TH1D*)recoEff_pt_noPtWeight_pass[i]->Clone(Form("recoEff_pt_noPtWeight_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_pt_noPtWeight[i]->Divide(recoEff_pt_noPtWeight_net[i]);
+    recoEff_pt_noPtWeight[i]->SetDirectory(0);
+
+    if( TEfficiency::CheckConsistency(*(recoEff_pt_noPtWeight_pass[i]), *(recoEff_pt_noPtWeight_net[i]),"w") ){
+      eff_pt_noPtWeight[i] = new TEfficiency(*(recoEff_pt_noPtWeight_pass[i]), *(recoEff_pt_noPtWeight_net[i]));
+      eff_pt_noPtWeight[i]->SetStatisticOption(TEfficiency::kBJeffrey);
+      eff_pt_noPtWeight[i]->SetName(Form("eff_pt_noPtWeight_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+      eff_pt_noPtWeight[i]->SetDirectory(0);
+    }
+    else{
+      std::cout << "Warning, these histograms are not consistent!" << std::endl;
+    }
+
+    recoEff_pt_noPtWeight_pass[i]->SetDirectory(0);
+    recoEff_pt_noPtWeight_net[i]->SetDirectory(0);
+  }
+  for(int i = 0; i<nBins; i++){
     forceConsistency(recoEff_y_pass[i], recoEff_y_net[i]);
     recoEff_y[i] = (TH1D*)recoEff_y_pass[i]->Clone(Form("recoEff_y_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     recoEff_y[i]->Divide(recoEff_y_net[i]);
@@ -588,6 +636,9 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   accept_pt_TEff24->SetStatisticOption(TEfficiency::kBJeffrey);
   accept_pt_TEff24->SetName("accept24_pt_TEff");
   accept_pt_TEff24->SetDirectory(0);
+  forceConsistency(accept24_yields_noPtWeight_pass, accept24_yields_noPtWeight_net);
+  forceConsistency(accept24_y_noPtWeight_pass, accept24_y_noPtWeight_net);
+  forceConsistency(accept24_pt_noPtWeight_pass, accept24_pt_noPtWeight_net);
 
   TFile * output;
   if(isTest) output = new TFile("resources/Z2mumu_Efficiencies_TEST.root","recreate");
@@ -618,11 +669,16 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     recoEff_noSF_pass[i]->Write();
     recoEff_noSF_net[i]->Write();
     eff_noSF[i]->Write();
-    
+   
     recoEff_pt[i]->Write();
     recoEff_pt_pass[i]->Write();
     recoEff_pt_net[i]->Write();
     eff_pt[i]->Write();
+    
+    recoEff_pt_noPtWeight[i]->Write();
+    recoEff_pt_noPtWeight_pass[i]->Write();
+    recoEff_pt_noPtWeight_net[i]->Write();
+    eff_pt_noPtWeight[i]->Write();
     
     recoEff_y[i]->Write();
     recoEff_y_pass[i]->Write();
@@ -686,6 +742,13 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   TH1D * accept24_nPDFVariationMax_yields_ratio;
   TH1D * accept24_nPDFVariationMax_y_ratio;
   TH1D * accept24_nPDFVariationMax_pt_ratio;
+  accept24_yields_noPtWeight_pass->Write();
+  accept24_yields_noPtWeight_net->Write();
+  accept24_pt_noPtWeight_pass->Write();
+  accept24_pt_noPtWeight_net->Write();
+  accept24_y_noPtWeight_pass->Write();
+  accept24_y_noPtWeight_net->Write();
+
   for(int w = 0; w<weightHelper.getSize(); w++){
     accept24_yields_ratio[w] = (TH1D*)accept24_yields_pass[w]->Clone(Form("accept24_yields_ratio_%d",w));
     accept24_yields_ratio[w]->Divide(accept24_yields_net[w]);
@@ -698,13 +761,6 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
     accept24_pt_ratio[w] = (TH1D*)accept24_pt_pass[w]->Clone(Form("accept24_pt_ratio_%d",w));
     accept24_pt_ratio[w]->Divide(accept24_pt_net[w]);
     accept24_pt_ratio[w]->Write();
-
-    //accept24_yields_pass[w]->Write();
-    //accept24_yields_net[w]->Write();
-    //accept24_pt_pass[w]->Write();
-    //accept24_pt_net[w]->Write();
-    //accept24_y_pass[w]->Write();
-    //accept24_y_net[w]->Write();
 
     //scale variations
     if(w>=3 && w<=8){
