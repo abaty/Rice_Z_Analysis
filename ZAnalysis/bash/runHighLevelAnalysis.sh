@@ -1,4 +1,5 @@
 #!/bin/bash
+source environment.sh
 
 ./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBin1_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root 1 21hiBin1
 ./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBin2_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root 1 21hiBin2

@@ -7,6 +7,8 @@ endif
 
 MKDIR_BIN=mkdir -p $(PWD)/bin
 
+ROOUNFOLDPATH=$(PWD)/resources
+ROOUNFOLDLIB=RooUnfold
 
 all: mkdirBin bin/Z_EE_Channel.exe bin/Z_EE_Channel_STARLIGHT.exe bin/Z_mumu_Channel.exe bin/Z_mumu_Channel_STARLIGHT.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe bin/prettyPlots_pTy.exe bin/prettyPlots_yields.exe bin/systematics.exe bin/systematicsV2.exe bin/dataMCCompare.exe
 
@@ -48,10 +50,10 @@ bin/efficiencyPlots.exe: src/efficiencyPlots.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/efficiencyPlots.exe src/efficiencyPlots.C
 
 bin/prettyPlots_pTy.exe: src/prettyPlots_pTy.C
-	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/prettyPlots_pTy.exe src/prettyPlots_pTy.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -I $(PWD)/include/RooUnfold -L $(ROOUNFOLDPATH) -o bin/prettyPlots_pTy.exe src/prettyPlots_pTy.C  -l$(ROOUNFOLDLIB) 
 
 bin/prettyPlots_yields.exe: src/prettyPlots_yields.C
-	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/prettyPlots_yields.exe src/prettyPlots_yields.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD)  -o bin/prettyPlots_yields.exe src/prettyPlots_yields.C
 
 bin/systematics.exe: src/systematics.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/systematics.exe src/systematics.C
