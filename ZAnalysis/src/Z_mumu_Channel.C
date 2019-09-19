@@ -268,8 +268,12 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
         if( v.mass()[j] < s.zMassRange[0] || v.mass()[j] > s.zMassRange[1]) continue; 
         if( !(v.pTD1()[j] > s.minMuonPt )) continue;
         if( !(v.pTD2()[j] > s.minMuonPt )) continue;
-        if( TMath::Abs(v.EtaD1()[j]) > etaCut ) continue;
-        if( TMath::Abs(v.EtaD2()[j]) > etaCut ) continue;
+        if( TMath::Abs(v.EtaD1()[j]) > s.maxZRap ) continue;
+        if( TMath::Abs(v.EtaD2()[j]) > s.maxZRap) continue;
+
+        if( TMath::Abs(v.y()[j]) > s.maxZRap) continue;
+        if(etaCut<2.11 && TMath::Abs(v.y()[j]) > s.maxZRapEle) continue;
+
         if( !(v.tightCand(j,"POG"))) continue;//tight Muon 1 && tight Muon 2      
         if( !(v.VtxProb()[j] >0.001)) continue; 
  

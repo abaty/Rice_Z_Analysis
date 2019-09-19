@@ -1,21 +1,21 @@
 #!/bin/bash
 source environment.sh
 
-./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBin1_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root 1 21hiBin1
-./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBin2_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root 1 21hiBin2
-./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBin0_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root 1 21
+./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBin1_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root resources/Z2mumu_Efficiencies.root 1 21hiBin1
+./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBin2_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root resources/Z2mumu_Efficiencies.root 1 21hiBin2
+./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBin0_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root resources/Z2mumu_Efficiencies.root 1 21
 #for ZDC crosscehck
 #./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBinZDC0_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root 1 21hiBin1
 #./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBinZDC0_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root 1 21hiBin2
 #./bin/massPeakPlots_BkgSub.exe Z2mumu_21_Data_hiBinZDC0_job0.root Z2mumu_MC_21_DY_job0.root Z2mumu_MC_21_TTbar_job0.root Z2mumu_MC_21_WJet_job0.root 1 21
 
-./bin/massPeakPlots_BkgSub.exe Z2mumu_24_Data_hiBin1_job0.root Z2mumu_MC_24_DY_job0.root Z2mumu_MC_24_TTbar_job0.root Z2mumu_MC_24_WJet_job0.root 1 24hiBin1
-./bin/massPeakPlots_BkgSub.exe Z2mumu_24_Data_hiBin2_job0.root Z2mumu_MC_24_DY_job0.root Z2mumu_MC_24_TTbar_job0.root Z2mumu_MC_24_WJet_job0.root 1 24hiBin2
-./bin/massPeakPlots_BkgSub.exe Z2mumu_24_Data_hiBin0_job0.root Z2mumu_MC_24_DY_job0.root Z2mumu_MC_24_TTbar_job0.root Z2mumu_MC_24_WJet_job0.root 1 24
+./bin/massPeakPlots_BkgSub.exe Z2mumu_24_Data_hiBin1_job0.root Z2mumu_MC_24_DY_job0.root Z2mumu_MC_24_TTbar_job0.root Z2mumu_MC_24_WJet_job0.root resources/Z2mumu_Efficiencies.root 1 24hiBin1
+./bin/massPeakPlots_BkgSub.exe Z2mumu_24_Data_hiBin2_job0.root Z2mumu_MC_24_DY_job0.root Z2mumu_MC_24_TTbar_job0.root Z2mumu_MC_24_WJet_job0.root resources/Z2mumu_Efficiencies.root 1 24hiBin2
+./bin/massPeakPlots_BkgSub.exe Z2mumu_24_Data_hiBin0_job0.root Z2mumu_MC_24_DY_job0.root Z2mumu_MC_24_TTbar_job0.root Z2mumu_MC_24_WJet_job0.root resources/Z2mumu_Efficiencies.root 1 24
 
-./bin/massPeakPlots_BkgSub.exe Z2ee_hiBin1.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root 0 eehiBin1
-./bin/massPeakPlots_BkgSub.exe Z2ee_hiBin2.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root 0 eehiBin2
-./bin/massPeakPlots_BkgSub.exe Z2ee.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root 0 ee
+./bin/massPeakPlots_BkgSub.exe Z2ee_hiBin1.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root resources/Z2ee_EfficiencyMC_0.root 0 eehiBin1
+./bin/massPeakPlots_BkgSub.exe Z2ee_hiBin2.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root resources/Z2ee_EfficiencyMC_0.root 0 eehiBin2
+./bin/massPeakPlots_BkgSub.exe Z2ee.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root resources/Z2ee_EfficiencyMC_0.root 0 ee
 #./bin/massPeakPlots_BkgSub.exe Z2ee_Data_hiBinZDC0.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root 0 eehiBin1
 #./bin/massPeakPlots_BkgSub.exe Z2ee_Data_hiBinZDC0.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root 0 eehiBin2
 #./bin/massPeakPlots_BkgSub.exe Z2ee_Data_hiBinZDC0.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root 0 ee

@@ -1,3 +1,6 @@
+#include "include/RooUnfold/RooUnfoldResponse.h"
+#include "include/RooUnfold/RooUnfoldInvert.h"
+#include "include/RooUnfold/RooUnfold.h"
 #include "include/CMS_lumi.C"
 #include "include/HistNameHelper.h"
 #include "include/centralityTool.h"
@@ -5,6 +8,7 @@
 #include "TStyle.h"
 #include "TFile.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TMath.h"
 #include "TCanvas.h"
 #include "TLegend.h"
@@ -13,7 +17,7 @@
 #include <fstream>
 #include <string>
 
-void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_, std::string Wjet_, bool isMu, std::string outTag){
+void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_, std::string Wjet_, std::string responseFile_, bool isMu, std::string outTag){
   TH1::SetDefaultSumw2();
   Settings s = Settings();
 
@@ -328,15 +332,108 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   mcStatRelErr_y->Write();
 
 
+  //UNFOLDING
+  TFile * responseFile = TFile::Open(responseFile_.c_str(),"read");
+  TH2 * unf_response = (TH2*) responseFile->Get("unfolding_response");
+  TH2 * unf_responseU = (TH2*) responseFile->Get("unfolding_responseU");
+  TH2 * unf_responseD = (TH2*) responseFile->Get("unfolding_responseD");
+  TH2D * unf_responseHist = (TH2D*) responseFile->Get("unfolding_response");
+  TH1D * unf_reco = (TH1D*) responseFile->Get("unfolding_recoPt");
+  TH1D * unf_gen = (TH1D*) responseFile->Get("unfolding_genPt");
+
+  out->cd();
+  RooUnfoldResponse nominalResponse = RooUnfoldResponse( 0, 0, unf_response);
+  RooUnfoldResponse nominalResponseU = RooUnfoldResponse( 0, 0, unf_responseU);
+  RooUnfoldResponse nominalResponseD = RooUnfoldResponse( 0, 0, unf_responseD);
+
+  h.undoDifferential( massPeakOS_minusAll[25][1][0] );
+  RooUnfoldInvert unfoldObject = RooUnfoldInvert(&nominalResponse, massPeakOS_minusAll[25][1][0]);
+  TH1D * unfoldedDist = (TH1D*) unfoldObject.Hreco();
+  RooUnfoldInvert unfoldObjectU = RooUnfoldInvert(&nominalResponseU, massPeakOS_minusAll[25][1][0]);
+  TH1D * unfoldedDistU = (TH1D*) unfoldObjectU.Hreco();
+  unfoldedDistU->Divide(unfoldedDist);
+  unfoldedDistU->SetName("unfoldedDistU");
+  unfoldedDistU->Print("All");
+  RooUnfoldInvert unfoldObjectD = RooUnfoldInvert(&nominalResponseD, massPeakOS_minusAll[25][1][0]);
+  TH1D * unfoldedDistD = (TH1D*) unfoldObjectD.Hreco();
+  unfoldedDistD->Divide(unfoldedDist);
+  unfoldedDistD->SetName("unfoldedDistD");
+  unfoldedDistD->Print("All");
+  TH1D * unfoldingUncert = (TH1D*)unfoldedDistU->Clone("unfoldingUncert");
+  unfoldingUncert->Reset();
+  for(int i = 0; i<unfoldingUncert->GetSize();i++){
+    unfoldingUncert->SetBinContent(i, TMath::Max( TMath::Abs(unfoldedDistU->GetBinContent(i)-1), TMath::Abs(unfoldedDistD->GetBinContent(i)-1)));
+  }
+
+  //smearing check
+  TH1D * unfoldedDistWithSmearing = (TH1D*) unfoldedDist->Clone("unfoldedDistWithSmearing");
+  unfoldedDistWithSmearing->Reset();
+  for(int i = 1; i<unfoldedDist->GetSize()-1; i++){
+    double rowSum = 0;
+    for(int j = 1; j<unfoldedDist->GetSize()-1; j++) rowSum += unf_responseHist->GetBinContent(j, i);
+    for(int j = 1; j<unfoldedDist->GetSize()-1; j++){
+      double old = unfoldedDistWithSmearing->GetBinContent(j);
+      unfoldedDistWithSmearing->SetBinContent(j, old + unfoldedDist->GetBinContent(i)*unf_responseHist->GetBinContent(j,i)/rowSum);
+    } 
+  }
+  unfoldedDistWithSmearing->Print("All");
+  unfoldedDistWithSmearing->Divide(massPeakOS_minusAll[25][1][0]);
+  unfoldedDistWithSmearing->Print("All");
+
+  h.makeDifferential( massPeakOS_minusAll[25][1][0] );
+  massPeakOS_minusAll[25][1][0]->Print("All");
+
+  unfoldedDist->SetName("unfoldedDist");
+  h.makeDifferential(unfoldedDist);
+  unfoldedDist->Print("All");
+
+  TH1D * unfoldedRatio = (TH1D*) unfoldedDist->Clone("unfoldedRatio");
+  unfoldedRatio->Divide(massPeakOS_minusAll[25][1][0]);
+  unfoldedRatio->Print("All");
+ 
+  //closure
+  RooUnfoldInvert unfoldObjectClosure = RooUnfoldInvert(&nominalResponse, unf_reco);
+  TH1D * unfoldedClosure = (TH1D*) unfoldObjectClosure.Hreco();
+  unfoldedClosure->SetName("unfoldedClosure");
+  unfoldedClosure->Divide(unf_gen); 
+  unfoldedClosure->Print("All");
+
+  
+  TCanvas * respC = new TCanvas("respC","respC",800,800);
+  unf_responseHist->GetXaxis()->SetTitle("p_{T}^{reco}");
+  unf_responseHist->GetYaxis()->SetTitle("p_{T}^{gen}");
+  unf_responseHist->SetStats(0);
+  unf_responseHist->Draw("colz");
+  respC->SetLogz();
+  respC->SaveAs(Form("plots/Unfolding/response_isMu%d_%s.png",(int)isMu,outTag.c_str()));
+  respC->SaveAs(Form("plots/Unfolding/response_isMu%d_%s.pdf",(int)isMu,outTag.c_str()));
+
+  TH1D * dummy4 = new TH1D("dummy4",";p_{T};Unfolded/Raw",1,0.1,200);
+  dummy4->Draw();
+  dummy4->SetStats(0);
+  respC->SetLogx();
+  dummy4->GetYaxis()->SetRangeUser(0.5,1.5);
+  unfoldedRatio->SetLineColor(kBlack);
+  unfoldedRatio->SetMarkerStyle(8);
+  unfoldedRatio->SetMarkerColor(kBlack);
+  unfoldedRatio->Draw("same");
+  respC->SaveAs(Form("plots/Unfolding/UnfoldingRatio_isMu%d_%s.png",(int)isMu,outTag.c_str()));
+  respC->SaveAs(Form("plots/Unfolding/UnfoldingRatio_isMu%d_%s.pdf",(int)isMu,outTag.c_str()));
+   
+  unfoldedDist->Write();
+  unfoldedRatio->Write();
+  unfoldedClosure->Write();
+  unfoldingUncert->Write();
+
   out->Close();
   return;
 }
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 7)
+  if(argc != 8)
   {
-    std::cout << "Usage: massPeakPlots_BkgSub <Data file> <DY File> <TTbar File> <WJet File> <isMu> <outTag>" << std::endl;
+    std::cout << "Usage: massPeakPlots_BkgSub <Data file> <DY File> <TTbar File> <WJet File> <ResponseMatrix file> <isMu> <outTag>" << std::endl;
     return 1;
   }  
 
@@ -344,9 +441,10 @@ int main(int argc, const char* argv[])
   std::string DY = argv[2];
   std::string ttbar = argv[3];
   std::string Wjet = argv[4];
-  bool isMu = (bool)std::atoi(argv[5]);
-  std::string outTag = argv[6];
-   
-  plotMassPeaks_BkgSub(data, DY, ttbar, Wjet, isMu, outTag);
+  std::string responseMatrix = argv[5];   
+  bool isMu = (bool)std::atoi(argv[6]);
+  std::string outTag = argv[7];
+
+  plotMassPeaks_BkgSub(data, DY, ttbar, Wjet, responseMatrix, isMu, outTag);
   return 0; 
 }

@@ -13,6 +13,7 @@ class HistNameHelper{
 
   HistNameHelper();
   void makeDifferential(TH1D * h);
+  void undoDifferential(TH1D * h);
   void subtractOneAndAbs(TH1D * h);
   void subtractOneAndAbsAndSymmetrize(TH1D * h, TH1D * h2);
   void absAndSymmetrize(TH1D * h, TH1D * h2);
@@ -52,6 +53,14 @@ void HistNameHelper::makeDifferential(TH1D* h){
   for(int j = 1; j<h->GetNbinsX()+1; j++){
     h->SetBinContent(j,h->GetBinContent(j)/h->GetBinWidth(j));
     h->SetBinError(j,h->GetBinError(j)/h->GetBinWidth(j));
+  }
+  return;
+}
+
+void HistNameHelper::undoDifferential(TH1D* h){
+  for(int j = 1; j<h->GetNbinsX()+1; j++){
+    h->SetBinContent(j,h->GetBinContent(j)*h->GetBinWidth(j));
+    h->SetBinError(j,h->GetBinError(j)*h->GetBinWidth(j));
   }
   return;
 }

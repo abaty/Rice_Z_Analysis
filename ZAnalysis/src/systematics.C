@@ -112,11 +112,11 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   std::vector< std::string > label21;
   label21.push_back("21");
   label21.push_back("");
-  TH1D * reso[nBins];
+  //TH1D * reso[nBins];
   TFile * eff = TFile::Open(effTable.c_str(),"read"); 
-  for(int i = 0; i<nBins; i++){
-    reso[i] = (TH1D*) eff->Get(Form("recoEff_pt_pass_forReso_Ratio_SmearedToNominal%s_%d_%d", isMu21 ? label21[0].c_str() : label21[1].c_str() ,c.getCentBinLow(i),c.getCentBinHigh(i)));
-  }
+  //for(int i = 0; i<nBins; i++){
+  //  reso[i] = (TH1D*) eff->Get(Form("recoEff_pt_pass_forReso_Ratio_SmearedToNominal%s_%d_%d", isMu21 ? label21[0].c_str() : label21[1].c_str() ,c.getCentBinLow(i),c.getCentBinHigh(i)));
+  //}
   
   TH1D * accept[4];
   accept[1] = (TH1D*)eff->Get(Form("accept%d_totalUncert_pt", (isMu21 || isEE) ? 21 : 24));
@@ -155,8 +155,10 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       h.subtractOneAndAbsAndSymmetrize(hfError[i][j], result[i][j][0][2]);
 
       if(j==1){
-        ptSmearError[i][j] = (TH1D*) reso[i]->Clone(Form("%s_ptSmearError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
-        h.subtractOneAndAbs(ptSmearError[i][j]);
+        //ptSmearError[i][j] = (TH1D*) reso[i]->Clone(Form("%s_ptSmearError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
+        //h.subtractOneAndAbs(ptSmearError[i][j]);
+        ptSmearError[i][j] = (TH1D*) inFile[0]->Get("unfoldingUncert");
+        ptSmearError[i][j]->SetName(Form("%s_ptSmearError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
       }
 
       wError[i][j] = (TH1D*) backgroundYields[i][j][0]->Clone(Form("%s_wError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
@@ -290,7 +292,7 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       leg->AddEntry(effError[i][j], "Lepton Reco","l");
       leg->AddEntry(acoError[i][j],"EM Background Cut","l");
       leg->AddEntry(hfError[i][j], "HF Uncert. (N_{MB} + centrality)","l");
-      if(j==1) leg->AddEntry(ptSmearError[i][j], "p_{T} Smearing","l");
+      if(j==1) leg->AddEntry(ptSmearError[i][j], "p_{T} unfolding","l");
       if( ( (j==1 || j==2) && (c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) ) || j==3 ){
         leg->AddEntry(mcStatError[i][j],"MC stat uncertainty","l");
       }

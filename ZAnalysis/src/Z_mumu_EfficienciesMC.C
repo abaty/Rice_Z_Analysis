@@ -145,6 +145,16 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
   TH1D * yReso[nBins];
 
+  TH1D * unfolding_genPt;
+  TH1D * unfolding_recoPt;
+  TH2D * unfolding_response;
+  TH1D * unfolding_genPtU;
+  TH1D * unfolding_recoPtU;
+  TH2D * unfolding_responseU;
+  TH1D * unfolding_genPtD;
+  TH1D * unfolding_recoPtD;
+  TH2D * unfolding_responseD;
+
   for(int k = 0; k<nBins; k++){
     recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins4Eff-1,s.zPtBins4Eff);
     recoEff_net[k] = new TH2D(Form("recoEff_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins4Eff-1,s.zPtBins4Eff);
@@ -200,6 +210,16 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   accept24_yields_noPtWeight_pass = new TH1D(Form("accept24_yields_noPtWeight_pass_%d",0),"",1,0,1);
   accept24_yields_noPtWeight_net = new TH1D(Form("accept24_yields_noPtWeight_net_%d",0),"",1,0,1);
 
+  unfolding_genPt = new TH1D("unfolding_genPt","",s.nZPtBins-1,s.zPtBins);
+  unfolding_recoPt = new TH1D("unfolding_recoPt","",s.nZPtBins-1,s.zPtBins);
+  unfolding_response = new TH2D("unfolding_response","",s.nZPtBins-1,s.zPtBins,s.nZPtBins-1,s.zPtBins);
+  unfolding_genPtU = new TH1D("unfolding_genPtU","",s.nZPtBins-1,s.zPtBins);
+  unfolding_recoPtU = new TH1D("unfolding_recoPtU","",s.nZPtBins-1,s.zPtBins);
+  unfolding_responseU = new TH2D("unfolding_responseU","",s.nZPtBins-1,s.zPtBins,s.nZPtBins-1,s.zPtBins);
+  unfolding_genPtD = new TH1D("unfolding_genPtD","",s.nZPtBins-1,s.zPtBins);
+  unfolding_recoPtD = new TH1D("unfolding_recoPtD","",s.nZPtBins-1,s.zPtBins);
+  unfolding_responseD = new TH2D("unfolding_responseD","",s.nZPtBins-1,s.zPtBins,s.nZPtBins-1,s.zPtBins);
+
   //starting looping over the file
   for(unsigned int f = 0; f<files.size(); f++){
     VertexCompositeNtuple v = VertexCompositeNtuple();
@@ -235,6 +255,8 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         
         //adjust the event weight based on the gen pT so that the pT spectrum is reweighted to data
         double ptWeight = spectrumRW.getReweightFactorMuon(v.pT_gen()[j]);
+        double ptWeightU = spectrumRW.getReweightFactorMuon(v.pT_gen()[j], 1);
+        double ptWeightD = spectrumRW.getReweightFactorMuon(v.pT_gen()[j], -1);
         eventWeight *= ptWeight;
 
         for(int w = 0; w<weightHelper.getSize(); w++){
@@ -271,7 +293,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         accept24_y_noPtWeight_pass->Fill(v.y_gen()[j], acceptWeight[0]);
         accept24_pt_noPtWeight_pass->Fill(v.pT_gen()[j], acceptWeight[0]);
 
-        if( TMath::Abs( v.y_gen()[j] ) < s.maxZRapEle && TMath::Abs( v.EtaD1_gen()[j] ) < s.maxZRapEle && TMath::Abs( v.EtaD2_gen()[j] ) < s.maxZRapEle){
+        if( TMath::Abs( v.y_gen()[j] ) < s.maxZRapEle){
           for(int w = 0; w<weightHelper.getSize(); w++){
             accept21_yields_pass[w]->Fill(0.5, acceptWeight[w] * ptWeight);
             accept21_y_pass[w]->Fill(v.y_gen()[j], acceptWeight[w] * ptWeight);
@@ -358,8 +380,20 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
                 recoEff_pt_pass_forReso_Gen[k]->Fill(v.pT_gen()[j], eventWeight);         
                 recoEff_ptReso[k]->Fill( (v.pT()[indx] - v.pT_gen()[j]) / v.pT_gen()[j], eventWeight);         
                 yReso[k]->Fill( v.y()[indx] - v.y_gen()[j] , eventWeight);            
+
+                if(k==25){//only fill on 0-90% selection
+                  unfolding_recoPt->Fill(v.pT()[indx],eventWeight*scaleFactor);
+                  unfolding_genPt->Fill(v.pT_gen()[j],eventWeight*scaleFactor);
+                  unfolding_response->Fill(v.pT()[indx], v.pT_gen()[j] ,eventWeight*scaleFactor);
+                  unfolding_recoPtU->Fill(v.pT()[indx],eventWeight*scaleFactor*ptWeightU/ptWeight);
+                  unfolding_genPtU->Fill(v.pT_gen()[j],eventWeight*scaleFactor*ptWeightU/ptWeight);
+                  unfolding_responseU->Fill(v.pT()[indx], v.pT_gen()[j] ,eventWeight*scaleFactor*ptWeightU/ptWeight);
+                  unfolding_recoPtD->Fill(v.pT()[indx],eventWeight*scaleFactor*ptWeightD/ptWeight);
+                  unfolding_genPtD->Fill(v.pT_gen()[j],eventWeight*scaleFactor*ptWeightD/ptWeight);
+                  unfolding_responseD->Fill(v.pT()[indx], v.pT_gen()[j] ,eventWeight*scaleFactor*ptWeightD/ptWeight);
+                }
  
-                if(TMath::Abs(v.EtaD1()[indx]) < s.maxZRapEle && TMath::Abs(v.EtaD2()[indx]) < s.maxZRapEle){   
+                if(TMath::Abs(v.EtaD1()[indx]) < s.maxZRapEle && TMath::Abs(v.EtaD2()[indx]) < s.maxZRapEle){  //this is not used any more 
                   recoEff_pt_pass_forReso_Reco21[k]->Fill(v.pT()[indx], eventWeight);         
                   recoEff_pt_pass_forReso_RecoSmeared21[k]->Fill(v.pT()[indx] * r->Gaus(1,0.05), eventWeight);         
                   recoEff_pt_pass_forReso_Gen21[k]->Fill(v.pT_gen()[j], eventWeight);         
@@ -642,7 +676,8 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
 
   TFile * output;
   if(isTest) output = new TFile("resources/Z2mumu_Efficiencies_TEST.root","recreate");
-  else       output = new TFile("resources/Z2mumu_Efficiencies.root","recreate");
+  else       output = new TFile("resources/Z2mumu_Efficiencies_Sept19.root","recreate");
+  //else       output = new TFile("resources/Z2mumu_Efficiencies.root","recreate");
   for(int i = 0; i<nBins; i++){
     recoEff[i]->Write();
     recoEff_pass[i]->Write();
@@ -993,6 +1028,16 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   accept_yields_TEff24->Write();
   accept_y_TEff24->Write();
   accept_pt_TEff24->Write();
+
+  unfolding_recoPt->Write();
+  unfolding_genPt->Write();
+  unfolding_response->Write();
+  unfolding_recoPtU->Write();
+  unfolding_genPtU->Write();
+  unfolding_responseU->Write();
+  unfolding_recoPtD->Write();
+  unfolding_genPtD->Write();
+  unfolding_responseD->Write();
 
   output->Close();
 

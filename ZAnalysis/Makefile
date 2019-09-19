@@ -38,7 +38,7 @@ bin/massPeakPlots.exe: src/massPeakPlots.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/massPeakPlots.exe src/massPeakPlots.C
 
 bin/massPeakPlots_BkgSub.exe: src/massPeakPlots_BkgSub.C
-	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/massPeakPlots_BkgSub.exe src/massPeakPlots_BkgSub.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -I $(PWD)/include/RooUnfold -L $(ROOUNFOLDPATH) -o bin/massPeakPlots_BkgSub.exe src/massPeakPlots_BkgSub.C -l$(ROOUNFOLDLIB)
 
 bin/v2Plots.exe: src/v2Plots.C
 	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/v2Plots.exe src/v2Plots.C
@@ -50,7 +50,7 @@ bin/efficiencyPlots.exe: src/efficiencyPlots.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/efficiencyPlots.exe src/efficiencyPlots.C
 
 bin/prettyPlots_pTy.exe: src/prettyPlots_pTy.C
-	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -I $(PWD)/include/RooUnfold -L $(ROOUNFOLDPATH) -o bin/prettyPlots_pTy.exe src/prettyPlots_pTy.C  -l$(ROOUNFOLDLIB) 
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD)  -o bin/prettyPlots_pTy.exe src/prettyPlots_pTy.C 
 
 bin/prettyPlots_yields.exe: src/prettyPlots_yields.C
 	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD)  -o bin/prettyPlots_yields.exe src/prettyPlots_yields.C

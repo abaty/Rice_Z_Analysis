@@ -1,5 +1,4 @@
-#include "include/RooUnfold/RooUnfold.h"
-#include "include/ptCorrector.h"
+//#include "include/ptCorrector.h"
 #include "include/CMS_lumi.C"
 #include "include/combinePoints.h"
 #include "include/centralityTool.h"
@@ -22,7 +21,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   CombinePoints cp = CombinePoints();
   HistNameHelper helper = HistNameHelper();
 
-  ptCorrector ptCorr = ptCorrector("resources/Z2mumu_Efficiencies.root","resources/Z2ee_EfficiencyMC_0.root");
+  //ptCorrector ptCorr = ptCorrector("resources/Z2mumu_Efficiencies.root","resources/Z2ee_EfficiencyMC_0.root");
 
   TH1D * acceptE[2];
   TH1D * acceptMu21[2];
@@ -53,21 +52,21 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   //mumu channel first
   TFile * mu24 = TFile::Open(Zmumu24.c_str(),"read");
   TH1D * y_mu24 = (TH1D*)mu24->Get("yOS_minusAll_0_90");
-  TH1D * pt_mu24 = (TH1D*)mu24->Get("pTOS_minusAll_0_90");
+  TH1D * pt_mu24 = (TH1D*)mu24->Get("unfoldedDist");
 
-  pt_mu24->Divide( ptCorr.correction[0] );
+  //pt_mu24->Divide( ptCorr.correction[0] );
  
   TFile * mu21 = TFile::Open(Zmumu21.c_str(),"read");
   TH1D * y_mu21 = (TH1D*)mu21->Get("yOS_minusAll_0_90");
-  TH1D * pt_mu21 = (TH1D*)mu21->Get("pTOS_minusAll_0_90");
+  TH1D * pt_mu21 = (TH1D*)mu21->Get("unfoldedDist");
   
-  pt_mu21->Divide( ptCorr.correction[2] );
+  //pt_mu21->Divide( ptCorr.correction[2] );
   
   TFile * e = TFile::Open(Zee.c_str(),"read");
   TH1D * y_e = (TH1D*)e->Get("yOS_minusAll_0_90");
-  TH1D * pt_e = (TH1D*)e->Get("pTOS_minusAll_0_90");
+  TH1D * pt_e = (TH1D*)e->Get("unfoldedDist");
   
-  pt_e->Divide( ptCorr.correction[1] );
+  //pt_e->Divide( ptCorr.correction[1] );
 
   //**********************************************Systematics********************************************************
   TFile * systFile[3];

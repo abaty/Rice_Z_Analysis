@@ -131,6 +131,15 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D * yGen;
   TH1D * yRatio;
 
+  TH1D * unfolding_genPt;
+  TH1D * unfolding_recoPt;
+  TH2D * unfolding_response;
+  TH1D * unfolding_genPtU;
+  TH1D * unfolding_recoPtU;
+  TH2D * unfolding_responseU;
+  TH1D * unfolding_genPtD;
+  TH1D * unfolding_recoPtD;
+  TH2D * unfolding_responseD;
 
   for(int k = 0; k<nBins; k++){
     massPeakOS[k] = new TH1D(Form("massPeakOS_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
@@ -185,6 +194,16 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   yReco = new TH1D("yReco",";y_{reco}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
   yGen = new TH1D("yGen",";y_{gen}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
   yResponse = new TH2D("yResponse","y_{reco};y_{gen}",s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle,s.nZRapBinsEle,-s.maxZRapEle,s.maxZRapEle);
+  
+  unfolding_genPt = new TH1D("unfolding_genPt","",s.nZPtBins-1,s.zPtBins);
+  unfolding_recoPt = new TH1D("unfolding_recoPt","",s.nZPtBins-1,s.zPtBins);
+  unfolding_response = new TH2D("unfolding_response","",s.nZPtBins-1,s.zPtBins,s.nZPtBins-1,s.zPtBins);
+  unfolding_genPtU = new TH1D("unfolding_genPtU","",s.nZPtBins-1,s.zPtBins);
+  unfolding_recoPtU = new TH1D("unfolding_recoPtU","",s.nZPtBins-1,s.zPtBins);
+  unfolding_responseU = new TH2D("unfolding_responseU","",s.nZPtBins-1,s.zPtBins,s.nZPtBins-1,s.zPtBins);
+  unfolding_genPtD = new TH1D("unfolding_genPtD","",s.nZPtBins-1,s.zPtBins);
+  unfolding_recoPtD = new TH1D("unfolding_recoPtD","",s.nZPtBins-1,s.zPtBins);
+  unfolding_responseD = new TH2D("unfolding_responseD","",s.nZPtBins-1,s.zPtBins,s.nZPtBins-1,s.zPtBins);
 
   int nEle;
   int hiBin;
@@ -322,7 +341,11 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
       int nGenElectronsFound = 0;
       
       TLorentzVector mom = TLorentzVector();
+      double ptWeight = 1.0;
+      double ptWeightU = 1.0;
+      double ptWeightD = 1.0;
       bool foundGen = false;
+
       for(int j = 0; j<nMC; j++){
         //break out if you find a Z->tautau
         if( mcGMomPID->at(j) == 23 && TMath::Abs(mcMomPID->at(j)) == 15) break;
@@ -368,7 +391,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           mom.SetPtEtaPhiM( mcMomPt->at(j), mcMomEta->at(j), mcMomPhi->at(j), mcMomMass->at(j));
                 
           //adjust the event weight based on the gen pT so that the pT spectrum is reweighted to data
-          double ptWeight = spectrumRW.getReweightFactorElectron(mcMomPt->at(j));
+          ptWeight = spectrumRW.getReweightFactorElectron(mcMomPt->at(j));
+          ptWeightU = spectrumRW.getReweightFactorElectron(mcMomPt->at(j), 1);
+          ptWeightD = spectrumRW.getReweightFactorElectron(mcMomPt->at(j), -1);
           eventWeight *= ptWeight;
    
           for(int w = 0; w<weightHelper.getSize(); w++){
@@ -517,7 +542,6 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   recoEff_U_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorU );
                   recoEff_D_pass[k]->Fill( mom.Rapidity(), mom.Pt(), eventWeight * scaleFactorD );
                   recoEff_pt_pass[k]->Fill( mom.Pt(), eventWeight * scaleFactor);
-                  double ptWeight = spectrumRW.getReweightFactorElectron(mom.Pt());
                   recoEff_pt_noPtWeight_pass[k]->Fill(  mom.Pt(), eventWeight/ptWeight * scaleFactor );
                   recoEff_y_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
                   recoEff_cent_pass[k]->Fill( hiBin/2.0, eventWeight * scaleFactor);
@@ -529,6 +553,18 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   recoEff_ptReso[k]->Fill( (Zcand.Pt() - mom.Pt()) / mom.Pt(), eventWeight);         
                 
                   yReso[k]->Fill( Zcand.Rapidity() - mom.Rapidity() , eventWeight);            
+                
+                  if(k==25){//only fill on 0-90% selection
+                    unfolding_recoPt->Fill(Zcand.Pt(),eventWeight*scaleFactor);
+                    unfolding_genPt->Fill(mom.Pt(),eventWeight*scaleFactor);
+                    unfolding_response->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor);
+                    unfolding_recoPtU->Fill(Zcand.Pt(),eventWeight*scaleFactor*ptWeightU/ptWeight);
+                    unfolding_genPtU->Fill(mom.Pt(),eventWeight*scaleFactor*ptWeightU/ptWeight);
+                    unfolding_responseU->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor*ptWeightU/ptWeight);
+                    unfolding_recoPtD->Fill(Zcand.Pt(),eventWeight*scaleFactor*ptWeightD/ptWeight);
+                    unfolding_genPtD->Fill(mom.Pt(),eventWeight*scaleFactor*ptWeightD/ptWeight);
+                    unfolding_responseD->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor*ptWeightD/ptWeight);
+                  }
           
                   //for the last few pt bins, halve the y binning so we have better stats
                   if(mom.Pt()> s.zPtBins4Eff[s.nZPtBins4Eff- s.nPtBinsToRebinRapEff]){
@@ -1012,6 +1048,16 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   accept_yields_TEff->Write();
   accept_y_TEff->Write();
   accept_pt_TEff->Write();
+  
+  unfolding_recoPt->Write();
+  unfolding_genPt->Write();
+  unfolding_response->Write();
+  unfolding_recoPtU->Write();
+  unfolding_genPtU->Write();
+  unfolding_responseU->Write();
+  unfolding_recoPtD->Write();
+  unfolding_genPtD->Write();
+  unfolding_responseD->Write();
 
   output->Close();
 
