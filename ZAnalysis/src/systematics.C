@@ -187,9 +187,10 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       if(j==3) mcStatError[i][j] = (TH1D*) mcStatRelErr[i]->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
 
       totalError[i][j] = (TH1D*)effError[i][j]->Clone(Form("%s_totalError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
+      
       if(j!=1) h.addInQuadrature3( totalError[i][j], acoError[i][j], hfError[i][j]);
       if(j==1) h.addInQuadrature4( totalError[i][j], acoError[i][j], hfError[i][j], ptSmearError[i][j]);
-      
+ 
       if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
       if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
       if(j==3) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]);

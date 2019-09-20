@@ -12,6 +12,7 @@
 #include "TMath.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+#include "TRandom3.h"
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -333,6 +334,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
 
 
   //UNFOLDING
+  const int nToys = 1000;
   TFile * responseFile = TFile::Open(responseFile_.c_str(),"read");
   TH2 * unf_response = (TH2*) responseFile->Get("unfolding_response");
   TH2 * unf_responseU = (TH2*) responseFile->Get("unfolding_responseU");
@@ -341,14 +343,31 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   TH1D * unf_reco = (TH1D*) responseFile->Get("unfolding_recoPt");
   TH1D * unf_gen = (TH1D*) responseFile->Get("unfolding_genPt");
 
+  TH2 * unf_responseLargeErrors[nToys];
+  TRandom3 randGen = TRandom3();
+  for(int j = 0; j<nToys; j++){
+    unf_responseLargeErrors[j] = (TH2*) unf_response->Clone("unfolding_response");
+    for(int i = 0; i<unf_responseHist->GetSize(); i++){
+      float mean = unf_responseLargeErrors[j]->GetBinContent(i);
+      float err = unf_responseLargeErrors[j]->GetBinError(i);
+      float newPoint = randGen.Gaus(mean, err);
+      unf_responseLargeErrors[j]->SetBinContent(i, newPoint);
+    }
+  }
+
   out->cd();
   RooUnfoldResponse nominalResponse = RooUnfoldResponse( 0, 0, unf_response);
   RooUnfoldResponse nominalResponseU = RooUnfoldResponse( 0, 0, unf_responseU);
   RooUnfoldResponse nominalResponseD = RooUnfoldResponse( 0, 0, unf_responseD);
+  RooUnfoldResponse nominalResponseLargeErr[nToys];
+  for(int i = 0; i<nToys; i++){
+    nominalResponseLargeErr[i] = RooUnfoldResponse(0,0,unf_responseLargeErrors[i]);
+  }
 
   h.undoDifferential( massPeakOS_minusAll[25][1][0] );
   RooUnfoldInvert unfoldObject = RooUnfoldInvert(&nominalResponse, massPeakOS_minusAll[25][1][0]);
   TH1D * unfoldedDist = (TH1D*) unfoldObject.Hreco();
+  unfoldedDist->Print("All");
   RooUnfoldInvert unfoldObjectU = RooUnfoldInvert(&nominalResponseU, massPeakOS_minusAll[25][1][0]);
   TH1D * unfoldedDistU = (TH1D*) unfoldObjectU.Hreco();
   unfoldedDistU->Divide(unfoldedDist);
@@ -359,12 +378,36 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   unfoldedDistD->Divide(unfoldedDist);
   unfoldedDistD->SetName("unfoldedDistD");
   unfoldedDistD->Print("All");
-  TH1D * unfoldingUncert = (TH1D*)unfoldedDistU->Clone("unfoldingUncert");
+  TH1D * unfoldingUncert = (TH1D*)unfoldedDistU->Clone("unfoldingUncert_SpectrumShape");
   unfoldingUncert->Reset();
   for(int i = 0; i<unfoldingUncert->GetSize();i++){
     unfoldingUncert->SetBinContent(i, TMath::Max( TMath::Abs(unfoldedDistU->GetBinContent(i)-1), TMath::Abs(unfoldedDistD->GetBinContent(i)-1)));
   }
 
+  //errors check
+  TH1D * unfoldingUncert_Stats = (TH1D*)unfoldedDistU->Clone("unfoldingUncert_Stats");
+  unfoldingUncert_Stats->Reset();
+  TH1D * unfoldedDist_LargeErrors[nToys];
+  RooUnfoldInvert unfoldObjectLargeErrors[nToys];
+  for(int i = 0; i<nToys; i++){
+    unfoldObjectLargeErrors[i] = RooUnfoldInvert(&nominalResponseLargeErr[i], massPeakOS_minusAll[25][1][0]);
+    unfoldedDist_LargeErrors[i] = (TH1D*) unfoldObjectLargeErrors[i].Hreco();
+    unfoldedDist_LargeErrors[i]->Divide(unfoldedDist);
+  }
+  unfoldedDist_LargeErrors[0]->Print("All");
+  for(int i = 0; i<unfoldingUncert_Stats->GetSize();i++){
+    std::vector< float > values;
+    //float max = 0;
+    for(int j = 0; j<nToys; j++) values.push_back( unfoldedDist_LargeErrors[j]->GetBinContent(i) );
+    std::sort( values.begin(), values.end() );
+    unfoldingUncert_Stats->SetBinContent(i, TMath::Max( TMath::Abs( values.at(((int)(0.683*nToys)))-1), TMath::Abs( values.at((int)((1-0.683)*nToys))-1) ) );
+  }
+  unfoldingUncert->Print("All");
+  unfoldingUncert_Stats->Print("All");
+  TH1D * unfoldingUncert_total = (TH1D*)unfoldingUncert->Clone("unfoldingUncert");
+  h.addInQuadrature2( unfoldingUncert_total, unfoldingUncert_Stats);  
+  unfoldingUncert_total->Print("All");  
+   
   //smearing check
   TH1D * unfoldedDistWithSmearing = (TH1D*) unfoldedDist->Clone("unfoldedDistWithSmearing");
   unfoldedDistWithSmearing->Reset();
@@ -419,11 +462,22 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   unfoldedRatio->Draw("same");
   respC->SaveAs(Form("plots/Unfolding/UnfoldingRatio_isMu%d_%s.png",(int)isMu,outTag.c_str()));
   respC->SaveAs(Form("plots/Unfolding/UnfoldingRatio_isMu%d_%s.pdf",(int)isMu,outTag.c_str()));
-   
+  
+  dummy4->GetYaxis()->SetTitle("varied/nominal");
+  dummy4->Draw();
+  for(int i = 0; i<nToys; i++){
+    unfoldedDist_LargeErrors[i]->SetLineColor(kGray);
+    unfoldedDist_LargeErrors[i]->Draw("same HIST L");
+  }
+  respC->SaveAs(Form("plots/Unfolding/UnfoldingStatVariations_isMu%d_%s.png",(int)isMu,outTag.c_str()));
+  respC->SaveAs(Form("plots/Unfolding/UnfoldingStatVariations_isMu%d_%s.pdf",(int)isMu,outTag.c_str()));
+ 
   unfoldedDist->Write();
   unfoldedRatio->Write();
   unfoldedClosure->Write();
   unfoldingUncert->Write();
+  unfoldingUncert_Stats->Write();
+  unfoldingUncert_total->Write();
 
   out->Close();
   return;

@@ -232,7 +232,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
  
   y_e->Draw("p same");
-  y_mu21->Draw("p same");
+  if(!doAccept) y_mu21->Draw("p same");
   y_mu24->Draw("p same");
   combo[2]->Draw("p same");
 
