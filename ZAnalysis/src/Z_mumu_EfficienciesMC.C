@@ -1,3 +1,4 @@
+#include "include/ZEfficiency.h"
 #include "include/centralityBin.h"
 #include "include/forceConsistency.h"
 #include "include/VertexCompositeNtuple.h"
@@ -42,6 +43,7 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   Settings s = Settings();
 
   MuonTnP tnp = MuonTnP();
+  ZEfficiency Zeff = ZEfficiency("resources/Z2mumu_Efficiencies.root", 0);
   MCReweight vzRW = MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
 
   CentralityBin cb = CentralityBin();
@@ -382,15 +384,16 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
                 yReso[k]->Fill( v.y()[indx] - v.y_gen()[j] , eventWeight);            
 
                 if(k==25){//only fill on 0-90% selection
-                  unfolding_recoPt->Fill(v.pT()[indx],eventWeight*scaleFactor);
-                  unfolding_genPt->Fill(v.pT_gen()[j],eventWeight*scaleFactor);
-                  unfolding_response->Fill(v.pT()[indx], v.pT_gen()[j] ,eventWeight*scaleFactor);
-                  unfolding_recoPtU->Fill(v.pT()[indx],eventWeight*scaleFactor*ptWeightU/ptWeight);
-                  unfolding_genPtU->Fill(v.pT_gen()[j],eventWeight*scaleFactor*ptWeightU/ptWeight);
-                  unfolding_responseU->Fill(v.pT()[indx], v.pT_gen()[j] ,eventWeight*scaleFactor*ptWeightU/ptWeight);
-                  unfolding_recoPtD->Fill(v.pT()[indx],eventWeight*scaleFactor*ptWeightD/ptWeight);
-                  unfolding_genPtD->Fill(v.pT_gen()[j],eventWeight*scaleFactor*ptWeightD/ptWeight);
-                  unfolding_responseD->Fill(v.pT()[indx], v.pT_gen()[j] ,eventWeight*scaleFactor*ptWeightD/ptWeight);
+                  float efficiency = Zeff.getEfficiency(v.y()[indx], v.pT()[indx], hiBin);
+                  unfolding_recoPt->Fill(v.pT()[indx],eventWeight*scaleFactor/efficiency);
+                  unfolding_genPt->Fill(v.pT_gen()[j],eventWeight*scaleFactor/efficiency);
+                  unfolding_response->Fill(v.pT()[indx], v.pT_gen()[j] ,eventWeight*scaleFactor/efficiency);
+                  unfolding_recoPtU->Fill(v.pT()[indx],eventWeight*scaleFactor*ptWeightU/ptWeight/efficiency);
+                  unfolding_genPtU->Fill(v.pT_gen()[j],eventWeight*scaleFactor*ptWeightU/ptWeight/efficiency);
+                  unfolding_responseU->Fill(v.pT()[indx], v.pT_gen()[j] ,eventWeight*scaleFactor*ptWeightU/ptWeight/efficiency);
+                  unfolding_recoPtD->Fill(v.pT()[indx],eventWeight*scaleFactor*ptWeightD/ptWeight/efficiency);
+                  unfolding_genPtD->Fill(v.pT_gen()[j],eventWeight*scaleFactor*ptWeightD/ptWeight/efficiency);
+                  unfolding_responseD->Fill(v.pT()[indx], v.pT_gen()[j] ,eventWeight*scaleFactor*ptWeightD/ptWeight/efficiency);
                 }
  
                 if(TMath::Abs(v.EtaD1()[indx]) < s.maxZRapEle && TMath::Abs(v.EtaD2()[indx]) < s.maxZRapEle){  //this is not used any more 
@@ -674,9 +677,11 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   forceConsistency(accept24_y_noPtWeight_pass, accept24_y_noPtWeight_net);
   forceConsistency(accept24_pt_noPtWeight_pass, accept24_pt_noPtWeight_net);
 
+  Zeff.~ZEfficiency();
+
   TFile * output;
   if(isTest) output = new TFile("resources/Z2mumu_Efficiencies_TEST.root","recreate");
-  else       output = new TFile("resources/Z2mumu_Efficiencies_Sept19.root","recreate");
+  else       output = new TFile("resources/Z2mumu_Efficiencies.root","recreate");
   //else       output = new TFile("resources/Z2mumu_Efficiencies.root","recreate");
   for(int i = 0; i<nBins; i++){
     recoEff[i]->Write();

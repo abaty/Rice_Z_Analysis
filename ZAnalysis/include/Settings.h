@@ -9,9 +9,9 @@ public:
   double NmbUp = 1.005*11311946989;
   double NmbDown = 0.99*11311946989;
 
-  double muLumi = 1606.06;
-  double eLumi = 1594.539;
-  double netLumi = 1618.466;
+  double muLumi = 1738.58;
+  double eLumi = 1726.095684561 ;
+  double netLumi = 1751.83;
 
 
   double minMuonPt = 20;

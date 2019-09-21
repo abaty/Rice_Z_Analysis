@@ -1,3 +1,4 @@
+#include "include/ZEfficiency.h"
 #include "include/centralityBin.h"
 #include "include/ptReweightSpectrum.h"
 #include "include/MCWeightHelper.h"
@@ -30,6 +31,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   timer.StartSplit("Start Up");
 
   TH1::SetDefaultSumw2();
+  ZEfficiency zEff = ZEfficiency("resources/Z2ee_EfficiencyMC_0.root", 0);
   ElectronEnergyScale energyScale = ElectronEnergyScale("MC");
   ElectronSelector eSel = ElectronSelector();
   ElectronTriggerMatcher matcher = ElectronTriggerMatcher();
@@ -555,15 +557,16 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   yReso[k]->Fill( Zcand.Rapidity() - mom.Rapidity() , eventWeight);            
                 
                   if(k==25){//only fill on 0-90% selection
-                    unfolding_recoPt->Fill(Zcand.Pt(),eventWeight*scaleFactor);
-                    unfolding_genPt->Fill(mom.Pt(),eventWeight*scaleFactor);
-                    unfolding_response->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor);
-                    unfolding_recoPtU->Fill(Zcand.Pt(),eventWeight*scaleFactor*ptWeightU/ptWeight);
-                    unfolding_genPtU->Fill(mom.Pt(),eventWeight*scaleFactor*ptWeightU/ptWeight);
-                    unfolding_responseU->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor*ptWeightU/ptWeight);
-                    unfolding_recoPtD->Fill(Zcand.Pt(),eventWeight*scaleFactor*ptWeightD/ptWeight);
-                    unfolding_genPtD->Fill(mom.Pt(),eventWeight*scaleFactor*ptWeightD/ptWeight);
-                    unfolding_responseD->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor*ptWeightD/ptWeight);
+                    float efficiency = zEff.getEfficiency(mom.Rapidity(), mom.Pt(), hiBin);
+                    unfolding_recoPt->Fill(Zcand.Pt(),eventWeight*scaleFactor/efficiency);
+                    unfolding_genPt->Fill(mom.Pt(),eventWeight*scaleFactor/efficiency);
+                    unfolding_response->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor/efficiency);
+                    unfolding_recoPtU->Fill(Zcand.Pt(),eventWeight*scaleFactor*ptWeightU/ptWeight/efficiency);
+                    unfolding_genPtU->Fill(mom.Pt(),eventWeight*scaleFactor*ptWeightU/ptWeight/efficiency);
+                    unfolding_responseU->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor*ptWeightU/ptWeight/efficiency);
+                    unfolding_recoPtD->Fill(Zcand.Pt(),eventWeight*scaleFactor*ptWeightD/ptWeight/efficiency);
+                    unfolding_genPtD->Fill(mom.Pt(),eventWeight*scaleFactor*ptWeightD/ptWeight/efficiency);
+                    unfolding_responseD->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor*ptWeightD/ptWeight/efficiency);
                   }
           
                   //for the last few pt bins, halve the y binning so we have better stats
@@ -824,6 +827,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   accept_pt_TEff->SetStatisticOption(TEfficiency::kBJeffrey);
   accept_pt_TEff->SetName("accept21_pt_TEff");
   accept_pt_TEff->SetDirectory(0);
+
+  zEff.~ZEfficiency();
 
   TFile * output;
   if(!isTest) output = new TFile(Form("resources/Z2ee_EfficiencyMC_%d.root",jobNumber),"recreate");
