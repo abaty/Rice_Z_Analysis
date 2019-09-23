@@ -355,6 +355,23 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     c1->SaveAs("plots/prettyPlots/pt_Pretty_withAccept.C"); 
   }
 
+  TCanvas * cRat = new TCanvas("cRat","cRat",800,800);
+  dummy->GetYaxis()->SetRangeUser(0,2.0);
+  dummy->Draw(); 
+  dummy->GetYaxis()->SetTitle("muon/electron channel");
+  pt_mu21->Divide(pt_e);
+  pt_mu21->Draw("same");
+  if(!doAccept){
+    cRat->SaveAs("plots/prettyPlots/ptChannelRatio_Pretty.png"); 
+    cRat->SaveAs("plots/prettyPlots/ptChannelRatio_Pretty.pdf"); 
+    cRat->SaveAs("plots/prettyPlots/ptChannelRatio_Pretty.C"); 
+  }
+  else{
+    cRat->SaveAs("plots/prettyPlots/ptChannelRatio_Pretty_withAccept.png"); 
+    cRat->SaveAs("plots/prettyPlots/ptChannelRatio_Pretty_withAccept.pdf"); 
+    cRat->SaveAs("plots/prettyPlots/ptChannelRatio_Pretty_withAccept.C"); 
+  }
+  
 
   return;
 }

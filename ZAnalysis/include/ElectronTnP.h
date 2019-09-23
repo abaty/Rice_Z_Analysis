@@ -20,6 +20,8 @@ private:
  float getSFFromGraph(float x, TGraphAsymmErrors* g, int idx);
  float getSingleSF(int hiBin, float x, float eta, int idx = 0);
  float getSingleSF_Reco(int hiBin, float x, float eta, int idx = 0);
+ float systGetSingleSF(int hiBin, float x, float eta, int idx = 0);
+ float systGetSingleSF_Reco(int hiBin, float x, float eta, int idx = 0);
  float getSingleSF_HLT(float x, float eta,bool isData, int idx = 0);
 
  TFile * EE_030_f, *EE_30100_f, *EB_030_f, *EB_30100_f;
@@ -42,9 +44,24 @@ private:
  TGraphAsymmErrors * EE_30100R; 
  TGraphAsymmErrors * EB_030R; 
  TGraphAsymmErrors * EB_30100R;
+
+  //systematics
+ TFile * sEE_030_f, *sEE_30100_f, *sEB_030_f, *sEB_30100_f;
+ TFile * sEE_030_fR, *sEE_30100_fR, *sEB_030_fR, *sEB_30100_fR;
+ 
+ TGraphAsymmErrors * sEE_030; 
+ TGraphAsymmErrors * sEE_30100; 
+ TGraphAsymmErrors * sEB_030; 
+ TGraphAsymmErrors * sEB_30100;
+ 
+ TGraphAsymmErrors * sEE_030R; 
+ TGraphAsymmErrors * sEE_30100R; 
+ TGraphAsymmErrors * sEB_030R; 
+ TGraphAsymmErrors * sEB_30100R;
   
  inline float quad(float x, float y); 
  inline float quad2(float x, float y); 
+ inline float quad2(float x, float y, float a, float b); 
 
 };
 
@@ -54,6 +71,10 @@ inline float ElectronTnP::quad(float x, float y){
 
 inline float ElectronTnP::quad2(float x, float y){
   return x*x + y*y;
+}
+
+inline float ElectronTnP::quad2(float x, float y, float a, float b){
+  return x*x + y*y + a*a + b*b;
 }
 
 float ElectronTnP::getESF(int hiBin, float pt1, float eta1){
@@ -78,6 +99,52 @@ float ElectronTnP::getSFFromGraph(float x, TGraphAsymmErrors * g, int idx){
     }
   }
 
+  return 1.0;
+}
+
+float ElectronTnP::systGetSingleSF(int hiBin, float x, float eta, int idx){
+  
+  //EB
+  if( TMath::Abs(eta)<1.442 ){
+    if(hiBin<60){
+      return getSFFromGraph(x, sEB_030, idx);
+    }
+    else{
+      return getSFFromGraph(x, sEB_30100, idx);
+    }
+  }
+  //EE
+  else{
+    if(hiBin<60){
+      return getSFFromGraph(x, sEE_030,idx);
+    }
+    else{
+      return getSFFromGraph(x, sEE_30100, idx);
+    }
+  }
+  return 1.0;
+}
+
+float ElectronTnP::systGetSingleSF_Reco(int hiBin, float x, float eta, int idx){
+  
+  //EB
+  if( TMath::Abs(eta)<1.442 ){
+    if(hiBin<60){
+      return getSFFromGraph(x, sEB_030R, idx);
+    }
+    else{
+      return getSFFromGraph(x, sEB_30100R, idx);
+    }
+  }
+  //EE
+  else{
+    if(hiBin<60){
+      return getSFFromGraph(x, sEE_030R,idx);
+    }
+    else{
+      return getSFFromGraph(x, sEE_30100R, idx);
+    }
+  }
   return 1.0;
 }
 
@@ -159,14 +226,18 @@ float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta
   //Muon reco scale factors:
   float recoSF1 = getSingleSF_Reco(hiBin, pt1, eta1);
   float recoSF1_var = recoSF1;
+  float recoSF1_Systvar = recoSF1;
   if(idx != 0){
     recoSF1_var = (getSingleSF_Reco(hiBin, pt1, eta1, idx) - recoSF1)/recoSF1;
+    recoSF1_Systvar = (systGetSingleSF_Reco(hiBin, pt1, eta1, idx) - recoSF1)/recoSF1;
   }
 
   float recoSF2 = getSingleSF_Reco(hiBin, pt2, eta2);
   float recoSF2_var = recoSF2;
+  float recoSF2_Systvar = recoSF2;
   if(idx != 0){
     recoSF2_var = (getSingleSF_Reco(hiBin, pt2, eta2, idx) - recoSF2)/recoSF2;
+    recoSF2_Systvar = (getSingleSF_Reco(hiBin, pt2, eta2, idx) - recoSF2)/recoSF2;
   }
 
   float recoSF = recoSF1 * recoSF2;
@@ -178,14 +249,18 @@ float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta
   //Muon ID scale factors:
   float idSF1 = getSingleSF(hiBin, pt1, eta1);
   float idSF1_var = idSF1;
+  float idSF1_Systvar = idSF1;
   if(idx != 0){
     idSF1_var = (getSingleSF(hiBin, pt1, eta1, idx) - idSF1)/idSF1;
+    idSF1_Systvar = (systGetSingleSF(hiBin, pt1, eta1, idx) - idSF1)/idSF1;
   }
 
   float idSF2 = getSingleSF(hiBin, pt2, eta2);
   float idSF2_var = idSF2;
+  float idSF2_Systvar = idSF2;
   if(idx != 0){
     idSF2_var = (getSingleSF(hiBin, pt2, eta2, idx) - idSF2)/idSF2;
+    idSF2_Systvar = (systGetSingleSF(hiBin, pt2, eta2, idx) - idSF2)/idSF2;
   }
   
 
@@ -229,37 +304,61 @@ float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta
 
   float SF = recoSF * idSF * trigSF;
   if(idx !=0){
-    if(idx==1 ) SF = SF * ( 1 + TMath::Sqrt( quad2(idSF1_var, idSF2_var ) + quad2(recoSF1_var, recoSF2_var) + trigSF_varied*trigSF_varied) );
-    if(idx==-1) SF = SF * ( 1 - TMath::Sqrt( quad2(idSF1_var, idSF2_var ) + quad2(recoSF1_var, recoSF2_var) + trigSF_varied*trigSF_varied) );
+    if(idx==1 ) SF = SF * ( 1 + TMath::Sqrt( quad2(idSF1_var, idSF1_Systvar, idSF2_var, idSF2_Systvar ) + quad2(recoSF1_var, recoSF1_Systvar, recoSF2_var, recoSF2_Systvar) + trigSF_varied*trigSF_varied) );
+    if(idx==-1) SF = SF * ( 1 - TMath::Sqrt( quad2(idSF1_var, idSF1_Systvar, idSF2_var, idSF2_Systvar ) + quad2(recoSF1_var, recoSF1_Systvar, recoSF2_var, recoSF2_Systvar) + trigSF_varied*trigSF_varied) );
   }
   return SF;
 }
 
 ElectronTnP::ElectronTnP(){
-  EE_030_f = TFile::Open("resources/electronSFs/v2_July9/ScaleFactors_PbPb_LooseWP_EE_Centr_0_30_AlpaFixedDataOnly_BWResCBErfExp_preliminary_v2.root","open"); 
-  EE_030 = (TGraphAsymmErrors*) EE_030_f->Get("g_scalefactors");
+  EE_030_f = TFile::Open("resources/electronSFs/IDSFs_Final/SFs_LooseWP_EE_centr0_30_stat_unc_only.root","open"); 
+  EE_030 = (TGraphAsymmErrors*) EE_030_f->Get("SFs_stat");
 
-  EE_30100_f = TFile::Open("resources/electronSFs/v2_July9/ScaleFactors_PbPb_LooseWP_EE_Centr_30_100_AlpaFixedDataOnly_BWResCBErfExp_preliminary_v2.root","open"); 
-  EE_30100 = (TGraphAsymmErrors*) EE_30100_f->Get("g_scalefactors");
+  EE_30100_f = TFile::Open("resources/electronSFs/IDSFs_Final/SFs_LooseWP_EE_centr30_100_stat_unc_only.root","open"); 
+  EE_30100 = (TGraphAsymmErrors*) EE_30100_f->Get("SFs_stat");
   
-  EB_030_f = TFile::Open("resources/electronSFs/v2_July9/ScaleFactors_PbPb_LooseWP_EB_Centr_0_30_AlpaFixedDataOnly_BWResCBErfExp_preliminary_v2.root","open"); 
-  EB_030 = (TGraphAsymmErrors*) EB_030_f->Get("g_scalefactors");
+  EB_030_f = TFile::Open("resources/electronSFs/IDSFs_Final/SFs_LooseWP_EB_centr0_30_stat_unc_only.root","open"); 
+  EB_030 = (TGraphAsymmErrors*) EB_030_f->Get("SFs_stat");
 
-  EB_30100_f = TFile::Open("resources/electronSFs/v2_July9/ScaleFactors_PbPb_LooseWP_EB_Centr_30_100_AlpaFixedDataOnly_BWResCBErfExp_preliminary_v2.root","open"); 
-  EB_30100 = (TGraphAsymmErrors*) EB_30100_f->Get("g_scalefactors");
+  EB_30100_f = TFile::Open("resources/electronSFs/IDSFs_Final/SFs_LooseWP_EB_centr30_100_stat_unc_only.root","open"); 
+  EB_30100 = (TGraphAsymmErrors*) EB_30100_f->Get("SFs_stat");
+  
+  sEE_030_f = TFile::Open("resources/electronSFs/IDSFs_Final/SFs_LooseWP_EE_centr0_30_syst_unc_only.root","open"); 
+  sEE_030 = (TGraphAsymmErrors*) sEE_030_f->Get("SFs_syst");
+
+  sEE_30100_f = TFile::Open("resources/electronSFs/IDSFs_Final/SFs_LooseWP_EE_centr30_100_syst_unc_only.root","open"); 
+  sEE_30100 = (TGraphAsymmErrors*) sEE_30100_f->Get("SFs_syst");
+  
+  sEB_030_f = TFile::Open("resources/electronSFs/IDSFs_Final/SFs_LooseWP_EB_centr0_30_syst_unc_only.root","open"); 
+  sEB_030 = (TGraphAsymmErrors*) sEB_030_f->Get("SFs_syst");
+
+  sEB_30100_f = TFile::Open("resources/electronSFs/IDSFs_Final/SFs_LooseWP_EB_centr30_100_syst_unc_only.root","open"); 
+  sEB_30100 = (TGraphAsymmErrors*) sEB_30100_f->Get("SFs_syst");
  
   //reconstruction 
-  EE_030_fR = TFile::Open("resources/electronSFs/RecoSFs_Aug8/Reco_ScaleFactors_PbPb_RECO_EE_Centr_0_30.root","open"); 
-  EE_030R = (TGraphAsymmErrors*) EE_030_fR->Get("g_scalefactors");
+  EE_030_fR = TFile::Open("resources/electronSFs/RecoSFs_Final/SFs_RECO_EE_centr0_30_stat_unc_only.root","open"); 
+  EE_030R = (TGraphAsymmErrors*) EE_030_fR->Get("SFs_stat");
 
-  EE_30100_fR = TFile::Open("resources/electronSFs/RecoSFs_Aug8/Reco_ScaleFactors_PbPb_RECO_EE_Centr_30_100.root","open"); 
-  EE_30100R = (TGraphAsymmErrors*) EE_30100_fR->Get("g_scalefactors");
+  EE_30100_fR = TFile::Open("resources/electronSFs/RecoSFs_Final/SFs_RECO_EE_centr30_100_stat_unc_only.root","open"); 
+  EE_30100R = (TGraphAsymmErrors*) EE_30100_fR->Get("SFs_stat");
   
-  EB_030_fR = TFile::Open("resources/electronSFs/RecoSFs_Aug8/Reco_ScaleFactors_PbPb_RECO_EB_Centr_0_30.root","open"); 
-  EB_030R = (TGraphAsymmErrors*) EB_030_fR->Get("g_scalefactors");
+  EB_030_fR = TFile::Open("resources/electronSFs/RecoSFs_Final/SFs_RECO_EB_centr0_30_stat_unc_only.root","open"); 
+  EB_030R = (TGraphAsymmErrors*) EB_030_fR->Get("SFs_stat");
 
-  EB_30100_fR = TFile::Open("resources/electronSFs/RecoSFs_Aug8/Reco_ScaleFactors_PbPb_RECO_EB_Centr_30_100.root","open"); 
-  EB_30100R = (TGraphAsymmErrors*) EB_30100_fR->Get("g_scalefactors");
+  EB_30100_fR = TFile::Open("resources/electronSFs/RecoSFs_Final/SFs_RECO_EB_centr30_100_stat_unc_only.root","open"); 
+  EB_30100R = (TGraphAsymmErrors*) EB_30100_fR->Get("SFs_stat");
+  
+  sEE_030_fR = TFile::Open("resources/electronSFs/RecoSFs_Final/SFs_RECO_EE_centr0_30_syst_unc_only.root","open"); 
+  sEE_030R = (TGraphAsymmErrors*) sEE_030_fR->Get("SFs_syst");
+
+  sEE_30100_fR = TFile::Open("resources/electronSFs/RecoSFs_Final/SFs_RECO_EE_centr30_100_syst_unc_only.root","open"); 
+  sEE_30100R = (TGraphAsymmErrors*) sEE_30100_fR->Get("SFs_syst");
+  
+  sEB_030_fR = TFile::Open("resources/electronSFs/RecoSFs_Final/SFs_RECO_EB_centr0_30_syst_unc_only.root","open"); 
+  sEB_030R = (TGraphAsymmErrors*) sEB_030_fR->Get("SFs_syst");
+
+  sEB_30100_fR = TFile::Open("resources/electronSFs/RecoSFs_Final/SFs_RECO_EB_centr30_100_syst_unc_only.root","open"); 
+  sEB_30100R = (TGraphAsymmErrors*) sEB_30100_fR->Get("SFs_syst");
 
   //trigger
   EE_HLT_Data_f = TFile::Open("resources/electronSFs/HLT_SFs_Aug9/eleTreeEff0_PbPb_LooseWP_EE_Centr_0_100_HLTOnly_Data.root","open");
@@ -284,6 +383,15 @@ ElectronTnP::~ElectronTnP(){
   EE_30100_fR->Close();
   EB_030_fR->Close();
   EB_30100_fR->Close();
+  
+  sEE_030_f->Close();
+  sEE_30100_f->Close();
+  sEB_030_f->Close();
+  sEB_30100_f->Close();
+  sEE_030_fR->Close();
+  sEE_30100_fR->Close();
+  sEB_030_fR->Close();
+  sEB_30100_fR->Close();
 
   EE_HLT_Data_f->Close();
   EE_HLT_MC_f->Close();
