@@ -307,8 +307,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
    
                 float scaleFactor1 = 1.0;
                 float scaleFactor2 = 1.0;
-                if(isMC) scaleFactor1 = sfs.getMuonSF(v.EtaD1()[j], v.pTD1()[j]);
-                if(isMC) scaleFactor2 = sfs.getMuonSF(v.EtaD2()[j], v.pTD2()[j]);
+                if(isMC) scaleFactor1 = sfs.getMuonSF(v.EtaD1()[j], v.pTD1()[j], (int)(hiBin/2));
+                if(isMC) scaleFactor2 = sfs.getMuonSF(v.EtaD2()[j], v.pTD2()[j], (int)(hiBin/2));
                              
                 lepPt->Fill( v.pTD1()[j] ,eventWeight*scaleFactor1);
                 lepPt->Fill( v.pTD2()[j] ,eventWeight*scaleFactor2);
@@ -319,7 +319,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
  
                 yields->Fill(k,1.0/efficiency * eventWeight);
                 candPt[k]->Fill(v.pT()[j]);
-                candPt_withSFwithEvtWeight[k]->Fill(v.pT()[j], eventWeight * sfs.getZSF(v.pTD1()[j], v.EtaD1()[j], v.pTD2()[j], v.EtaD2()[j], 0) );
+                candPt_withSFwithEvtWeight[k]->Fill(v.pT()[j], eventWeight * sfs.getZSF(v.pTD1()[j], v.EtaD1()[j], v.pTD2()[j], v.EtaD2()[j], (int)(hiBin/2), 0) );
                 candPtFine[k]->Fill(v.pT()[j]);
                 candPtFiner[k]->Fill(v.pT()[j]);
                 candPt_unnormalized[k]->Fill(v.pT()[j]);

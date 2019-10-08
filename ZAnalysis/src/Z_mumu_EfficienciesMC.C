@@ -357,9 +357,9 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         if( !isOppositeSign ) continue;
 
         //Looks like this is a good candidate match! Let's get the scale factor
-        float scaleFactor = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], 0);
-        float scaleFactorU = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], 1);
-        float scaleFactorD = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j], -1);
+        float scaleFactor = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j],(int)(hiBin/2), 0);
+        float scaleFactorU = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j],(int)(hiBin/2), 1);
+        float scaleFactorD = tnp.getZSF( v.pTD1_gen()[j], v.EtaD1_gen()[j], v.pTD2_gen()[j], v.EtaD2_gen()[j],(int)(hiBin/2), -1);
 
         //Fill numerator (and apply the scale factor here!)
         for(int k = 0; k<nBins; k++){ 

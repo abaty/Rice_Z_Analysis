@@ -443,6 +443,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
 
   
   TCanvas * respC = new TCanvas("respC","respC",800,800);
+  respC->SetLeftMargin(0.2);
   unf_responseHist->GetXaxis()->SetTitle("p_{T}^{reco}");
   unf_responseHist->GetYaxis()->SetTitle("p_{T}^{gen}");
   unf_responseHist->SetStats(0);
@@ -455,7 +456,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   dummy4->Draw();
   dummy4->SetStats(0);
   respC->SetLogx();
-  dummy4->GetYaxis()->SetRangeUser(0.5,1.5);
+  dummy4->GetYaxis()->SetRangeUser(0.8,1.2);
   unfoldedRatio->SetLineColor(kBlack);
   unfoldedRatio->SetMarkerStyle(8);
   unfoldedRatio->SetMarkerColor(kBlack);
@@ -471,10 +472,24 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   }
   respC->SaveAs(Form("plots/Unfolding/UnfoldingStatVariations_isMu%d_%s.png",(int)isMu,outTag.c_str()));
   respC->SaveAs(Form("plots/Unfolding/UnfoldingStatVariations_isMu%d_%s.pdf",(int)isMu,outTag.c_str()));
+
+  dummy4->GetYaxis()->SetTitle("(unfolded+smeared) / raw");
+  dummy4->Draw();
+  unfoldedDistWithSmearing->Draw("same");
+  respC->SaveAs(Form("plots/Unfolding/UnfoldingSmeared_isMu%d_%s.png",(int)isMu,outTag.c_str()));
+  respC->SaveAs(Form("plots/Unfolding/UnfoldingSmeared_isMu%d_%s.pdf",(int)isMu,outTag.c_str()));
+ 
+  dummy4->GetYaxis()->SetTitle("unfolded / gen");
+  dummy4->Draw();
+  unfoldedClosure->Draw("same");
+  respC->SaveAs(Form("plots/Unfolding/UnfoldingClosure_isMu%d_%s.png",(int)isMu,outTag.c_str()));
+  respC->SaveAs(Form("plots/Unfolding/UnfoldingClosure_isMu%d_%s.pdf",(int)isMu,outTag.c_str()));
+
  
   unfoldedDist->Write();
   unfoldedRatio->Write();
   unfoldedClosure->Write();
+  unfoldedDistWithSmearing->Write();
   unfoldingUncert->Write();
   unfoldingUncert_Stats->Write();
   unfoldingUncert_total->Write();
