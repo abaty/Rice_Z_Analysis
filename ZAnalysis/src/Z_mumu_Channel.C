@@ -307,8 +307,8 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
    
                 float scaleFactor1 = 1.0;
                 float scaleFactor2 = 1.0;
-                if(isMC) scaleFactor1 = sfs.getMuonSF(v.EtaD1()[j], v.pTD1()[j], (int)(hiBin/2));
-                if(isMC) scaleFactor2 = sfs.getMuonSF(v.EtaD2()[j], v.pTD2()[j], (int)(hiBin/2));
+                if(isMC) scaleFactor1 = sfs.getMuonSF(v.pTD1()[j], v.EtaD1()[j],  (int)(hiBin/2));
+                if(isMC) scaleFactor2 = sfs.getMuonSF(v.pTD2()[j], v.EtaD2()[j],  (int)(hiBin/2));
                              
                 lepPt->Fill( v.pTD1()[j] ,eventWeight*scaleFactor1);
                 lepPt->Fill( v.pTD2()[j] ,eventWeight*scaleFactor2);
@@ -387,6 +387,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
           }
         }
         if(isMC) continue;
+
 
         //v2 calcuation
         TComplex Qp = TComplex(v.ephfpQ()[1], v.ephfpAngle()[1], true);

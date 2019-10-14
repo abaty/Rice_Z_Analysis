@@ -84,6 +84,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TH1D * pTOS_TauTau_withEff[nBins]; 
   TH1D * pTSS_TauTau_withEff[nBins]; 
   TH1D * pTOS_withEff_RelStatErr[nBins];
+  TH1D * pTOS_withEff_energyScale[nBins][2];
   
   TH1D * yOS_withEff[nBins][5]; 
   TH1D * ySS_withEff[nBins][5]; 
@@ -91,6 +92,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TH1D * yOS_TauTau_withEff[nBins]; 
   TH1D * ySS_TauTau_withEff[nBins]; 
   TH1D * yOS_withEff_RelStatErr[nBins];
+  TH1D * yOS_withEff_energyScale[nBins][2];
   
   TH1D * yieldOS_withEff[nBins][5]; 
   TH1D * yieldSS_withEff[nBins][5]; 
@@ -98,6 +100,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
   TH1D * yieldOS_TauTau_withEff[nBins]; 
   TH1D * yieldSS_TauTau_withEff[nBins]; 
   TH1D * yieldOS_withEff_RelStatErr[nBins];
+  TH1D * yieldOS_withEff_energyScale[nBins][2];
   
   TH3D * candYVsPtForStat[nBins];
   TH2D * effVsPt;
@@ -167,6 +170,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     pTOS_TauTau_withEff[i] = new TH1D(Form("pTOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     pTSS_TauTau_withEff[i] = new TH1D(Form("pTSS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
     pTOS_withEff_RelStatErr[i] = new TH1D(Form("pTOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    pTOS_withEff_energyScale[i][0] = new TH1D(Form("pTOS_withEff_energyScale0_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
+    pTOS_withEff_energyScale[i][1] = new TH1D(Form("pTOS_withEff_energyScale1_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";p_{T}",s.nZPtBins-1,s.zPtBins);
 
     int nRapBins = 14;
     for(int j = 0; j < (isMC ? 1 : 5); j++){
@@ -177,6 +182,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     yOS_TauTau_withEff[i] = new TH1D(Form("yOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);
     ySS_TauTau_withEff[i] = new TH1D(Form("ySS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);
     yOS_withEff_RelStatErr[i] = new TH1D(Form("yOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);   
+    yOS_withEff_energyScale[i][0] = new TH1D(Form("yOS_withEff_energyScale0_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);   
+    yOS_withEff_energyScale[i][1] = new TH1D(Form("yOS_withEff_energyScale1_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";y",nRapBins,-s.maxZRapEle,s.maxZRapEle);   
     
     for(int j = 0; j < (isMC ? 1 : 5); j++){
       yieldOS_withEff[i][j] = new TH1D(Form("yieldOS_withEff%s_%d_%d",h.variationName.at(j).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
@@ -186,6 +193,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     yieldOS_TauTau_withEff[i] = new TH1D(Form("yieldOS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
     yieldSS_TauTau_withEff[i] = new TH1D(Form("yieldSS_TauTau_withEff_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
     yieldOS_withEff_RelStatErr[i] = new TH1D(Form("yieldOS_withEff_RelStatErr_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    yieldOS_withEff_energyScale[i][0] = new TH1D(Form("yieldOS_withEff_energyScale0_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
+    yieldOS_withEff_energyScale[i][1] = new TH1D(Form("yieldOS_withEff_energyScale1_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),";m_{#mu^{+}#mu^{-}};counts",1,0,1);
     candYVsPtForStat[i] = new TH3D(Form("candYVsPtForStat_withEff2_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",xBins,xBinsArray,s.nZPtBins-1,s.zPtBins,cBins,cBinsArray);
 
     v2Num[i] = new TProfile(Form("v2Num_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)),"",1,0,1);
@@ -740,7 +749,20 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     yOS_withEff_RelStatErr[i]->Write();
     yieldOS_withEff_RelStatErr[i]->Write();
     candYVsPtForStat[i]->Write();
-    
+   
+    pTOS_withEff_energyScale[i][0]->Divide(pTOS_withEff[i][j]);
+    pTOS_withEff_energyScale[i][1]->Divide(pTOS_withEff[i][j]);
+    pTOS_withEff_energyScale[i][0]->Write();
+    pTOS_withEff_energyScale[i][1]->Write();
+    yOS_withEff_energyScale[i][0]->Divide(yOS_withEff[i][j]);
+    yOS_withEff_energyScale[i][1]->Divide(yOS_withEff[i][j]);
+    yOS_withEff_energyScale[i][0]->Write();
+    yOS_withEff_energyScale[i][1]->Write();
+    yieldOS_withEff_energyScale[i][0]->Divide(yieldOS_withEff[i][j]);
+    yieldOS_withEff_energyScale[i][1]->Divide(yieldOS_withEff[i][j]);
+    yieldOS_withEff_energyScale[i][0]->Write();
+    yieldOS_withEff_energyScale[i][1]->Write();
+ 
     for(int j = 0; j< (isMC ? 1 : 5); j++){
       h.makeDifferential( pTOS_withEff[i][j]);
       h.makeDifferential( pTSS_withEff[i][j]);
