@@ -421,7 +421,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
         if(isMC) elePt->at(j) = energyScaleMC.correctPt( elePt->at(j), eleSCEta->at(j), hiBin);
         
         //kinematic cuts
-        if(elePt->at(j)< s.minElectronPt) continue;        
+        float elePtVariedUp = energyScale.varyPt( elePt->at(j), eleSCEta->at(j), hiBin, 1);
+        if(!isMC && elePtVariedUp< s.minElectronPt) continue;    
+        if(isMC && elePt->at(j)< s.minElectronPt) continue;    
         if(TMath::Abs(eleSCEta->at(j)) > s.maxZRapEle) continue;
       
         //veto on transition region
@@ -479,9 +481,13 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
         elec1->SetPtEtaPhiM(elePt->at(goodElectrons.at(j)), eleEta->at(goodElectrons.at(j)), elePhi->at(goodElectrons.at(j)), 0.000511);
         
         for(unsigned int j2 = j+1; j2<goodElectrons.size(); j2++){
+          bool bothElectronPassNominalPtCut = (elePt->at(goodElectrons.at(j)) > s.minElectronPt) && (elePt->at(goodElectrons.at(j2)) > s.minElectronPt);
+          //if(elePt->at(goodElectrons.at(j)) < 21) std::cout <<"Here " <<  elePt->at(goodElectrons.at(j)) << std::endl;
+
           elec2->SetPtEtaPhiM(elePt->at(goodElectrons.at(j2)), eleEta->at(goodElectrons.at(j2)), elePhi->at(goodElectrons.at(j2)), 0.000511);
           TLorentzVector Zcand = *elec1+*elec2;
           if(Zcand.M() < s.zMassRange[0] || Zcand.M() > s.zMassRange[1]) continue;      
+          if( TMath::Abs(Zcand.Rapidity()) > s.maxZRapEle) continue;
 
           //L1 trigger matching (1 L1 EG > 15 GeV)
           //bool isFirstElectronL1Matched =  matcher.isL1Matched(eleSCEta->at(goodElectrons.at(j)), eleSCPhi->at(goodElectrons.at(j)), eTrig, 15.0);
@@ -506,7 +512,21 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
           if( isOppositeSign){
             for(int k = 0; k<nBins; k++){
               if(c.isInsideBin(hiBinZDC,k)){
-                if((isMC && !isTau) || !isMC){
+                if(!isMC){
+                  pTOS_withEff_energyScale[k][0]->Fill(Zcand.Pt(), 1.0/efficiencyArray[0] * eventWeight);
+                  yOS_withEff_energyScale[k][0]->Fill(Zcand.Rapidity(), 1.0/efficiencyArray[0] * eventWeight);
+                  yieldOS_withEff_energyScale[k][0]->Fill( 0.5, 1.0/efficiencyArray[0] * eventWeight );
+                  
+                  if(energyScale.varyPt(elePt->at(goodElectrons.at(j))   ,eleSCEta->at(goodElectrons.at(j)) ,hiBinZDC,-1) > s.minElectronPt){
+                    if(energyScale.varyPt(elePt->at(goodElectrons.at(j2)),eleSCEta->at(goodElectrons.at(j2)) ,hiBinZDC,-1) > s.minElectronPt){
+                      pTOS_withEff_energyScale[k][1]->Fill(Zcand.Pt(), 1.0/efficiencyArray[0] * eventWeight );
+                      yOS_withEff_energyScale[k][1]->Fill(Zcand.Rapidity(), 1.0/efficiencyArray[0] * eventWeight);
+                      yieldOS_withEff_energyScale[k][1]->Fill( 0.5, 1.0/efficiencyArray[0] * eventWeight );
+                    }
+                  }
+                }
+
+                if((isMC && !isTau) || (!isMC && bothElectronPassNominalPtCut)){
                   massPeakOS[k]->Fill( Zcand.M() );
                   massPeakOS_withEff[k]->Fill( Zcand.M(), eventWeight/efficiency );
                   for( int l = 0; l< (isMC ? 1 : 5); l++){
@@ -586,7 +606,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
           }else{
             for(int k = 0; k<nBins; k++){
               if(c.isInsideBin(hiBinZDC,k)){
-                if((isMC && !isTau) || !isMC){
+                if((isMC && !isTau) || (!isMC && bothElectronPassNominalPtCut)){
                   massPeakSS[k]->Fill( Zcand.M() );
                   massPeakSS_withEff[k]->Fill( Zcand.M(), eventWeight/efficiency );
                   for( int l = 0; l< (isMC ? 1 : 5); l++){
@@ -614,7 +634,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
           if(isMC) continue;       
  
           //v2 calcuation
-          if( isOppositeSign){
+          if( isOppositeSign && bothElectronPassNominalPtCut){
             //reference Q vectors
             TComplex Qp = TComplex(hiQVecMag[7], hiQVecAngle[7], true);
             TComplex Qn = TComplex(hiQVecMag[6], hiQVecAngle[6], true);
@@ -750,16 +770,16 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     yieldOS_withEff_RelStatErr[i]->Write();
     candYVsPtForStat[i]->Write();
    
-    pTOS_withEff_energyScale[i][0]->Divide(pTOS_withEff[i][j]);
-    pTOS_withEff_energyScale[i][1]->Divide(pTOS_withEff[i][j]);
+    pTOS_withEff_energyScale[i][0]->Divide(pTOS_withEff[i][0]);
+    pTOS_withEff_energyScale[i][1]->Divide(pTOS_withEff[i][0]);
     pTOS_withEff_energyScale[i][0]->Write();
     pTOS_withEff_energyScale[i][1]->Write();
-    yOS_withEff_energyScale[i][0]->Divide(yOS_withEff[i][j]);
-    yOS_withEff_energyScale[i][1]->Divide(yOS_withEff[i][j]);
+    yOS_withEff_energyScale[i][0]->Divide(yOS_withEff[i][0]);
+    yOS_withEff_energyScale[i][1]->Divide(yOS_withEff[i][0]);
     yOS_withEff_energyScale[i][0]->Write();
     yOS_withEff_energyScale[i][1]->Write();
-    yieldOS_withEff_energyScale[i][0]->Divide(yieldOS_withEff[i][j]);
-    yieldOS_withEff_energyScale[i][1]->Divide(yieldOS_withEff[i][j]);
+    yieldOS_withEff_energyScale[i][0]->Divide(yieldOS_withEff[i][0]);
+    yieldOS_withEff_energyScale[i][1]->Divide(yieldOS_withEff[i][0]);
     yieldOS_withEff_energyScale[i][0]->Write();
     yieldOS_withEff_energyScale[i][1]->Write();
  

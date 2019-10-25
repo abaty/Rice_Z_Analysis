@@ -18,12 +18,29 @@ public:
   float smearPt(   float pt, float eta, int hiBin);
   float scalePt(   float pt, float eta, int hiBin );
 
+  float varyPt( float pt, float eta, int hiBin, int indx);
+
 private:
 
   TRandom3 * r;
   std::string mode;
 
 };
+
+
+float ElectronEnergyScale::varyPt( float pt, float eta, int hiBin, int indx){
+  if( TMath::Abs(eta) < 1.442 ){
+    if(hiBin<20)       return pt*(1 + indx*0.007);
+    else if(hiBin<60)  return pt*(1 + indx*0.008);
+    else if(hiBin<200) return pt*(1 + indx*0.009);
+  }
+  else{
+    if(hiBin<20)       return pt*(1 + indx*0.023);
+    else if(hiBin<60)  return pt*(1 + indx*0.021);
+    else if(hiBin<200) return pt*(1 + indx*0.017);
+  }
+  return pt;
+}
 
 
 float ElectronEnergyScale::smearPt( float pt, float eta, int hiBin){

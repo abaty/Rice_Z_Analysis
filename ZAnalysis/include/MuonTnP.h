@@ -7,8 +7,12 @@
 class MuonTnP{
 
 public:
- float getZSF(float pt1, float eta1, float pt2, float eta2, int cent, int idx);
+ float getZSF(float pt1, float eta1, float pt2, float eta2, int cent, int idx, bool doCorrelations = true);
  float getMuonSF(float pt1, float eta1, int cent);
+ bool isSameTrkTnPBin(float eta1, float eta2);
+ int  findTrkTnPBins(float eta);
+ bool isSameIdTnPBin(float eta1, float eta2);
+ int  findIdTnPBins(float eta);
 
 private:
  inline float quad2(float x, float y);
@@ -29,6 +33,48 @@ inline float MuonTnP::quad(float x, float y){
   return TMath::Sqrt(quad2(x,y));
 }
 
+int MuonTnP::findTrkTnPBins(float eta){
+  if( eta >= -2.4 && eta<-2.1) return 0;
+  if( eta >= -2.1 && eta<-1.6) return 1;
+  if( eta >= -1.6 && eta<-1.2) return 2;
+  if( eta >= -1.2 && eta<-0.9) return 3;
+  if( eta >= -0.9 && eta<0)    return 4;
+  if( eta >= 0 && eta<0.9)     return 5;
+  if( eta >= 0.9 && eta<1.2)   return 6;
+  if( eta >= 1.2 && eta<1.6)   return 7;
+  if( eta >= 1.6 && eta<2.1)   return 8;
+  if( eta >= 2.1 && eta<2.4)   return 9;
+  return -1;
+}
+
+bool MuonTnP::isSameTrkTnPBin(float eta1, float eta2){
+  if( findTrkTnPBins( eta1 ) == findTrkTnPBins( eta2) ) return true;
+  return false;
+}
+
+int MuonTnP::findIdTnPBins(float eta){
+  if( eta >= -2.4 && eta<-2.1) return 0;
+  if( eta >= -2.1 && eta<-1.6) return 1;
+  if( eta >= -1.6 && eta<-1.2) return 2;
+  if( eta >= -1.2 && eta<-0.9) return 3;
+  if( eta >= -0.9 && eta<-0.6)    return 4;
+  if( eta >= -0.6 && eta<-0.3)    return 5;
+  if( eta >= -0.3 && eta<0)    return 6;
+  if( eta >= 0   && eta<0.3)     return 7;
+  if( eta >= 0.3 && eta<0.6)     return 8;
+  if( eta >= 0.6 && eta<0.9)     return 9;
+  if( eta >= 0.9 && eta<1.2)   return 10;
+  if( eta >= 1.2 && eta<1.6)   return 11;
+  if( eta >= 1.6 && eta<2.1)   return 12;
+  if( eta >= 2.1 && eta<2.4)   return 13;
+  return -1;
+}
+
+bool MuonTnP::isSameIdTnPBin(float eta1, float eta2){
+  if( findIdTnPBins( eta1 ) == findIdTnPBins( eta2) ) return true;
+  return false;
+}
+
 float MuonTnP::getMuonSF(float pt1, float eta1, int cent){
   float trackSF = tnp_weight_glbtrk_pbpb(eta1, cent, 0);
   float idSF = tnp_weight_muid_pbpb(eta1, 0);
@@ -37,7 +83,7 @@ float MuonTnP::getMuonSF(float pt1, float eta1, int cent){
 
 }
 
-float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, int idx){
+float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, int idx, bool doCorrelations){
   
   //************************************************************************************
   //Tracking scale factors
@@ -58,6 +104,9 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, in
     float trkSF2U_2 = quad2(trkSF2StatU, trkSF2SystU);
    
     trackSF_varied = trkSF1U_2 + trkSF2U_2;//relative uncertainty squared
+
+    if( isSameTrkTnPBin( eta1, eta2 ) && doCorrelations) trackSF_varied += 2*trkSF1StatU*trkSF2StatU;//add the remaining part to vary in a correlated fashion if they are in the same eta bin
+    if( doCorrelations ) trackSF_varied += 2*trkSF1SystU*trkSF2SystU;
   }
   //downward variation
   if(idx == -1){
@@ -71,6 +120,9 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, in
     float trkSF2D_2 = quad2(trkSF2StatD, trkSF2SystD); 
 
     trackSF_varied = trkSF1D_2 + trkSF2D_2;//relative uncertainty squared
+
+    if( isSameTrkTnPBin( eta1, eta2 ) && doCorrelations) trackSF_varied += 2*trkSF1StatD*trkSF2StatD;//add the remaining part to vary in a correlated fashion if they are in the same eta bin
+    if( doCorrelations ) trackSF_varied += 2*trkSF1SystD*trkSF2SystD;
   }
 
 
@@ -97,6 +149,9 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, in
     float idSF2U_2 = quad2(idSF2StatU, idSF2SystU);
    
     idSF_varied = idSF1U_2 + idSF2U_2;//relative uncertainty squared
+
+    if( isSameIdTnPBin( eta1, eta2 ) && doCorrelations) idSF_varied += 2*idSF1StatU*idSF2StatU;//add the remaining part to vary in a correlated fashion if they are in the same eta bin
+    if( doCorrelations ) idSF_varied += 2*idSF1SystU*idSF2SystU;
   }
   //downward variation
   if(idx == -1){
@@ -110,6 +165,9 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, in
     float idSF2D_2 = quad2(idSF2StatD, idSF2SystD); 
 
     idSF_varied = idSF1D_2 + idSF2D_2;//relative uncertainty squared
+
+    if( isSameIdTnPBin( eta1, eta2 ) && doCorrelations) idSF_varied += 2*idSF1StatD*idSF2StatD;//add the remaining part to vary in a correlated fashion if they are in the same eta bin
+    if( doCorrelations ) idSF_varied += 2*idSF1SystD*idSF2SystD;
   }
 
 
@@ -127,14 +185,25 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, in
   //upward
   if(idx == 1){
     //first uncertainty
+    //assuming uncorrelated
     float eff_data_TnPU1 = ((1 - ( (1 - eff1*tnp_weight_trig_pbpb(pt1, eta1, cent, -1)/tnp_weight_trig_pbpb(pt1, eta1, cent, 0) ) * (1 - eff2) )) - eff_data)/eff_data; 
     float eff_data_TnPU2 = ((1 - ( (1 - eff1) * (1 - eff2*tnp_weight_trig_pbpb(pt2, eta2,cent, -1)/tnp_weight_trig_pbpb(pt2, eta2,cent, 0) ) )) - eff_data)/eff_data;
     float TnPU = quad2( eff_data_TnPU1, eff_data_TnPU2);
+
     //second uncertainty
     float eff_data_StatU1 = ((1 - ( (1 - eff1*tnp_weight_trig_pbpb(pt1, eta1,cent, 1)/tnp_weight_trig_pbpb(pt1, eta1,cent, 0) ) * (1 - eff2) )) - eff_data)/eff_data; 
     float eff_data_StatU2 = ((1 - ( (1 - eff1) * (1 - eff2*tnp_weight_trig_pbpb(pt2, eta2,cent, 1)/tnp_weight_trig_pbpb(pt2, eta2,cent, 0) ) ))- eff_data)/eff_data; 
     float StatU = quad2( eff_data_StatU1, eff_data_StatU2); 
 
+    //recalculate if we assume correlations
+    if(doCorrelations){
+      float eff_data_TnPU1Corr = ((1 - ( (1 - eff1*tnp_weight_trig_pbpb(pt1, eta1, cent, -1)/tnp_weight_trig_pbpb(pt1, eta1, cent, 0) ) * (1 - eff2*tnp_weight_trig_pbpb(pt2, eta2,cent, -1)/tnp_weight_trig_pbpb(pt2, eta2,cent, 0)) )) - eff_data)/eff_data;
+      TnPU = eff_data_TnPU1Corr * eff_data_TnPU1Corr;
+
+      float eff_data_StatU1Corr = ((1 - ( (1 - eff1*tnp_weight_trig_pbpb(pt1, eta1,cent, 1)/tnp_weight_trig_pbpb(pt1, eta1,cent, 0) ) * (1 - eff2*tnp_weight_trig_pbpb(pt2, eta2,cent, -1)/tnp_weight_trig_pbpb(pt2, eta2,cent, 0)) )) - eff_data)/eff_data;
+      StatU = eff_data_StatU1Corr * eff_data_StatU1Corr;
+    }
+    
     trigSF_varied = TnPU + StatU;//relative uncertainty squared
   }
   //downward
@@ -147,6 +216,15 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, in
     float eff_data_StatD1 = ((1 - ( (1 - eff1*tnp_weight_trig_pbpb(pt1, eta1,cent, 2)/tnp_weight_trig_pbpb(pt1, eta1,cent, 0) ) * (1 - eff2) )) - eff_data)/eff_data; 
     float eff_data_StatD2 = ((1 - ( (1 - eff1) * (1 - eff2*tnp_weight_trig_pbpb(pt2, eta2,cent, 2)/tnp_weight_trig_pbpb(pt2, eta2,cent, 0) ) ))- eff_data)/eff_data; 
     float StatD = quad2( eff_data_StatD1, eff_data_StatD2); 
+    
+    //recalculate if we assume correlations
+    if(doCorrelations){
+      float eff_data_TnPD1Corr = ((1 - ( (1 - eff1*tnp_weight_trig_pbpb(pt1, eta1, cent, -2)/tnp_weight_trig_pbpb(pt1, eta1, cent, 0) ) * (1 - eff2*tnp_weight_trig_pbpb(pt2, eta2,cent, -2)/tnp_weight_trig_pbpb(pt2, eta2,cent, 0)) )) - eff_data)/eff_data;
+      TnPD = eff_data_TnPD1Corr * eff_data_TnPD1Corr;
+
+      float eff_data_StatD1Corr = ((1 - ( (1 - eff1*tnp_weight_trig_pbpb(pt1, eta1,cent, 2)/tnp_weight_trig_pbpb(pt1, eta1,cent, 0) ) * (1 - eff2*tnp_weight_trig_pbpb(pt2, eta2,cent, -2)/tnp_weight_trig_pbpb(pt2, eta2,cent, 0)) )) - eff_data)/eff_data;
+      StatD = eff_data_StatD1Corr * eff_data_StatD1Corr;
+    }
 
     trigSF_varied = TnPD + StatD;//relative uncertainty squared
   }
