@@ -12,7 +12,7 @@ public:
 
   ElectronTnP();
   ~ElectronTnP();
-  float getZSF(int hiBin, float pt1, float eta, float pt2, float eta2, int idx);
+  float getZSF(int hiBin, float pt1, float eta, float pt2, float eta2, int idx, bool doCorrelations=true);
   float getESF(int hiBin, float pt1, float eta1);
 
 private:
@@ -209,7 +209,7 @@ float ElectronTnP::getSingleSF_HLT(float x, float eta, bool isData, int idx){
   return 1.0;
 }
 
-float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta2, int idx){
+float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta2, int idx, bool doCorrelations){
 
   //for sysetmatic variations eventually;
   idx = idx;
@@ -291,6 +291,10 @@ float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta
     float eff_data_StatU2 = ((1 - ( (1 - eff1) * (1 - getSingleSF_HLT(pt2, eta2, true,1 )) ))- eff_data)/eff_data; 
     float StatU = quad( eff_data_StatU1, eff_data_StatU2); 
 
+    if(doCorrelations){
+      StatU = ((1 - ( (1 - getSingleSF_HLT(pt1, eta1, true, 1)) * (1 - getSingleSF_HLT(pt2, eta2, true, 1)) )) - eff_data)/eff_data;
+    }
+ 
     trigSF_varied = StatU;
   }
   //downward
@@ -299,13 +303,31 @@ float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta
     float eff_data_StatD2 = ((1 - ( (1 - eff1) * (1 - getSingleSF_HLT(pt2, eta2, true,-1 )) ))- eff_data)/eff_data; 
     float StatD = quad( eff_data_StatD1, eff_data_StatD2); 
     
+    if(doCorrelations){
+      StatD = ((1 - ( (1 - getSingleSF_HLT(pt1, eta1, true, -1)) * (1 - getSingleSF_HLT(pt2, eta2, true, -1)) )) - eff_data)/eff_data;
+    }
+    
     trigSF_varied = StatD;
   }
 
   float SF = recoSF * idSF * trigSF;
   if(idx !=0){
-    if(idx==1 ) SF = SF * ( 1 + TMath::Sqrt( quad2(idSF1_var, idSF1_Systvar, idSF2_var, idSF2_Systvar ) + quad2(recoSF1_var, recoSF1_Systvar, recoSF2_var, recoSF2_Systvar) + trigSF_varied*trigSF_varied) );
-    if(idx==-1) SF = SF * ( 1 - TMath::Sqrt( quad2(idSF1_var, idSF1_Systvar, idSF2_var, idSF2_Systvar ) + quad2(recoSF1_var, recoSF1_Systvar, recoSF2_var, recoSF2_Systvar) + trigSF_varied*trigSF_varied) );
+
+    float correlationFactorIDStat = 0;
+    float correlationFactorIDSyst = 0;
+    float correlationFactorRecoStat = 0;
+    float correlationFactorRecoSyst = 0;
+    float totalCorrelationFactor = 0;
+    if(doCorrelations){
+      if( (idSF1 - idSF2) < 0.0000001 ) correlationFactorIDStat = 2*idSF1_var*idSF2_var;
+      correlationFactorIDSyst = 2*idSF1_Systvar*idSF2_Systvar; 
+      if( (recoSF1 - recoSF2) < 0.0000001 ) correlationFactorRecoStat = 2*recoSF1_var*recoSF2_var;
+      correlationFactorRecoSyst = 2*recoSF1_Systvar*recoSF2_Systvar; 
+      totalCorrelationFactor = correlationFactorIDStat + correlationFactorRecoStat + correlationFactorIDSyst + correlationFactorRecoSyst;
+    }
+
+    if(idx==1 ) SF = SF * ( 1 + TMath::Sqrt( quad2(idSF1_var, idSF1_Systvar, idSF2_var, idSF2_Systvar ) + quad2(recoSF1_var, recoSF1_Systvar, recoSF2_var, recoSF2_Systvar) + totalCorrelationFactor + trigSF_varied*trigSF_varied) );
+    if(idx==-1) SF = SF * ( 1 - TMath::Sqrt( quad2(idSF1_var, idSF1_Systvar, idSF2_var, idSF2_Systvar ) + quad2(recoSF1_var, recoSF1_Systvar, recoSF2_var, recoSF2_Systvar) + totalCorrelationFactor + trigSF_varied*trigSF_varied) );
   }
   return SF;
 }
