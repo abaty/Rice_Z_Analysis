@@ -256,7 +256,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   ATLAS->SetMarkerColor(kGreen+1);
   ATLAS->SetLineColor(kGreen+1);
 
-  for(int i = 1; i<11; i++){
+  for(int i = 1; i<10; i++){
     yieldPlot_mumu->GetXaxis()->SetBinLabel(i, labels[i-1]);
     yieldPlot_mumu->GetXaxis()->ChangeLabel(i,45);
   }
@@ -274,7 +274,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   yieldPlot_mumu->SetLineWidth(2);
   yieldPlot_mumu->GetYaxis()->SetTitle("#frac{1}{N_{evt}} #frac{1}{T_{AA}} N_{Z} (mb)");
   yieldPlot_mumu->GetYaxis()->SetRangeUser(0.15*TMath::Power(10,-6),0.45*TMath::Power(10,-6));
-  if(doAccept) yieldPlot_mumu->GetYaxis()->SetRangeUser(0.15*TMath::Power(10,-6)*1.6,0.45*TMath::Power(10,-6)*1.6);
+  if(doAccept) yieldPlot_mumu->GetYaxis()->SetRangeUser(0,0.45*TMath::Power(10,-6)*1.6);
 
   yieldPlot_ee->SetMarkerStyle(21);
   yieldPlot_ee->SetMarkerSize(1.5);
@@ -294,7 +294,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 
   yieldPlot_mumu->SetStats(0);
   yieldPlot_mumu->Draw();
-  yieldPlot_mumu24->Draw("same");
+  //yieldPlot_mumu24->Draw("same");
   yieldPlot_ee->Draw("same");
   yieldCombo->Draw("same");
   if(!doAccept) ATLAS->Draw("same"); 
@@ -302,7 +302,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 
   TBox * eBox[40];
   TBox * mu21Box[40];
-  TBox * mu24Box[40];
+  //TBox * mu24Box[40];
   TBox * netBox[40];
   TBox * ATLASBox;  
 
@@ -316,14 +316,14 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
       helper.drawBoxAbsolute(yieldCombo, i , glauberBox[i][0], yieldCombo->GetBinContent(i) * TAARelErr[i-1],Gwidth,(Color_t)kGray+2); 
       helper.drawBoxAbsolute(yieldPlot_ee, i , glauberBox[i][1], yieldPlot_ee->GetBinContent(i) * TAARelErr[i-1] ,Gwidth ,(Color_t)kGray+2); 
       helper.drawBoxAbsolute(yieldPlot_mumu, i , glauberBox[i][2], yieldPlot_mumu->GetBinContent(i) * TAARelErr[i-1],Gwidth,(Color_t)kGray+2); 
-      helper.drawBoxAbsolute(yieldPlot_mumu24, i , glauberBox[i][3], yieldPlot_mumu24->GetBinContent(i) * TAARelErr[i-1],Gwidth,(Color_t)kGray+2); 
+     // helper.drawBoxAbsolute(yieldPlot_mumu24, i , glauberBox[i][3], yieldPlot_mumu24->GetBinContent(i) * TAARelErr[i-1],Gwidth,(Color_t)kGray+2); 
   }
   float shift = 0.005*TMath::Power(10,-6);
   for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-2; i++){
       helper.drawBoxAbsolute(yieldCombo, i , glauberBox2[i][0], yieldCombo->GetBinContent(i) * TAARelErr[i-1] - shift,Gwidth,(Color_t)kWhite); 
       helper.drawBoxAbsolute(yieldPlot_ee, i , glauberBox2[i][1], yieldPlot_ee->GetBinContent(i) * TAARelErr[i-1] - shift,Gwidth ,(Color_t)kWhite); 
       helper.drawBoxAbsolute(yieldPlot_mumu, i , glauberBox2[i][2], yieldPlot_mumu->GetBinContent(i) * TAARelErr[i-1]- shift,Gwidth,(Color_t)kWhite); 
-      helper.drawBoxAbsolute(yieldPlot_mumu24, i , glauberBox2[i][3], yieldPlot_mumu24->GetBinContent(i) * TAARelErr[i-1] - shift,Gwidth,(Color_t)kWhite); 
+    //  helper.drawBoxAbsolute(yieldPlot_mumu24, i , glauberBox2[i][3], yieldPlot_mumu24->GetBinContent(i) * TAARelErr[i-1] - shift,Gwidth,(Color_t)kWhite); 
   }
 
 
@@ -334,7 +334,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
       helper.drawBoxAbsolute(yieldCombo, i , netBox[i], comboSyst[binMap[i-1]]->GetBinContent(1)* scaleFactor_Combo[i-1],width,(Color_t)kBlack); 
       helper.drawBoxAbsolute(yieldPlot_ee, i , eBox[i], yieldPlot_ee->GetBinContent(i) * totalError[binMap[i-1]][0]->GetBinContent(1) ,width ,(Color_t)kRed+1); 
       helper.drawBoxAbsolute(yieldPlot_mumu, i , mu21Box[i], yieldPlot_mumu->GetBinContent(i) * totalError[binMap[i-1]][1]->GetBinContent(1),width,(Color_t)kViolet+1); 
-      helper.drawBoxAbsolute(yieldPlot_mumu24, i , mu24Box[i], yieldPlot_mumu24->GetBinContent(i) * totalError[binMap[i-1]][2]->GetBinContent(1),width,(Color_t)kBlue); 
+    //  helper.drawBoxAbsolute(yieldPlot_mumu24, i , mu24Box[i], yieldPlot_mumu24->GetBinContent(i) * totalError[binMap[i-1]][2]->GetBinContent(1),width,(Color_t)kBlue); 
   }
  
   TH1D * glauberDummy = new TH1D("glauberDummy","",1,0,1);
@@ -344,7 +344,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   if(!doAccept) helper.drawBoxAbsolute(ATLAS, 1 , ATLASBox, 0.00787*TMath::Power(10,-6) ,width,(Color_t)kGreen+1); 
   
   yieldPlot_mumu->Draw("same");
-  yieldPlot_mumu24->Draw("same");
+  //yieldPlot_mumu24->Draw("same");
   yieldPlot_ee->Draw("same");
   yieldCombo->Draw("same");
  
@@ -357,12 +357,12 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   leg->SetBorderSize(0);
   leg->AddEntry((TObject*)0,"2018 PbPb, p_{T}^{l} > 20 GeV","");
   if(!doAccept){
-    leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |#eta^{l}| < 2.4","p");
+    //leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |#eta^{l}| < 2.4","p");
     leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-} |#eta^{l}| < 2.1","p");
     leg->AddEntry(yieldPlot_ee,"e^{+}e^{-} |#eta^{l}| < 2.1 ","p");
     leg->AddEntry(yieldCombo,"Combined |#eta^{l}| < 2.1","p");
   } else {
-    leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |y_{Z}| < 2.4","p");
+    //leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |y_{Z}| < 2.4","p");
     leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-} |y_{Z}| < 2.1","p");
     leg->AddEntry(yieldPlot_ee,"e^{+}e^{-} |y_{Z}| < 2.1 ","p");
     leg->AddEntry(yieldCombo,"Combined |y_{Z}| < 2.1","p");

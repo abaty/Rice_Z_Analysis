@@ -190,9 +190,9 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   c1->SetLeftMargin(0.2);
   c1->SetBottomMargin(0.2);
   
-  y_mu24->SetMarkerColor(kBlue);
+  y_mu24->SetMarkerColor(kViolet+1);
   y_mu24->SetMarkerStyle(21);
-  y_mu24->SetLineColor(kBlue);
+  y_mu24->SetLineColor(kViolet+1);
   
   y_mu21->SetMarkerColor(kViolet+1);
   y_mu21->SetMarkerStyle(8);
@@ -209,7 +209,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
   
   y_e->Draw("p");
-  y_mu21->Draw("p same");
+  //y_mu21->Draw("p same");
   y_mu24->Draw("p same");
   combo[2]->SetMarkerStyle(8);
   combo[2]->SetMarkerColor(kBlack);
@@ -217,17 +217,17 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   combo[2]->Draw("p same");
 
   TBox * eBoxy[40];
-  TBox * mu21Boxy[40];
+  //TBox * mu21Boxy[40];
   TBox * mu24Boxy[40];
   TBox * netBoxy[40];
   
   for(int i = 1; i<combo[2]->GetSize()-1; i++){
       helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.1,(Color_t)kBlack); 
       helper.drawBoxAbsolute(y_e, i , eBoxy[i], y_e->GetBinContent(i) * totalError_0_90[0][2]->GetBinContent(i) ,0.1,(Color_t)kRed+1); 
-      helper.drawBoxAbsolute(y_mu21, i , mu21Boxy[i], y_mu21->GetBinContent(i) * totalError_0_90[1][2]->GetBinContent(i),0.1,(Color_t)kViolet+1); 
+      //helper.drawBoxAbsolute(y_mu21, i , mu21Boxy[i], y_mu21->GetBinContent(i) * totalError_0_90[1][2]->GetBinContent(i),0.1,(Color_t)kViolet+1); 
   }
   for(int i = 1; i<y_mu24->GetSize()-1; i++){
-      helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kBlue); 
+      helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kViolet+1); 
   }
 
  
@@ -242,12 +242,12 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ly->AddEntry((TObject*)0,"PbPb (0-90%)","");
   if(!doAccept){
     ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
-    ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
+    //ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
     ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
     ly->AddEntry(combo[2],"Combined (|#eta_{l}|<2.1)","p");
   }else{
     ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.4)","p");
-    ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
+    //ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
     ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|y_{Z}|<2.1)","p");
     ly->AddEntry(combo[2],"Combined (|y_{Z}|<2.1)","p");
   }
@@ -294,7 +294,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   
   pt_e->Draw("p same");
   pt_mu21->Draw("p same");
-  pt_mu24->Draw("p same");
+  //pt_mu24->Draw("p same");
   combo[1]->SetMarkerStyle(8);
   combo[1]->SetMarkerColor(kBlack);
   combo[1]->SetLineColor(kBlack);
@@ -302,7 +302,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   
   TBox * eBoxpt[40];
   TBox * mu21Boxpt[40];
-  TBox * mu24Boxpt[40];
+  //TBox * mu24Boxpt[40];
   TBox * netBoxpt[40];
   
   for(int i = 1; i<combo[1]->GetSize()-1; i++){
@@ -310,14 +310,14 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       helper.drawBoxAbsolute(combo[1], i , netBoxpt[i], comboSyst[1]->GetBinContent(i),width,(Color_t)kBlack); 
       helper.drawBoxAbsolute(pt_e, i , eBoxpt[i], pt_e->GetBinContent(i) * totalError_0_90[0][1]->GetBinContent(i) ,width ,(Color_t)kRed+1); 
       helper.drawBoxAbsolute(pt_mu21, i , mu21Boxpt[i], pt_mu21->GetBinContent(i) * totalError_0_90[1][1]->GetBinContent(i),width,(Color_t)kViolet+1); 
-      helper.drawBoxAbsolute(pt_mu24, i , mu24Boxpt[i], pt_mu24->GetBinContent(i) * totalError_0_90[2][1]->GetBinContent(i),width,(Color_t)kBlue); 
+   //   helper.drawBoxAbsolute(pt_mu24, i , mu24Boxpt[i], pt_mu24->GetBinContent(i) * totalError_0_90[2][1]->GetBinContent(i),width,(Color_t)kBlue); 
   }
  
 
  
   pt_e->Draw("p same");
   pt_mu21->Draw("p same");
-  pt_mu24->Draw("p same");
+  //pt_mu24->Draw("p same");
   combo[1]->Draw("p same");
 
   c1->SetLogy();
@@ -328,12 +328,12 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   lpt->SetFillStyle(0);
   lpt->AddEntry((TObject*)0,"PbPb (0-90%)","");
   if(!doAccept){
-    lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
+    //lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
     lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
     lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
     lpt->AddEntry(combo[1],"Combined (|#eta_{l}|<2.1)","p");
   }else{
-    lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.4)","p");
+    //lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.4)","p");
     lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
     lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-} (|y_{Z}|<2.1)","p");
     lpt->AddEntry(combo[1],"Combined (|y_{Z}|<2.1)","p");
