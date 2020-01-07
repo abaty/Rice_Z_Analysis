@@ -1,3 +1,4 @@
+#include "include/HistNameHelper.h"
 #include "include/ZEfficiency.h"
 #include "include/centralityBin.h"
 #include "include/ptReweightSpectrum.h"
@@ -25,6 +26,8 @@
 #include <fstream>
 #include <string>
 
+int pdfProcess(int id1,int id2,int nPartons);
+
 void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   Timer timer = Timer();
   timer.Start();
@@ -37,6 +40,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   ElectronTriggerMatcher matcher = ElectronTriggerMatcher();
   ElecTrigObject eTrig = ElecTrigObject();
   ElectronTnP eTnP = ElectronTnP();  
+
+  HistNameHelper histHelper = HistNameHelper();
 
   MCReweight vzRW = MCReweight("resources/vzReweight.root","resources/centralityFlatteningWeight.root");
   MCWeightHelper weightHelper = MCWeightHelper();
@@ -143,6 +148,32 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D * unfolding_recoPtD;
   TH2D * unfolding_responseD;
 
+  const int pdfXnbins = 40;
+  const double pdfXbins[pdfXnbins] = {0.0001,0.00015,0.0002,0.00025,0.0003,0.0004,0.0005,0.0006,0.0008,0.001,0.003,0.005,0.007,0.01,0.013,0.016,0.02,0.028,0.036,0.044,0.052,0.06,0.07,0.08,0.09,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.5, 0.6, 0.7, 0.85, 1.0};
+
+  TH2D * pdfXVsPt = new TH2D("pdfXVsPt","pdfXVsPt",s.nZPtBins-1,s.zPtBins,pdfXnbins-1,pdfXbins);
+  TH2D * pdfXVsRap = new TH2D("pdfXVsRap","pdfXVsRap",s.nZRapBins,-s.maxZRap,s.maxZRap,pdfXnbins-1,pdfXbins);
+  TH1D * pdfIDVsPt[13];
+  for(int i = 0; i<13; i++){
+    pdfIDVsPt[i] = new TH1D(Form("pdfIDVsPt_%d",i),Form("pdfIDVsPt_%d",i),s.nZPtBins-1,s.zPtBins);
+  }
+  TH2D * pdfX1X2LowPt = new TH2D("pdfX1X2LowPt",";x_{projectile};x_{target}",pdfXnbins-1,pdfXbins,pdfXnbins-1,pdfXbins);
+  TH2D * pdfX1X2HighPt = new TH2D("pdfX1X2HighPt",";x_{projectile};x_{target}",pdfXnbins-1,pdfXbins,pdfXnbins-1,pdfXbins);
+
+  std::vector<double> theoryEventWeights = std::vector<double>(1210, 0);
+  TH1D * theoryPtCT14[57];
+  for(int i = 0; i<57; i++) theoryPtCT14[i] = new TH1D(Form("theoryCT14_pt_%d",i),Form("theoryCT14_pt_%d",i),s.nZPtBins-1,s.zPtBins);
+  TH1D * theoryPtnCTEQ15[33];
+  for(int i = 0; i<33; i++) theoryPtnCTEQ15[i] = new TH1D(Form("theorynCTEQ15_pt_%d",i),Form("theorynCTEQ15_pt_%d",i),s.nZPtBins-1,s.zPtBins);
+  TH1D * theoryPtEPPS16[97];
+  for(int i = 0; i<97; i++) theoryPtEPPS16[i] = new TH1D(Form("theoryEPPS16_pt_%d",i),Form("theoryEPPS16_pt_%d",i),s.nZPtBins-1,s.zPtBins);
+  TH1D * theoryRapCT14[57];
+  for(int i = 0; i<57; i++) theoryRapCT14[i] = new TH1D(Form("theoryCT14_rap_%d",i),Form("theoryCT14_rap_%d",i),s.nZRapBins,-s.maxZRap,s.maxZRap);
+  TH1D * theoryRapnCTEQ15[33];
+  for(int i = 0; i<33; i++) theoryRapnCTEQ15[i] = new TH1D(Form("theorynCTEQ15_rap_%d",i),Form("theorynCTEQ15_rap_%d",i),s.nZRapBins,-s.maxZRap,s.maxZRap);
+  TH1D * theoryRapEPPS16[97];
+  for(int i = 0; i<97; i++) theoryRapEPPS16[i] = new TH1D(Form("theoryEPPS16_rap_%d",i),Form("theoryEPPS16_rap_%d",i),s.nZRapBins,-s.maxZRap,s.maxZRap);
+
   for(int k = 0; k<nBins; k++){
     massPeakOS[k] = new TH1D(Form("massPeakOS_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
     massPeakOS_noSF[k] = new TH1D(Form("massPeakOS_noSF_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
@@ -211,6 +242,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   int hiBin;
   float hiHF;
   float vz;
+  int nMEPartons;
+  std::pair<float, float> * pdfX = 0;
+  std::pair<int, int> * pdfID = 0;
   std::vector< float > * ttbar_w = 0;
 
   int pprimaryVertexFilter;
@@ -300,6 +334,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     //evtTree->SetBranchAddress("hiBin",&hiBin);
     evtTree->SetBranchAddress("hiHF",&hiHF);
     evtTree->SetBranchAddress("vz",&vz);
+    evtTree->SetBranchAddress("pdfX",&pdfX);
+    evtTree->SetBranchAddress("pdfID",&pdfID);
+    evtTree->SetBranchAddress("nMEPartons",&nMEPartons);
     evtTree->SetBranchAddress("ttbar_w",&ttbar_w); 
  
     TTree * skimTree = (TTree*)in->Get("skimanalysis/HltTree");
@@ -331,6 +368,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
       
       hiBin = cb.getHiBinFromhiHF(hiHF,3);
       double acceptWeight[120];
+      for(int w = 0; w<=1209; w++) theoryEventWeights.at(w) += ttbar_w->at(w);
       for(int w = 0; w<weightHelper.getSize(); w++){
         acceptWeight[w] = vzRW.reweightFactor( vz ) * (ttbar_w->at(weightHelper.getIndx(w))/10000.0);
       }
@@ -347,10 +385,40 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
       double ptWeightU = 1.0;
       double ptWeightD = 1.0;
       bool foundGen = false;
+      bool foundZforTheory = false;
 
       for(int j = 0; j<nMC; j++){
         //break out if you find a Z->tautau
         if( mcGMomPID->at(j) == 23 && TMath::Abs(mcMomPID->at(j)) == 15) break;
+
+        if(!foundZforTheory && TMath::Abs(mcMomPID->at(j)) == 23){
+          TLorentzVector tempMomThry = TLorentzVector();
+          tempMomThry.SetPtEtaPhiM( mcMomPt->at(j), mcMomEta->at(j), mcMomPhi->at(j), mcMomMass->at(j));
+          
+          if(TMath::Abs( tempMomThry.Rapidity() ) < s.maxZRap ){
+            pdfXVsPt->Fill(mcMomPt->at(j) , pdfX->first, ttbar_w->at(1080));
+            pdfXVsRap->Fill(tempMomThry.Rapidity() , pdfX->first, ttbar_w->at(1080));
+            pdfIDVsPt[pdfProcess(pdfID->first, pdfID->second, nMEPartons)]->Fill(mcMomPt->at(j), ttbar_w->at(1080));
+            pdfIDVsPt[12]->Fill(mcMomPt->at(j), ttbar_w->at(1080));
+            if( mcMomPt->at(j) < 10 ) pdfX1X2LowPt->Fill(pdfX->first, pdfX->second, ttbar_w->at(1080));
+            if( mcMomPt->at(j) >100 ) pdfX1X2HighPt->Fill(pdfX->first, pdfX->second, ttbar_w->at(1080));
+
+
+            for(int w = 282; w<=338; w++){
+              if(TMath::Abs( tempMomThry.Rapidity() ) < s.maxZRapEle ) theoryPtCT14[w-282]->Fill(mcMomPt->at(j),ttbar_w->at(w));
+              theoryRapCT14[w-282]->Fill(tempMomThry.Rapidity(),ttbar_w->at(w));
+            }
+            for(int w = 1177; w<=1209; w++){
+              if(TMath::Abs( tempMomThry.Rapidity() ) < s.maxZRapEle ) theoryPtnCTEQ15[w-1177]->Fill(mcMomPt->at(j),ttbar_w->at(w));
+              theoryRapnCTEQ15[w-1177]->Fill(tempMomThry.Rapidity(),ttbar_w->at(w));
+            }
+            for(int w = 1080; w<=1176; w++){
+              if(TMath::Abs( tempMomThry.Rapidity() ) < s.maxZRapEle ) theoryPtEPPS16[w-1080]->Fill(mcMomPt->at(j),ttbar_w->at(w));
+              theoryRapEPPS16[w-1080]->Fill(tempMomThry.Rapidity(),ttbar_w->at(w));
+            }
+          }
+          foundZforTheory = true;
+        }
         
         //only look for electrons coming directly from a Z
         if( TMath::Abs(mcMomPID->at(j)) != 23) continue;
@@ -548,7 +616,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   recoEff_y_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
                   recoEff_cent_pass[k]->Fill( hiBin/2.0, eventWeight * scaleFactor);
                   recoEff_phi_pass[k]->Fill( mom.Phi(), eventWeight * scaleFactor);
-              
+             
                   recoEff_pt_pass_forReso_Reco[k]->Fill(Zcand.Pt(), eventWeight);         
                   recoEff_pt_pass_forReso_RecoSmeared[k]->Fill(Zcand.Pt() * r->Gaus(1,0.05), eventWeight);         
                   recoEff_pt_pass_forReso_Gen[k]->Fill(mom.Pt(), eventWeight);         
@@ -1064,6 +1132,131 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   unfolding_genPtD->Write();
   unfolding_responseD->Write();
 
+  float TAA090 = 6.274;
+  //float TAA090RelError = 0.022;
+  float TAA090RelError = 0.0;//do not include TAA for now
+  float unitConversion = TMath::Power(10,9);
+  for(int w = 282; w<=338; w++){
+    theoryPtCT14[w-282]->Scale(s.DY_XS*0.5*TAA090/theoryEventWeights.at(w)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
+    histHelper.makeDifferential( theoryPtCT14[w-282] );
+  }
+  for(int w = 282; w<=338; w++){
+    theoryRapCT14[w-282]->Scale(s.DY_XS*0.5*TAA090/theoryEventWeights.at(w)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
+    histHelper.makeDifferential( theoryRapCT14[w-282] );
+  }
+  for(int w = 1177; w<=1209; w++){
+    theoryPtnCTEQ15[w-1177]->Scale(s.DY_XS*0.5*TAA090/theoryEventWeights.at(w)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
+    histHelper.makeDifferential( theoryPtnCTEQ15[w-1177] );
+  }
+  for(int w = 1177; w<=1209; w++){
+    theoryRapnCTEQ15[w-1177]->Scale(s.DY_XS*0.5*TAA090/theoryEventWeights.at(w)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
+    histHelper.makeDifferential( theoryRapnCTEQ15[w-1177] );
+  }
+  for(int w = 1080; w<=1176; w++){
+    theoryPtEPPS16[w-1080]->Scale(s.DY_XS*0.5*TAA090/theoryEventWeights.at(w)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
+    histHelper.makeDifferential( theoryPtEPPS16[w-1080] );
+  }
+  for(int w = 1080; w<=1176; w++){
+    theoryRapEPPS16[w-1080]->Scale(s.DY_XS*0.5*TAA090/theoryEventWeights.at(w)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
+    histHelper.makeDifferential( theoryRapEPPS16[w-1080] );
+  }
+
+  TH1D* theoryPtCT14_Band = new TH1D("theoryCT14_pt_Band","theoryCT14_pt_Band",s.nZPtBins-1,s.zPtBins);
+  TH1D* theoryPtnCTEQ15_Band = new TH1D("theorynCTEQ15_pt_Band","theorynCTEQ15_pt_Band",s.nZPtBins-1,s.zPtBins);
+  TH1D* theoryPtEPPS16_Band = new TH1D("theoryEPPS16_pt_Band","theoryEPPS16_pt_Band",s.nZPtBins-1,s.zPtBins);
+  TH1D* theoryRapCT14_Band = new TH1D("theoryCT14_rap_Band","theoryCT14_rap_Band",s.nZRapBins,-s.maxZRap,s.maxZRap);
+  TH1D* theoryRapnCTEQ15_Band = new TH1D("theorynCTEQ15_rap_Band","theorynCTEQ15_rap_Band",s.nZRapBins,-s.maxZRap,s.maxZRap);
+  TH1D* theoryRapEPPS16_Band = new TH1D("theoryEPPS16_rap_Band","theoryEPPS16_rap_Band",s.nZRapBins,-s.maxZRap,s.maxZRap);
+  float max[100];
+  float min[100];
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 282; w<=338; w++){
+    for(int i = 0; i<theoryPtCT14_Band->GetSize(); i++){
+      if(theoryPtCT14[w-282]->GetBinContent(i) < min[i]) min[i] = theoryPtCT14[w-282]->GetBinContent(i);
+      if(theoryPtCT14[w-282]->GetBinContent(i) > max[i]) max[i] = theoryPtCT14[w-282]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryPtCT14_Band->GetSize(); i++){
+    theoryPtCT14_Band->SetBinContent(i,((max[i]+min[i])/2.0));
+    theoryPtCT14_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + TMath::Power(TAA090RelError * theoryPtCT14_Band->GetBinContent(i) ,2)) );//scaled down to 1 sigma level and add TAA
+  }
+  theoryPtCT14_Band->Write();
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 282; w<=338; w++){
+    for(int i = 0; i<theoryRapCT14_Band->GetSize(); i++){
+      if(theoryRapCT14[w-282]->GetBinContent(i) < min[i]) min[i] = theoryRapCT14[w-282]->GetBinContent(i);
+      if(theoryRapCT14[w-282]->GetBinContent(i) > max[i]) max[i] = theoryRapCT14[w-282]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryRapCT14_Band->GetSize(); i++){
+    theoryRapCT14_Band->SetBinContent(i,((max[i]+min[i])/2.0));
+    theoryRapCT14_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + TMath::Power(TAA090RelError * theoryRapCT14_Band->GetBinContent(i) ,2)) );//scaled down to 1 sigma level and add TAA
+  }
+  theoryRapCT14_Band->Write();
+ 
+  //nCTEQ15 
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 1177; w<=1209; w++){
+    for(int i = 0; i<theoryPtnCTEQ15_Band->GetSize(); i++){
+      if(theoryPtnCTEQ15[w-1177]->GetBinContent(i) < min[i]) min[i] = theoryPtnCTEQ15[w-1177]->GetBinContent(i);
+      if(theoryPtnCTEQ15[w-1177]->GetBinContent(i) > max[i]) max[i] = theoryPtnCTEQ15[w-1177]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryPtnCTEQ15_Band->GetSize(); i++){
+    theoryPtnCTEQ15_Band->SetBinContent(i,((max[i]+min[i])/2.0));
+    theoryPtnCTEQ15_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + TMath::Power(TAA090RelError * theoryPtnCTEQ15_Band->GetBinContent(i) ,2)) );//scaled down to 1 sigma level and add TAA
+  }
+  theoryPtnCTEQ15_Band->Write();
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 1177; w<=1209; w++){
+    for(int i = 0; i<theoryRapnCTEQ15_Band->GetSize(); i++){
+      if(theoryRapnCTEQ15[w-1177]->GetBinContent(i) < min[i]) min[i] = theoryRapnCTEQ15[w-1177]->GetBinContent(i);
+      if(theoryRapnCTEQ15[w-1177]->GetBinContent(i) > max[i]) max[i] = theoryRapnCTEQ15[w-1177]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryRapnCTEQ15_Band->GetSize(); i++){
+    theoryRapnCTEQ15_Band->SetBinContent(i,((max[i]+min[i])/2.0));
+    theoryRapnCTEQ15_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + TMath::Power(TAA090RelError * theoryRapnCTEQ15_Band->GetBinContent(i) ,2)) );//scaled down to 1 sigma level and add TAA
+  }
+  theoryRapnCTEQ15_Band->Write();
+
+  //EPPS16
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 1080; w<=1176; w++){
+    for(int i = 0; i<theoryPtEPPS16_Band->GetSize(); i++){
+      if(theoryPtEPPS16[w-1080]->GetBinContent(i) < min[i]) min[i] = theoryPtEPPS16[w-1080]->GetBinContent(i);
+      if(theoryPtEPPS16[w-1080]->GetBinContent(i) > max[i]) max[i] = theoryPtEPPS16[w-1080]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryPtEPPS16_Band->GetSize(); i++){
+    theoryPtEPPS16_Band->SetBinContent(i,((max[i]+min[i])/2.0));
+    theoryPtEPPS16_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + TMath::Power(TAA090RelError * theoryPtEPPS16_Band->GetBinContent(i) ,2)) );//scaled down to 1 sigma level and add TAA
+  }
+  theoryPtEPPS16_Band->Write();
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 1080; w<=1176; w++){
+    for(int i = 0; i<theoryRapEPPS16_Band->GetSize(); i++){
+      if(theoryRapEPPS16[w-1080]->GetBinContent(i) < min[i]) min[i] = theoryRapEPPS16[w-1080]->GetBinContent(i);
+      if(theoryRapEPPS16[w-1080]->GetBinContent(i) > max[i]) max[i] = theoryRapEPPS16[w-1080]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryRapEPPS16_Band->GetSize(); i++){
+    theoryRapEPPS16_Band->SetBinContent(i,((max[i]+min[i])/2.0));
+    theoryRapEPPS16_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + TMath::Power(TAA090RelError * theoryRapEPPS16_Band->GetBinContent(i) ,2)) );//scaled down to 1 sigma level and add TAA
+  }
+  theoryRapEPPS16_Band->Write();
+
+  pdfXVsPt->Write();
+  pdfXVsRap->Write();
+
+  for(int i = 0; i<12; i++){
+    pdfIDVsPt[i]->Divide(pdfIDVsPt[12]);
+    pdfIDVsPt[i]->Write();
+  }
+
+  pdfX1X2LowPt->Write();
+  pdfX1X2HighPt->Write();
+
   output->Close();
 
   timer.Stop();
@@ -1109,4 +1302,41 @@ int main(int argc, const char* argv[])
    
   doZ2EE(listOfFiles, job, isTest);
   return 0; 
+}
+
+
+int pdfProcess(int id1,int id2,int nPartons){
+  if(nPartons>2) return 11;//NNNLO or higher
+
+  //uubar
+  if((id1==2 && id2==-2) || (id1==-2 && id2==2)){
+    if(nPartons==0) return 0;
+    if(nPartons==1) return 3;
+  }
+  //ddbar
+  if((id1==1 && id2==-1) || (id1==-1 && id2==1)){
+    if(nPartons==0) return 1;
+    if(nPartons==1) return 4;
+  }
+  //ssbar + QQbar
+  if((id1==3 && id2==-3) || (id1==-3 && id2==3) || (id1==4 && id2==-4) || (id1==-4 && id2==4) || (id1==5 && id2==-5) || (id1==-5 && id2==5) || (id1==6 && id2==-6) || (id1==-6 && id2==6)){
+    if(nPartons==0) return 2;
+    if(nPartons==1) return 5;
+  }
+  //gu
+  if((id1==21 && id2==2) || (id1==2 && id2==21)){
+    if(nPartons==1) return 6;
+  }
+  //gd
+  if((id1==21 && id2==1) || (id1==1 && id2==21)){
+    if(nPartons==1) return 7;
+  }
+  //gQ
+  if((id1==21) || (id2==21)){
+    if(nPartons==1 || nPartons==0) return 8;//NLO
+    if(nPartons==2) return 9;//NNLO
+  }else{
+    if(nPartons==2) return 10;//NNLO no gluons initial state 
+  }
+  return 11;
 }

@@ -1,3 +1,4 @@
+#include "TExec.h"
 #include "include/CMS_lumi.C"
 #include "include/centralityTool.h"
 #include "include/combinePoints.h"
@@ -23,6 +24,9 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 
   CombinePoints cp = CombinePoints();
   HistNameHelper helper = HistNameHelper();
+
+  TFile * HGPythia = TFile::Open("resources/HGPythia_hfSum.root","read");
+  TH1D * hgPythia = (TH1D*)HGPythia->Get("RAA_hf_rebin");
  
   TH1D * acceptE[1];
   TH1D * acceptMu21[1];
@@ -179,7 +183,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
     if(i == 6 || i==7) scaleFactor_Combo[i] = scaleFactor_Combo[i] * 4.5;
   }
 
-  gStyle->SetErrorX(0);
+ // gStyle->SetErrorX(0);
 
   int binMap[9] = {0,1,2,3,4,5,15,16,25};
 
@@ -256,11 +260,6 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   ATLAS->SetMarkerColor(kGreen+1);
   ATLAS->SetLineColor(kGreen+1);
 
-  for(int i = 1; i<10; i++){
-    yieldPlot_mumu->GetXaxis()->SetBinLabel(i, labels[i-1]);
-    yieldPlot_mumu->GetXaxis()->ChangeLabel(i,45);
-  }
-  
   yieldPlot_mumu24->SetMarkerStyle(8);
   yieldPlot_mumu24->SetMarkerColor(kBlue+1);
   yieldPlot_mumu24->SetMarkerSize(1.3);
@@ -293,12 +292,32 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   c1->SetBottomMargin(0.2);
 
   yieldPlot_mumu->SetStats(0);
+  
+  TExec *setex2 = new TExec("setex2","gStyle->SetErrorX(0)");
+  setex2->Draw();
+
   yieldPlot_mumu->Draw();
+  yieldPlot_mumu->Draw("same");
   //yieldPlot_mumu24->Draw("same");
   yieldPlot_ee->Draw("same");
   yieldCombo->Draw("same");
   if(!doAccept) ATLAS->Draw("same"); 
+ 
+  TExec *setex1 = new TExec("setex1","gStyle->SetErrorX(0.5)");
+  setex1->Draw();  
   
+  //HGPythia scaled by 0-90 yield
+  TH1D * hgp = new TH1D("HG_PYTHIA","",10,0,10);
+  for(int i = 1; i<9; i++){
+    float inclusivePbPb = yieldCombo->GetBinContent(9);
+    float inclusivePbPb_e = TMath::Sqrt(yieldCombo->GetBinError(9) * yieldCombo->GetBinError(9) + TMath::Power( comboSyst[binMap[9-1]]->GetBinContent(1)* scaleFactor_Combo[9-1] , 2) + TMath::Power( yieldCombo->GetBinContent(9) * TAARelErr[9-1]  ,2));
+    hgp->SetBinContent(i,hgPythia->GetBinContent(i) * inclusivePbPb );
+    hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
+  }
+  hgp->SetFillColor(kGreen-6);
+  hgp->SetLineWidth(0);
+  hgp->Draw("same E2");
+  setex2->Draw();
 
   TBox * eBox[40];
   TBox * mu21Box[40];
@@ -307,28 +326,27 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   TBox * ATLASBox;  
 
   TBox * glauberBox[40][4];
-  TBox * glauberBox2[40][4];
+  //TBox * glauberBox2[40][4];
 
   //*********GLAUBER BRACKETS
   
   float Gwidth = 0.1;
   for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-2; i++){
-      helper.drawBoxAbsolute(yieldCombo, i , glauberBox[i][0], yieldCombo->GetBinContent(i) * TAARelErr[i-1],Gwidth,(Color_t)kGray+2); 
-      helper.drawBoxAbsolute(yieldPlot_ee, i , glauberBox[i][1], yieldPlot_ee->GetBinContent(i) * TAARelErr[i-1] ,Gwidth ,(Color_t)kGray+2); 
-      helper.drawBoxAbsolute(yieldPlot_mumu, i , glauberBox[i][2], yieldPlot_mumu->GetBinContent(i) * TAARelErr[i-1],Gwidth,(Color_t)kGray+2); 
+      helper.drawBoxAbsolute(yieldCombo, i , glauberBox[i][0], yieldCombo->GetBinContent(i) * TAARelErr[i-1],Gwidth,(Color_t)kGray+1, true, 1001); 
+      helper.drawBoxAbsolute(yieldPlot_ee, i , glauberBox[i][1], yieldPlot_ee->GetBinContent(i) * TAARelErr[i-1] ,Gwidth ,(Color_t)kGray+1, true, 1001); 
+      helper.drawBoxAbsolute(yieldPlot_mumu, i , glauberBox[i][2], yieldPlot_mumu->GetBinContent(i) * TAARelErr[i-1],Gwidth,(Color_t)kGray+1, true, 1001); 
      // helper.drawBoxAbsolute(yieldPlot_mumu24, i , glauberBox[i][3], yieldPlot_mumu24->GetBinContent(i) * TAARelErr[i-1],Gwidth,(Color_t)kGray+2); 
   }
-  float shift = 0.005*TMath::Power(10,-6);
+  /*float shift = 0.005*TMath::Power(10,-6);
   for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-2; i++){
       helper.drawBoxAbsolute(yieldCombo, i , glauberBox2[i][0], yieldCombo->GetBinContent(i) * TAARelErr[i-1] - shift,Gwidth,(Color_t)kWhite); 
       helper.drawBoxAbsolute(yieldPlot_ee, i , glauberBox2[i][1], yieldPlot_ee->GetBinContent(i) * TAARelErr[i-1] - shift,Gwidth ,(Color_t)kWhite); 
       helper.drawBoxAbsolute(yieldPlot_mumu, i , glauberBox2[i][2], yieldPlot_mumu->GetBinContent(i) * TAARelErr[i-1]- shift,Gwidth,(Color_t)kWhite); 
     //  helper.drawBoxAbsolute(yieldPlot_mumu24, i , glauberBox2[i][3], yieldPlot_mumu24->GetBinContent(i) * TAARelErr[i-1] - shift,Gwidth,(Color_t)kWhite); 
-  }
-
-
-
+  }*/
   //**********END GLAUBER BRACKETS
+  
+  //Syst Uncertainties
   float width = 0.06;
   for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-2; i++){
       helper.drawBoxAbsolute(yieldCombo, i , netBox[i], comboSyst[binMap[i-1]]->GetBinContent(1)* scaleFactor_Combo[i-1],width,(Color_t)kBlack); 
@@ -336,9 +354,17 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
       helper.drawBoxAbsolute(yieldPlot_mumu, i , mu21Box[i], yieldPlot_mumu->GetBinContent(i) * totalError[binMap[i-1]][1]->GetBinContent(1),width,(Color_t)kViolet+1); 
     //  helper.drawBoxAbsolute(yieldPlot_mumu24, i , mu24Box[i], yieldPlot_mumu24->GetBinContent(i) * totalError[binMap[i-1]][2]->GetBinContent(1),width,(Color_t)kBlue); 
   }
+  
+
+  for(int i = 1; i<10; i++){
+    yieldPlot_mumu->GetXaxis()->SetBinLabel(i, labels[i-1]);
+    yieldPlot_mumu->GetXaxis()->ChangeLabel(i,45);
+  }
+  
  
   TH1D * glauberDummy = new TH1D("glauberDummy","",1,0,1);
-  glauberDummy->SetLineColor(kGray+2);
+  glauberDummy->SetLineColor(kGray+1);
+  glauberDummy->SetFillColor(kGray+1);
  
   //ATLAS point error    
   if(!doAccept) helper.drawBoxAbsolute(ATLAS, 1 , ATLASBox, 0.00787*TMath::Power(10,-6) ,width,(Color_t)kGreen+1); 
@@ -347,15 +373,16 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   //yieldPlot_mumu24->Draw("same");
   yieldPlot_ee->Draw("same");
   yieldCombo->Draw("same");
+  setex1->Draw();  
  
   yieldPlot_mumu->Print("All");
   yieldPlot_ee->Print("All");
   yieldCombo->Print("All");  
 
-  TLegend * leg = new TLegend(0.21,0.22,0.81,0.43);
+  TLegend * leg = new TLegend(0.21,0.22,0.83,0.50);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
-  leg->AddEntry((TObject*)0,"2018 PbPb, p_{T}^{l} > 20 GeV","");
+  leg->AddEntry((TObject*)0,"p_{T}^{l} > 20 GeV, |y_{Z}| < 2.1","");
   if(!doAccept){
     //leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |#eta^{l}| < 2.4","p");
     leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-} |#eta^{l}| < 2.1","p");
@@ -363,12 +390,13 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
     leg->AddEntry(yieldCombo,"Combined |#eta^{l}| < 2.1","p");
   } else {
     //leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |y_{Z}| < 2.4","p");
-    leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-} |y_{Z}| < 2.1","p");
-    leg->AddEntry(yieldPlot_ee,"e^{+}e^{-} |y_{Z}| < 2.1 ","p");
-    leg->AddEntry(yieldCombo,"Combined |y_{Z}| < 2.1","p");
+    leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-}","p");
+    leg->AddEntry(yieldPlot_ee,"e^{+}e^{-}","p");
+    leg->AddEntry(yieldCombo,"Combined","p");
   }
-  leg->AddEntry(glauberDummy,"Glauber Uncertainties","l");
+  leg->AddEntry(glauberDummy,"Glauber Uncertainties","f");
   if(!doAccept) leg->AddEntry(ATLAS,"ATLAS pp |#eta^{l}| < 2.5","p");
+  leg->AddEntry(hgp,"Scaled HG-PYTHIA","f");
 
   leg->Draw("same");
   c1->RedrawAxis();

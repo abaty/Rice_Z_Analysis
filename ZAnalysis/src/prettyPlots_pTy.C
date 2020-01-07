@@ -1,4 +1,5 @@
 //#include "include/ptCorrector.h"
+#include "TExec.h"
 #include "include/CMS_lumi.C"
 #include "include/combinePoints.h"
 #include "include/centralityTool.h"
@@ -43,11 +44,32 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     }
   }
 
-  gStyle->SetErrorX(0);
-  gStyle->SetPadTickX(1);
-  gStyle->SetPadTickY(1);
   //CentralityTool c = CentralityTool();
   //const int nBins = c.getNCentBins();
+
+  TFile * theory = TFile::Open("resources/Z2ee_EfficiencyMC_0.root","read");
+  TH1D * EPPS16Pt = (TH1D*)theory->Get("theoryEPPS16_pt_Band");
+  TH1D * EPPS16Rap = (TH1D*)theory->Get("theoryEPPS16_rap_Band");
+  TH1D * nCTEQ15Pt = (TH1D*)theory->Get("theorynCTEQ15_pt_Band");
+  TH1D * nCTEQ15Rap = (TH1D*)theory->Get("theorynCTEQ15_rap_Band");
+  EPPS16Pt->SetFillColor(kGray+1);
+  EPPS16Pt->SetLineColor(kGray+1);
+  EPPS16Pt->SetMarkerColor(kGray+1);
+  EPPS16Rap->SetFillColor(kGray+1);
+  EPPS16Rap->SetLineColor(kGray+1);
+  EPPS16Rap->SetMarkerColor(kGray+1);
+  nCTEQ15Pt->SetFillColor(kGreen+2);
+  nCTEQ15Pt->SetFillStyle(3244);
+  nCTEQ15Pt->SetLineColor(kGreen+2);
+  nCTEQ15Pt->SetMarkerSize(0);
+  nCTEQ15Rap->SetFillColor(kGreen+2);
+  nCTEQ15Rap->SetFillStyle(3244);
+  nCTEQ15Rap->SetLineColor(kGreen+2);
+  nCTEQ15Rap->SetMarkerSize(0);
+  
+  //gStyle->SetErrorX(0);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
 
   //mumu channel first
   TFile * mu24 = TFile::Open(Zmumu24.c_str(),"read");
@@ -207,8 +229,15 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_e->GetXaxis()->SetRangeUser(-2.4,2.4);
   y_e->GetYaxis()->SetRangeUser(0,y_e->GetMaximum()*1.4);
 
-  
   y_e->Draw("p");
+
+  TExec *setex2 = new TExec("setex2","gStyle->SetErrorX(0.5)");
+  setex2->Draw();
+  EPPS16Rap->Draw("same E2");
+  nCTEQ15Rap->Draw("same E2");
+  TExec *setex1 = new TExec("setex1","gStyle->SetErrorX(0)");
+  setex1->Draw();
+  y_e->Draw("same");
   //y_mu21->Draw("p same");
   y_mu24->Draw("p same");
   combo[2]->SetMarkerStyle(8);
@@ -250,6 +279,8 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     //ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
     ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|y_{Z}|<2.1)","p");
     ly->AddEntry(combo[2],"Combined (|y_{Z}|<2.1)","p");
+    ly->AddEntry(EPPS16Rap,"aMC@NLO + EPPS16","F");
+    ly->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
   }
   ly->Draw("same");
   
@@ -291,7 +322,11 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   dummy->GetYaxis()->CenterTitle();
   dummy->SetStats(0);
   dummy->Draw();
-  
+ 
+  setex2->Draw();
+  EPPS16Pt->Draw("same E2"); 
+  nCTEQ15Pt->Draw("same E2"); 
+  setex1->Draw();
   pt_e->Draw("p same");
   pt_mu21->Draw("p same");
   //pt_mu24->Draw("p same");
@@ -337,6 +372,8 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
     lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-} (|y_{Z}|<2.1)","p");
     lpt->AddEntry(combo[1],"Combined (|y_{Z}|<2.1)","p");
+    lpt->AddEntry(EPPS16Pt,"aMC@NLO + EPPS16","F");
+    lpt->AddEntry(nCTEQ15Pt,"aMC@NLO + nCTEQ15","F");
   }
   lpt->Draw("same");
   
