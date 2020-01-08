@@ -2,7 +2,7 @@
 #include <iostream>
 
 void 
-CMS_lumi( TPad* pad, int iPeriod, int iPosX )
+CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier )
 {            
   bool outOfFrame    = false;
   if( iPosX/10==0 ) 
@@ -87,14 +87,14 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX )
 
   latex.SetTextFont(42);
   latex.SetTextAlign(31); 
-  latex.SetTextSize(lumiTextSize*t);    
+  latex.SetTextSize(lumiTextSize*t*fontMultiplier);    
   latex.DrawLatex(1-r,1-t+lumiTextOffset*t,lumiText);
 
   if( outOfFrame )
     {
       latex.SetTextFont(cmsTextFont);
       latex.SetTextAlign(11); 
-      latex.SetTextSize(cmsTextSize*t);    
+      latex.SetTextSize(cmsTextSize*t*fontMultiplier);    
       latex.DrawLatex(l,1-t+lumiTextOffset*t,cmsText);
     }
   
@@ -135,14 +135,14 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX )
       else
 	{
 	  latex.SetTextFont(cmsTextFont);
-	  latex.SetTextSize(cmsTextSize*t);
+	  latex.SetTextSize(cmsTextSize*t*fontMultiplier);
 	  latex.SetTextAlign(align_);
 	  latex.DrawLatex(posX_, posY_, cmsText);
 	  if( writeExtraText ) 
 	    {
 	      latex.SetTextFont(extraTextFont);
 	      latex.SetTextAlign(align_);
-	      latex.SetTextSize(extraTextSize*t);
+	      latex.SetTextSize(extraTextSize*t*fontMultiplier);
 	      latex.DrawLatex(posX_, posY_- relExtraDY*cmsTextSize*t, extraText);
 	    }
 	}
@@ -155,7 +155,7 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX )
 	  posY_ =   1-t+lumiTextOffset*t;
 	}
       latex.SetTextFont(extraTextFont);
-      latex.SetTextSize(extraTextSize*t);
+      latex.SetTextSize(extraTextSize*t*fontMultiplier);
       latex.SetTextAlign(align_);
       latex.DrawLatex(posX_, posY_, extraText);      
     }

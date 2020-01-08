@@ -11,12 +11,14 @@
 #include "TH2D.h"
 #include "TMath.h"
 #include "TCanvas.h"
+#include "TPad.h"
 #include "TLegend.h"
 #include "TRandom3.h"
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "TLine.h"
 
 void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_, std::string Wjet_, std::string responseFile_, bool isMu, std::string outTag){
   TH1::SetDefaultSumw2();
@@ -208,9 +210,24 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     gStyle->SetPadTickX(1);
     gStyle->SetPadTickY(1);
     //gStyle->SetErrorX(0);
-    TCanvas * c1 = new TCanvas("c1","c1",800,800);
-    c1->SetLeftMargin(0.2);
-    c1->SetBottomMargin(0.2);
+    TCanvas * c1 = new TCanvas("c1","c1",800,900);
+    c1->SetBorderSize(0);
+    TPad * p1 = new TPad("p1","p1",0,0.2,1,1,0);
+    TPad * p2 = new TPad("p2","p2",0,0,1,0.2,0);
+    c1->SetLineWidth(0);
+    p1->SetBottomMargin(0);
+    p1->SetLeftMargin(0.15);
+    p1->SetRightMargin(0.05);
+    p1->SetTopMargin(0.07);
+    p1->SetBorderSize(0);
+    p1->Draw();
+    p2->SetTopMargin(0);
+    p2->SetLeftMargin(0.15);
+    p2->SetRightMargin(0.05);
+    p2->SetBottomMargin(0.3);
+    p2->SetBorderSize(0);
+    p2->Draw();
+    p1->cd();
     
     if(j==0) massPeakOS[i][j][0]->GetXaxis()->SetTitle("m_{#mu#mu} (GeV)");
     if(j==1) massPeakOS[i][j][0]->GetXaxis()->SetTitle("p_{T} (GeV)");
@@ -229,13 +246,17 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     massPeakOS[i][j][0]->SetStats(0);
 
     TH1D * dummy;
+    TH1D * dummyR;
     if(j==1){
       dummy = new TH1D("dummy",";p_{T} (GeV); #frac{dN_{Z}}{dp_{T}} (GeV^{-1})",2,0.1,200);
+      dummyR = new TH1D("dummy",";p_{T} (GeV); #frac{Data}{MC}",2,0.1,200);
       dummy->SetBinContent(1,massPeakOS[i][j][0]->GetMaximum());
       dummy->SetBinContent(2,massPeakOS[i][j][0]->GetMinimum());
       dummy->SetLineColor(kWhite);
+      dummy->GetYaxis()->CenterTitle();
       dummy->SetMarkerColor(kWhite);
       dummy->SetStats(0);
+      dummyR->SetStats(0);
       dummy->Draw();
     }
 
@@ -276,7 +297,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     bkg_ttbar[i][j][0]->Draw("HIST same");
     massPeakOS[i][j][0]->Draw("p same");
 
-    TLegend *leg = new TLegend(0.65,0.7,0.9,0.875);
+    TLegend *leg = new TLegend(0.65,0.65,0.92,0.885);
     leg->AddEntry(massPeakOS[i][j][0],Form("Data (%d-%d%%)",c.getCentBinLow(i),c.getCentBinHigh(i)),"p");
     if(isMu) leg->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z #rightarrow #mu^{+}#mu^{-}","f");
     if(!isMu) leg->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z #rightarrow e^{+}e^{-}","f");
@@ -289,29 +310,70 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     leg->SetFillStyle(0);
     leg->Draw("same");
 
+    //ratio plot
+    TH1D * tempRatio = (TH1D*)massPeakOS[i][j][0]->Clone("tempRatio");
+    tempRatio->Divide(massPeakOS_DYsignalMinusPhoton[i][j]);
+    tempRatio->GetYaxis()->SetNdivisions(4,4,0,kTRUE);
+    p2->cd();
     if(j==1){
-      c1->SetLogx();
-      c1->SetLogy();
+      dummyR->GetYaxis()->SetTitleOffset(0.4);
+      dummyR->GetYaxis()->SetRangeUser(0,1.99);
+      dummyR->GetYaxis()->SetTitleSize(0.14);
+      dummyR->GetXaxis()->SetTitleSize(0.14);
+      dummyR->GetYaxis()->SetLabelSize(0.14);
+      dummyR->GetXaxis()->SetLabelSize(0.14);
+      dummyR->GetYaxis()->CenterTitle();
+      dummyR->GetXaxis()->CenterTitle();
+      dummyR->GetYaxis()->SetNdivisions(4,4,0,kTRUE);
+      dummyR->Draw();
+    }
+    tempRatio->GetYaxis()->SetTitle("#frac{Data}{MC}");
+    tempRatio->GetYaxis()->SetTitleOffset(0.4);
+    tempRatio->GetYaxis()->SetRangeUser(0,1.99);
+    tempRatio->GetYaxis()->SetTitleSize(0.14);
+    tempRatio->GetXaxis()->SetTitleSize(0.14);
+    tempRatio->GetYaxis()->SetLabelSize(0.14);
+    tempRatio->GetXaxis()->SetLabelSize(0.14);
+    tempRatio->Draw("same");
+ 
+    TLine * line1;
+    line1 = new TLine(tempRatio->GetXaxis()->GetBinLowEdge(1),1,tempRatio->GetXaxis()->GetBinUpEdge(tempRatio->GetSize()-2),1);
+    line1->SetLineWidth(2);
+    line1->SetLineStyle(2);
+    line1->Draw("same");
+
+    p1->cd();
+
+    if(j==1){
+      p2->SetLogx();
+      tempRatio->GetXaxis()->SetRangeUser(0.1,199);
+      p1->SetLogx();
+      p1->SetLogy();
       dummy->GetXaxis()->SetRangeUser(0.1,199);
       dummy->GetYaxis()->SetRangeUser(0.01,200000);
     }
 
-    c1->RedrawAxis();
+    p1->RedrawAxis();
 
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d.png",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d.pdf",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d.C",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
 
-    if(j==0) massPeakOS[i][j][0]->GetYaxis()->SetRangeUser(0.01, massPeakOS[i][j][0]->GetMaximum()*50);
+    if(j==0) massPeakOS[i][j][0]->GetYaxis()->SetRangeUser(0.015, massPeakOS[i][j][0]->GetMaximum()*50);
     if(j==2) massPeakOS[i][j][0]->GetYaxis()->SetRangeUser(0.3, massPeakOS[i][j][0]->GetMaximum()*300);
-    c1->SetLogy();
-    CMS_lumi(c1,0,10);
+    p1->SetLogy();
+    CMS_lumi(p1,0,10,1.8);
 
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log.png",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log.pdf",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log.C",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
    
-    if(j==1) delete dummy; 
+    if(j==1) delete dummy;
+    if(j==1) delete dummyR;
+    delete line1; 
+    delete tempRatio;
+    delete p1;
+    delete p2;
     delete c1;
     delete leg;
   }
