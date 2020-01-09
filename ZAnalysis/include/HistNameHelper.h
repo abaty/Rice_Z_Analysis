@@ -21,7 +21,7 @@ class HistNameHelper{
   void addInQuadrature3(TH1D * h1, TH1D * h2, TH1D * h3);
   void addInQuadrature4(TH1D * h1, TH1D * h2, TH1D * h3, TH1D * h4);
 
-  void drawBoxAbsolute(TH1D * h, int i, TBox * b, float absError, float width, Color_t color, bool doDraw = true, int fillStyle = 0);
+  void drawBoxAbsolute(TH1D * h, int i, TBox * b, float absError, float width, Color_t color, bool doDraw = true, int fillStyle = 0, float width2 = -1);
   ~HistNameHelper();
 
   std::vector< std::string > name;
@@ -42,8 +42,9 @@ HistNameHelper::~HistNameHelper(){
 
 }
 
-void HistNameHelper::drawBoxAbsolute(TH1D * h, int i, TBox * b, float absError, float width, Color_t color, bool doDraw, int fillStyle){
-  b = new TBox(h->GetBinCenter(i)-width,h->GetBinContent(i)-absError,h->GetBinCenter(i)+width,h->GetBinContent(i)+absError);
+void HistNameHelper::drawBoxAbsolute(TH1D * h, int i, TBox * b, float absError, float width, Color_t color, bool doDraw, int fillStyle, float width2){
+  if(width2<0)  b = new TBox(h->GetBinCenter(i)-width,h->GetBinContent(i)-absError,h->GetBinCenter(i)+width,h->GetBinContent(i)+absError);
+  if(width2>=0) b = new TBox(h->GetBinCenter(i)-width,h->GetBinContent(i)-absError,h->GetBinCenter(i)+width2,h->GetBinContent(i)+absError);
   b->SetLineColor(color);
   b->SetFillColor(color);
   b->SetFillStyle(fillStyle);

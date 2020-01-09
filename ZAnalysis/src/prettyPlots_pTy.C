@@ -341,10 +341,11 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TBox * netBoxpt[40];
   
   for(int i = 1; i<combo[1]->GetSize()-1; i++){
-      float width = (comboSyst[1]->GetXaxis()->GetBinUpEdge(i)-comboSyst[1]->GetXaxis()->GetBinLowEdge(i)) * 0.8 / 2.0;
-      helper.drawBoxAbsolute(combo[1], i , netBoxpt[i], comboSyst[1]->GetBinContent(i),width,(Color_t)kBlack); 
-      helper.drawBoxAbsolute(pt_e, i , eBoxpt[i], pt_e->GetBinContent(i) * totalError_0_90[0][1]->GetBinContent(i) ,width ,(Color_t)kRed+1); 
-      helper.drawBoxAbsolute(pt_mu21, i , mu21Boxpt[i], pt_mu21->GetBinContent(i) * totalError_0_90[1][1]->GetBinContent(i),width,(Color_t)kViolet+1); 
+      float width = (comboSyst[1]->GetXaxis()->GetBinCenter(i)-comboSyst[1]->GetXaxis()->GetBinLowEdge(i));
+      float width2 = (comboSyst[1]->GetXaxis()->GetBinUpEdge(i)-comboSyst[1]->GetXaxis()->GetBinCenter(i));
+      helper.drawBoxAbsolute(combo[1], i , netBoxpt[i], comboSyst[1]->GetBinContent(i),width,(Color_t)kBlack,true,0,width2); 
+      helper.drawBoxAbsolute(pt_e, i , eBoxpt[i], pt_e->GetBinContent(i) * totalError_0_90[0][1]->GetBinContent(i) ,width ,(Color_t)kRed+1, true, 0 , width2); 
+      helper.drawBoxAbsolute(pt_mu21, i , mu21Boxpt[i], pt_mu21->GetBinContent(i) * totalError_0_90[1][1]->GetBinContent(i),width,(Color_t)kViolet+1, true, 0, width2); 
    //   helper.drawBoxAbsolute(pt_mu24, i , mu24Boxpt[i], pt_mu24->GetBinContent(i) * totalError_0_90[2][1]->GetBinContent(i),width,(Color_t)kBlue); 
   }
  

@@ -310,7 +310,8 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   TH1D * hgp = new TH1D("HG_PYTHIA","",10,0,10);
   for(int i = 1; i<9; i++){
     float inclusivePbPb = yieldCombo->GetBinContent(9);
-    float inclusivePbPb_e = TMath::Sqrt(yieldCombo->GetBinError(9) * yieldCombo->GetBinError(9) + TMath::Power( comboSyst[binMap[9-1]]->GetBinContent(1)* scaleFactor_Combo[9-1] , 2) + TMath::Power( yieldCombo->GetBinContent(9) * TAARelErr[9-1]  ,2));
+    //float inclusivePbPb_e = TMath::Sqrt(yieldCombo->GetBinError(9) * yieldCombo->GetBinError(9) + TMath::Power( comboSyst[binMap[9-1]]->GetBinContent(1)* scaleFactor_Combo[9-1] , 2) + TMath::Power( yieldCombo->GetBinContent(9) * TAARelErr[9-1]  ,2));
+    float inclusivePbPb_e = TMath::Power(10,-7) * 0.025;
     hgp->SetBinContent(i,hgPythia->GetBinContent(i) * inclusivePbPb );
     hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
   }
