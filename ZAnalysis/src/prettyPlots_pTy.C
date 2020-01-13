@@ -212,13 +212,13 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   c1->SetLeftMargin(0.2);
   c1->SetBottomMargin(0.2);
   
-  y_mu24->SetMarkerColor(kViolet+1);
+  y_mu24->SetMarkerColor(kBlue);
   y_mu24->SetMarkerStyle(21);
-  y_mu24->SetLineColor(kViolet+1);
+  y_mu24->SetLineColor(kBlue);
   
-  y_mu21->SetMarkerColor(kViolet+1);
+  y_mu21->SetMarkerColor(kBlue);
   y_mu21->SetMarkerStyle(8);
-  y_mu21->SetLineColor(kViolet+1);
+  y_mu21->SetLineColor(kBlue);
   
   y_e->SetMarkerColor(kRed+1);
   y_e->SetMarkerStyle(25);
@@ -253,10 +253,10 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   for(int i = 1; i<combo[2]->GetSize()-1; i++){
       helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.1,(Color_t)kBlack); 
       helper.drawBoxAbsolute(y_e, i , eBoxy[i], y_e->GetBinContent(i) * totalError_0_90[0][2]->GetBinContent(i) ,0.1,(Color_t)kRed+1); 
-      //helper.drawBoxAbsolute(y_mu21, i , mu21Boxy[i], y_mu21->GetBinContent(i) * totalError_0_90[1][2]->GetBinContent(i),0.1,(Color_t)kViolet+1); 
+      //helper.drawBoxAbsolute(y_mu21, i , mu21Boxy[i], y_mu21->GetBinContent(i) * totalError_0_90[1][2]->GetBinContent(i),0.1,(Color_t)kBlue); 
   }
   for(int i = 1; i<y_mu24->GetSize()-1; i++){
-      helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kViolet+1); 
+      helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kBlue); 
   }
 
  
@@ -268,17 +268,17 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TLegend *ly = new TLegend(0.625,0.725,0.875,0.875);
   ly->SetBorderSize(0);
   ly->SetFillStyle(0);
-  ly->AddEntry((TObject*)0,"PbPb (0-90%)","");
+  ly->AddEntry((TObject*)0,"0-90%","");
   if(!doAccept){
     ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
     //ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
     ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
     ly->AddEntry(combo[2],"Combined (|#eta_{l}|<2.1)","p");
   }else{
-    ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.4)","p");
+    ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-}","p");
     //ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
-    ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|y_{Z}|<2.1)","p");
-    ly->AddEntry(combo[2],"Combined (|y_{Z}|<2.1)","p");
+    ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-}","p");
+    ly->AddEntry(combo[2],"Combined","p");
     ly->AddEntry(EPPS16Rap,"aMC@NLO + EPPS16","F");
     ly->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
   }
@@ -297,7 +297,28 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     c1->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept.pdf"); 
     c1->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept.C"); 
   }
-  
+ 
+  delete c1;
+  c1 = new TCanvas("c1","c1",800,800);
+  TPad * p1 = new TPad("p1","p1",0,0.2,1,1,0);
+  TPad * p2 = new TPad("p2","p2",0,0,1,0.2,0);
+  c1->SetLineWidth(0);
+  p1->SetBottomMargin(0);
+  p1->SetLeftMargin(0.15);
+  p1->SetRightMargin(0.05);
+  p1->SetTopMargin(0.07);
+  p1->SetBorderSize(0);
+  p1->Draw();
+  p2->SetTopMargin(0);
+  p2->SetLeftMargin(0.15);
+  p2->SetRightMargin(0.05);
+  p2->SetBottomMargin(0.3);
+  p2->SetBorderSize(0);
+  p2->Draw();
+  p1->cd();
+  c1->SetLeftMargin(0.2);
+  c1->SetBottomMargin(0.2);
+ 
   //make pt plot
   pt_e->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dp_{T}} (GeV^{-1})");
   
@@ -305,9 +326,9 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   pt_mu24->SetMarkerStyle(21);
   pt_mu24->SetLineColor(kBlue);
   
-  pt_mu21->SetMarkerColor(kViolet+1);
+  pt_mu21->SetMarkerColor(kBlue);
   pt_mu21->SetMarkerStyle(8);
-  pt_mu21->SetLineColor(kViolet+1);
+  pt_mu21->SetLineColor(kBlue);
   
   pt_e->SetMarkerColor(kRed+1);
   pt_e->SetMarkerStyle(25);
@@ -321,7 +342,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   dummy->GetXaxis()->CenterTitle();
   dummy->GetYaxis()->CenterTitle();
   dummy->SetStats(0);
-  dummy->Draw();
+  dummy->DrawCopy();
  
   setex2->Draw();
   EPPS16Pt->Draw("same E2"); 
@@ -345,24 +366,23 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
       float width2 = (comboSyst[1]->GetXaxis()->GetBinUpEdge(i)-comboSyst[1]->GetXaxis()->GetBinCenter(i));
       helper.drawBoxAbsolute(combo[1], i , netBoxpt[i], comboSyst[1]->GetBinContent(i),width,(Color_t)kBlack,true,0,width2); 
       helper.drawBoxAbsolute(pt_e, i , eBoxpt[i], pt_e->GetBinContent(i) * totalError_0_90[0][1]->GetBinContent(i) ,width ,(Color_t)kRed+1, true, 0 , width2); 
-      helper.drawBoxAbsolute(pt_mu21, i , mu21Boxpt[i], pt_mu21->GetBinContent(i) * totalError_0_90[1][1]->GetBinContent(i),width,(Color_t)kViolet+1, true, 0, width2); 
+      helper.drawBoxAbsolute(pt_mu21, i , mu21Boxpt[i], pt_mu21->GetBinContent(i) * totalError_0_90[1][1]->GetBinContent(i),width,(Color_t)kBlue, true, 0, width2); 
    //   helper.drawBoxAbsolute(pt_mu24, i , mu24Boxpt[i], pt_mu24->GetBinContent(i) * totalError_0_90[2][1]->GetBinContent(i),width,(Color_t)kBlue); 
   }
- 
-
  
   pt_e->Draw("p same");
   pt_mu21->Draw("p same");
   //pt_mu24->Draw("p same");
   combo[1]->Draw("p same");
 
-  c1->SetLogy();
-  c1->SetLogx();
+  p1->SetLogy();
+  p1->SetLogx();
 
-  TLegend *lpt = new TLegend(0.325,0.325,0.575,0.475);
+
+  TLegend *lpt = new TLegend(0.225,0.125,0.675,0.475);
   lpt->SetBorderSize(0);
   lpt->SetFillStyle(0);
-  lpt->AddEntry((TObject*)0,"PbPb (0-90%)","");
+  lpt->AddEntry((TObject*)0,"0-90%, |y_{Z}|<2.1","");
   if(!doAccept){
     //lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
     lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
@@ -370,17 +390,75 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     lpt->AddEntry(combo[1],"Combined (|#eta_{l}|<2.1)","p");
   }else{
     //lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.4)","p");
-    lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
-    lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-} (|y_{Z}|<2.1)","p");
-    lpt->AddEntry(combo[1],"Combined (|y_{Z}|<2.1)","p");
+    lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-}","p");
+    lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-}","p");
+    lpt->AddEntry(combo[1],"Combined","p");
     lpt->AddEntry(EPPS16Pt,"aMC@NLO + EPPS16","F");
     lpt->AddEntry(nCTEQ15Pt,"aMC@NLO + nCTEQ15","F");
   }
   lpt->Draw("same");
   
 
-  c1->RedrawAxis();
-  CMS_lumi(c1,0,10);
+  p1->RedrawAxis();
+  CMS_lumi(p1,0,10,1.8);
+  
+  p2->cd();
+  p2->SetLogx();
+  dummy->GetYaxis()->SetTitle("#frac{MC}{Data}");
+  dummy->GetYaxis()->SetNdivisions(4,4,0,kTRUE);
+  dummy->GetYaxis()->SetTitleOffset(0.4);
+  dummy->GetYaxis()->SetRangeUser(0.4,1.6);
+  dummy->GetYaxis()->SetTitleSize(0.14);
+  dummy->GetXaxis()->SetTitleSize(0.14);
+  dummy->GetYaxis()->SetLabelSize(0.14);
+  dummy->GetXaxis()->SetLabelSize(0.14);
+  dummy->Draw();
+
+
+  TH1D * datErr = (TH1D*)EPPS16Pt->Clone("datErr");
+  for(int i = 1; i<datErr->GetSize()-1; i++){
+    float err = TMath::Power( TMath::Power(combo[1]->GetBinError(i)/combo[1]->GetBinContent(i),2) + TMath::Power(comboSyst[1]->GetBinContent(i)/combo[1]->GetBinContent(i),2) , 0.5 );
+    datErr->SetBinContent(i,1);
+    datErr->SetBinError(i,err);
+  }
+  datErr->Print("All");
+  datErr->SetFillStyle(1001);
+  datErr->SetFillColor(kGray);
+  datErr->SetLineColor(kGray);
+  setex2->Draw();
+  datErr->Draw("same E2");
+  setex1->Draw();
+  
+  TLine * line1;
+  line1 = new TLine(EPPS16Pt->GetXaxis()->GetBinLowEdge(1),1,EPPS16Pt->GetXaxis()->GetBinUpEdge(EPPS16Pt->GetSize()-2),1);
+  line1->SetLineWidth(2);
+  line1->SetLineStyle(2);
+  line1->Draw("same");
+
+  
+  TH1D * ratioEPPS16 = (TH1D*)EPPS16Pt->Clone("ratioEPPS16");
+  ratioEPPS16->Divide(combo[1]);
+  ratioEPPS16->SetLineColor(kBlack);
+  ratioEPPS16->SetLineWidth(2);
+  ratioEPPS16->SetMarkerColor(kBlack);
+  ratioEPPS16->SetMarkerStyle(8);
+  ratioEPPS16->Draw("same");
+  TH1D * ratioNCTEQ15 = (TH1D*)nCTEQ15Pt->Clone("ratioNCTEQ15");
+  ratioNCTEQ15->Divide(combo[1]);
+  ratioNCTEQ15->SetLineColor(kGreen+2);
+  ratioNCTEQ15->SetMarkerColor(kGreen+2);
+  ratioNCTEQ15->SetMarkerStyle(25);
+  ratioNCTEQ15->SetMarkerSize(1);
+  ratioNCTEQ15->Draw("same p");
+  p2->RedrawAxis();
+  
+  TLegend *lptR = new TLegend(0.175,0.3,0.575,0.6);
+  lptR->SetBorderSize(0);
+  lptR->SetFillStyle(0);
+  lptR->SetNColumns(2);
+  lptR->AddEntry(ratioEPPS16,"EPPS16","p");
+  lptR->AddEntry(ratioNCTEQ15,"nCTEQ15","p");
+  lptR->Draw("same");
 
   if(!doAccept){
     c1->SaveAs("plots/prettyPlots/pt_Pretty.png"); 
