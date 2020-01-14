@@ -287,7 +287,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   TLegend * leg = new TLegend(0.28,0.64,0.83,0.87);
   leg->SetBorderSize(0);
   leg->AddEntry((TObject*)0,"2018 PbPb, p_{T}^{l} > 20 GeV","");
-  leg->AddEntry((TObject*)0,"3 subevent SP Method","");
+  //leg->AddEntry((TObject*)0,"3 subevent SP Method","");
   leg->AddEntry(v2Plot,"#mu^{+}#mu^{-} channel, |#eta_{#mu}|<2.4","p");
   leg->AddEntry(v2EEPlot,"e^{+}e^{-} channel, |#eta_{e}|<2.1","p");
   leg->AddEntry(v2ComboPlot,"combined result","p");
