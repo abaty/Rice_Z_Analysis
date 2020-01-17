@@ -265,7 +265,9 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   yieldPlot_mumu24->SetMarkerSize(1.3);
   yieldPlot_mumu24->SetLineColor(kBlue+1);
   yieldPlot_mumu24->SetLineWidth(2);
-  
+ 
+  yieldPlot_mumu->GetYaxis()->CenterTitle(); 
+  yieldPlot_mumu->GetXaxis()->SetTitle("Centrality"); 
   yieldPlot_mumu->SetMarkerStyle(8);
   yieldPlot_mumu->SetMarkerColor(kBlue);
   yieldPlot_mumu->SetMarkerSize(1.3);

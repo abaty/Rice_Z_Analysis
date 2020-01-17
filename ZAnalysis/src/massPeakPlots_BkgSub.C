@@ -229,7 +229,8 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     p2->Draw();
     p1->cd();
     
-    if(j==0) massPeakOS[i][j][0]->GetXaxis()->SetTitle("m_{#mu#mu} (GeV)");
+    if(j==0 && isMu) massPeakOS[i][j][0]->GetXaxis()->SetTitle("m_{#mu#mu} (GeV)");
+    if(j==0 && !isMu) massPeakOS[i][j][0]->GetXaxis()->SetTitle("m_{ee} (GeV)");
     if(j==1) massPeakOS[i][j][0]->GetXaxis()->SetTitle("p_{T} (GeV)");
     if(j==2) massPeakOS[i][j][0]->GetXaxis()->SetTitle("y");
     if(j==3) massPeakOS[i][j][0]->GetXaxis()->SetTitle("yield");
