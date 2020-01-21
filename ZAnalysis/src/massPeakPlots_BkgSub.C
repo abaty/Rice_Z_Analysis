@@ -21,6 +21,7 @@
 #include "TLine.h"
 
 void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_, std::string Wjet_, std::string responseFile_, bool isMu, std::string outTag){
+  gErrorIgnoreLevel = kWarning;
   TH1::SetDefaultSumw2();
   Settings s = Settings();
 
@@ -224,7 +225,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     p2->SetTopMargin(0);
     p2->SetLeftMargin(0.15);
     p2->SetRightMargin(0.05);
-    p2->SetBottomMargin(0.3);
+    p2->SetBottomMargin(0.42);
     p2->SetBorderSize(0);
     p2->Draw();
     p1->cd();
@@ -245,6 +246,13 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     massPeakOS[i][j][0]->SetMarkerColor(kBlack);
     massPeakOS[i][j][0]->SetLineColor(kBlack);
     massPeakOS[i][j][0]->SetStats(0);
+
+    if(j==0){
+      massPeakOS[i][j][0]->GetYaxis()->SetLabelSize(0.06);
+      massPeakOS[i][j][0]->GetYaxis()->SetTitleSize(0.08);
+      massPeakOS[i][j][0]->GetYaxis()->SetTitleOffset(0.89);
+    }
+
 
     TH1D * dummy;
     TH1D * dummyR;
@@ -298,11 +306,11 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     bkg_ttbar[i][j][0]->Draw("HIST same");
     massPeakOS[i][j][0]->Draw("p same");
 
-    TLegend *leg = new TLegend(0.65,0.65,0.92,0.885);
+    TLegend *leg = new TLegend(0.645,0.585,0.94,0.92);
     leg->AddEntry(massPeakOS[i][j][0],Form("Data (%d-%d%%)",c.getCentBinLow(i),c.getCentBinHigh(i)),"p");
     if(isMu) leg->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z #rightarrow #mu^{+}#mu^{-}","f");
     if(!isMu) leg->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z #rightarrow e^{+}e^{-}","f");
-    leg->AddEntry(massPeakSS_ChargeFlipCorrected[i][j][0],"Same Sign (QCD)","f");
+    leg->AddEntry(massPeakSS_ChargeFlipCorrected[i][j][0],"Same sign (QCD)","f");
     leg->AddEntry(massPeakOS_photons[i][j][0],"EM background","f");
     leg->AddEntry(bkg_tau[i][j][0],"Z #rightarrow #tau^{+}#tau^{-}","f");
     leg->AddEntry(bkg_Wjet[i][j][0],"W^{#pm} + X","f");
@@ -330,11 +338,13 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     }
     tempRatio->GetYaxis()->SetTitle("#frac{Data}{MC}");
     tempRatio->GetYaxis()->SetTitleOffset(0.4);
-    tempRatio->GetYaxis()->SetRangeUser(0,1.99);
-    tempRatio->GetYaxis()->SetTitleSize(0.14);
-    tempRatio->GetXaxis()->SetTitleSize(0.14);
-    tempRatio->GetYaxis()->SetLabelSize(0.14);
-    tempRatio->GetXaxis()->SetLabelSize(0.14);
+    tempRatio->GetYaxis()->SetRangeUser(0.25,1.75);
+    tempRatio->GetYaxis()->SetTitleSize(0.2);
+    tempRatio->GetYaxis()->SetTitleOffset(0.32);
+    tempRatio->GetYaxis()->SetLabelSize(0.18);
+    tempRatio->GetXaxis()->SetTitleSize(0.19);
+    tempRatio->GetXaxis()->SetTitleOffset(1.0);
+    tempRatio->GetXaxis()->SetLabelSize(0.19);
     tempRatio->Draw("same");
  
     TLine * line1;
@@ -360,7 +370,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d.pdf",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d.C",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)isMu, c.getCentBinLow(i),c.getCentBinHigh(i)));
 
-    if(j==0) massPeakOS[i][j][0]->GetYaxis()->SetRangeUser(0.015, massPeakOS[i][j][0]->GetMaximum()*50);
+    if(j==0) massPeakOS[i][j][0]->GetYaxis()->SetRangeUser(0.15, massPeakOS[i][j][0]->GetMaximum()*50);
     if(j==2) massPeakOS[i][j][0]->GetYaxis()->SetRangeUser(0.3, massPeakOS[i][j][0]->GetMaximum()*300);
     p1->SetLogy();
     CMS_lumi(p1,0,10,1.8);

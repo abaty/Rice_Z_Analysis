@@ -387,7 +387,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
       
 
       float eventWeight = 1.0;
-      if(isMC) eventWeight = vzRW->reweightFactor( vz ) * vzRW->reweightFactorCent(hiBin) * c.findNcoll( hiBin ) * (ttbar_w->at(1080)/10000.0);//1080 is EEPS16NLO+CT14
+      if(isMC && ttbar_w->size()>=1081) eventWeight = vzRW->reweightFactor( vz ) * vzRW->reweightFactorCent(hiBin) * c.findNcoll( hiBin ) * (ttbar_w->at(1080)/10000.0);//1080 is EEPS16NLO+CT14
+      else if(isMC) eventWeight = vzRW->reweightFactor( vz ) * vzRW->reweightFactorCent(hiBin) * c.findNcoll( hiBin );//1080 is EEPS16NLO+CT14
       nEvents->Fill(0.5,eventWeight);
       
       timer.StartSplit("Checking Number of electrons");

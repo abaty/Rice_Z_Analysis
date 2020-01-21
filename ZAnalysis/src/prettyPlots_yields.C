@@ -19,6 +19,8 @@
 void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, std::string ZeeSyst, std::string Zmumu21Syst, std::string Zmumu24Syst, bool doAccept){
   Settings s = Settings();
 
+  float unitScale = TMath::Power(10,6);
+
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
 
@@ -267,6 +269,15 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   yieldPlot_mumu24->SetLineWidth(2);
  
   yieldPlot_mumu->GetYaxis()->CenterTitle(); 
+  yieldPlot_mumu->GetYaxis()->SetTitleSize(0.05); 
+  yieldPlot_mumu->GetYaxis()->SetTitleOffset(1.6); 
+  yieldPlot_mumu->GetYaxis()->SetLabelSize(0.05); 
+  yieldPlot_mumu->GetYaxis()->SetLabelOffset(0.005); 
+  yieldPlot_mumu->GetXaxis()->SetTitleSize(0.06); 
+  yieldPlot_mumu->GetXaxis()->SetTitleOffset(1.1); 
+  yieldPlot_mumu->GetXaxis()->SetLabelSize(0.05); 
+  yieldPlot_mumu->GetXaxis()->SetLabelOffset(0.008); 
+  yieldPlot_mumu->GetYaxis()->CenterTitle(); 
   yieldPlot_mumu->GetXaxis()->CenterTitle(); 
   yieldPlot_mumu->GetXaxis()->SetTitleOffset(1.1);
   yieldPlot_mumu->GetXaxis()->SetTitle("Centrality"); 
@@ -275,9 +286,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   yieldPlot_mumu->SetMarkerSize(1.3);
   yieldPlot_mumu->SetLineColor(kBlue);
   yieldPlot_mumu->SetLineWidth(2);
-  yieldPlot_mumu->GetYaxis()->SetTitle("#frac{1}{N_{evt}} #frac{1}{T_{AA}} N_{Z} (mb)");
-  yieldPlot_mumu->GetYaxis()->SetRangeUser(0.15*TMath::Power(10,-6),0.45*TMath::Power(10,-6));
-  if(doAccept) yieldPlot_mumu->GetYaxis()->SetRangeUser(0,0.45*TMath::Power(10,-6)*1.6);
+  yieldPlot_mumu->GetYaxis()->SetTitle("#frac{1}{N_{evt}} #frac{1}{T_{AA}} N_{Z} (nb)");
 
   yieldPlot_ee->SetMarkerStyle(21);
   yieldPlot_ee->SetMarkerSize(1.5);
@@ -300,6 +309,12 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   TExec *setex2 = new TExec("setex2","gStyle->SetErrorX(0)");
   setex2->Draw();
 
+  yieldPlot_mumu->Scale(unitScale);
+  yieldPlot_ee->Scale(unitScale);
+  yieldCombo->Scale(unitScale);
+  yieldPlot_mumu->GetYaxis()->SetRangeUser(0.15*TMath::Power(10,-6)*unitScale,0.45*TMath::Power(10,-6)*unitScale*1.6);
+  if(doAccept) yieldPlot_mumu->GetYaxis()->SetRangeUser(0,0.72);
+
   yieldPlot_mumu->Draw();
   yieldPlot_mumu->Draw("same");
   //yieldPlot_mumu24->Draw("same");
@@ -315,7 +330,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   for(int i = 1; i<9; i++){
     float inclusivePbPb = yieldCombo->GetBinContent(9);
     //float inclusivePbPb_e = TMath::Sqrt(yieldCombo->GetBinError(9) * yieldCombo->GetBinError(9) + TMath::Power( comboSyst[binMap[9-1]]->GetBinContent(1)* scaleFactor_Combo[9-1] , 2) + TMath::Power( yieldCombo->GetBinContent(9) * TAARelErr[9-1]  ,2));
-    float inclusivePbPb_e = TMath::Power(10,-7) * 0.025;
+    float inclusivePbPb_e = TMath::Power(10,-7) * 0.025*unitScale;
     hgp->SetBinContent(i,hgPythia->GetBinContent(i) * inclusivePbPb );
     hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
   }
@@ -395,8 +410,8 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
     leg->AddEntry(yieldCombo,"Combined |#eta^{l}| < 2.1","p");
   } else {
     //leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |y_{Z}| < 2.4","p");
-    leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-}","p");
-    leg->AddEntry(yieldPlot_ee,"e^{+}e^{-}","p");
+    leg->AddEntry(yieldPlot_mumu,"Z#rightarrow #mu^{+}#mu^{-}","p");
+    leg->AddEntry(yieldPlot_ee,"Z#rightarrow e^{+}e^{-}","p");
     leg->AddEntry(yieldCombo,"Combined","p");
   }
   leg->AddEntry(glauberDummy,"Glauber Uncertainties","f");

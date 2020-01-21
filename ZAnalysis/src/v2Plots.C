@@ -231,7 +231,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   TBox * ATLASBox;
 
   //const char * labels[7] = {"0-80%","0-90%","0-10%", "10-30%", "30-50%", "50-90%","20-80%"};
-  const char * labels[6] = {"0-80%","0-90%","0-10%", "10-30%", "30-50%", "50-90%"};
+  const char * labels[6] = {"0-80","0-90","0-10", "10-30", "30-50", "50-90"};
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
   c1->SetLeftMargin(0.2);
@@ -266,7 +266,14 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   v2ComboPlot->SetLineWidth(2);
 
   v2Plot->GetYaxis()->SetTitle("v_{2}");
-  v2Plot->GetXaxis()->SetTitle("Centrality");
+  v2Plot->GetYaxis()->SetTitleOffset(1.11);
+  v2Plot->GetYaxis()->SetTitleSize(0.08);
+  v2Plot->GetYaxis()->SetLabelSize(0.04);
+  v2Plot->GetXaxis()->SetTitle("Centrality (%)");
+  v2Plot->GetXaxis()->SetTitleOffset(1.0);
+  v2Plot->GetXaxis()->SetTitleSize(0.065);
+  v2Plot->GetXaxis()->SetLabelSize(0.06);
+  v2Plot->GetXaxis()->SetLabelOffset(0.007);
 
   ATLAS->SetMarkerColor(kViolet);
   ATLAS->SetLineColor(kViolet);
@@ -288,10 +295,10 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   leg->SetBorderSize(0);
   leg->AddEntry((TObject*)0,"2018 PbPb, p_{T}^{l} > 20 GeV","");
   //leg->AddEntry((TObject*)0,"3 subevent SP Method","");
-  leg->AddEntry(v2Plot,"#mu^{+}#mu^{-} channel, |#eta_{#mu}|<2.4","p");
-  leg->AddEntry(v2EEPlot,"e^{+}e^{-} channel, |#eta_{e}|<2.1","p");
-  leg->AddEntry(v2ComboPlot,"combined result","p");
-  leg->AddEntry(ATLAS,"2012 ATLAS","p");
+  leg->AddEntry(v2Plot,"#mu^{+}#mu^{-}, |#eta_{#mu}|<2.4","p");
+  leg->AddEntry(v2EEPlot,"e^{+}e^{-}, |#eta_{e}|<2.1","p");
+  leg->AddEntry(v2ComboPlot,"Combined","p");
+  leg->AddEntry(ATLAS,"PRL 110, 022301 (2013)","p");
 
   v2Plot->Draw();
   l->Draw("same");
