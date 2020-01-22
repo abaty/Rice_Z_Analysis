@@ -22,6 +22,8 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   CombinePoints cp = CombinePoints();
   HistNameHelper helper = HistNameHelper();
 
+  float unitScale  = TMath::Power(10,6);
+
   //ptCorrector ptCorr = ptCorrector("resources/Z2mumu_Efficiencies.root","resources/Z2ee_EfficiencyMC_0.root");
 
   TH1D * acceptE[2];
@@ -127,9 +129,9 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
   
   //scaling
-  y_mu24->Scale(s.netLumi/(s.muLumi * s.Nmb));
-  y_mu21->Scale(s.netLumi/(s.muLumi * s.Nmb));
-  y_e->Scale(s.netLumi/(s.eLumi * s.Nmb));
+  y_mu24->Scale(unitScale*s.netLumi/(s.muLumi * s.Nmb));
+  y_mu21->Scale(unitScale*s.netLumi/(s.muLumi * s.Nmb));
+  y_e->Scale(unitScale*s.netLumi/(s.eLumi * s.Nmb));
   pt_mu24->Scale(s.netLumi/(s.muLumi * s.Nmb));
   pt_mu21->Scale(s.netLumi/(s.muLumi * s.Nmb));
   pt_e->Scale(s.netLumi/(s.eLumi * s.Nmb));
@@ -206,7 +208,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
 
   //make muon plot
-  y_e->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dy}");
+  y_e->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dy} #times 10^{6}");
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
   c1->SetLeftMargin(0.2);
@@ -229,10 +231,21 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_e->GetXaxis()->SetRangeUser(-2.4,2.4);
   y_e->GetYaxis()->SetRangeUser(0,y_e->GetMaximum()*1.4);
 
+  y_e->GetYaxis()->SetTitleSize(0.05);
+  y_e->GetYaxis()->SetTitleOffset(1.6);
+  y_e->GetYaxis()->SetLabelSize(0.05);
+  y_e->GetYaxis()->SetLabelOffset(0.005);
+  y_e->GetXaxis()->SetTitleSize(0.06);
+  y_e->GetXaxis()->SetTitleOffset(1);
+  y_e->GetXaxis()->SetLabelSize(0.04);
+  y_e->GetXaxis()->SetLabelOffset(0.005);
+
   y_e->Draw("p");
 
   TExec *setex2 = new TExec("setex2","gStyle->SetErrorX(0.5)");
   setex2->Draw();
+  EPPS16Rap->Scale(unitScale);
+  nCTEQ15Rap->Scale(unitScale);
   EPPS16Rap->Draw("same E2");
   nCTEQ15Rap->Draw("same E2");
   TExec *setex1 = new TExec("setex1","gStyle->SetErrorX(0)");
@@ -265,7 +278,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_mu24->Draw("p same");
   combo[2]->Draw("p same");
 
-  TLegend *ly = new TLegend(0.625,0.725,0.875,0.875);
+  TLegend *ly = new TLegend(0.225,0.225,0.705,0.5);
   ly->SetBorderSize(0);
   ly->SetFillStyle(0);
   ly->AddEntry((TObject*)0,"0-90%","");
@@ -341,6 +354,10 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   dummy->SetMarkerColor(kWhite);
   dummy->GetXaxis()->CenterTitle();
   dummy->GetYaxis()->CenterTitle();
+  dummy->GetYaxis()->SetTitleSize(0.05);
+  dummy->GetYaxis()->SetTitleOffset(1.27);
+  dummy->GetYaxis()->SetLabelSize(0.05);
+  dummy->GetYaxis()->SetLabelOffset(0.005);
   dummy->SetStats(0);
   dummy->DrawCopy();
  
@@ -408,10 +425,14 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   dummy->GetYaxis()->SetNdivisions(4,4,0,kTRUE);
   dummy->GetYaxis()->SetTitleOffset(0.4);
   dummy->GetYaxis()->SetRangeUser(0.4,1.6);
-  dummy->GetYaxis()->SetTitleSize(0.14);
-  dummy->GetXaxis()->SetTitleSize(0.14);
-  dummy->GetYaxis()->SetLabelSize(0.14);
-  dummy->GetXaxis()->SetLabelSize(0.14);
+  dummy->GetYaxis()->SetTitleSize(0.21);
+  dummy->GetYaxis()->SetTitleOffset(0.31);
+  dummy->GetXaxis()->SetTitleSize(0.18);
+  dummy->GetXaxis()->SetTitleOffset(0.7);
+  dummy->GetYaxis()->SetLabelSize(0.19);
+  dummy->GetYaxis()->SetLabelOffset(0.005);
+  dummy->GetXaxis()->SetLabelSize(0.21);
+  dummy->GetXaxis()->SetLabelOffset(-0.053);
   dummy->Draw();
 
 
