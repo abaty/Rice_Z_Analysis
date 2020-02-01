@@ -76,7 +76,7 @@ bool MuonTnP::isSameIdTnPBin(float eta1, float eta2){
 }
 
 float MuonTnP::getMuonSF(float pt1, float eta1, int cent){
-  float trackSF = tnp_weight_glbtrk_pbpb(eta1, cent, 0);
+  float trackSF = tnp_weight_glbPFtrk_pbpb(eta1, cent, 0);
   float idSF = tnp_weight_muid_pbpb(eta1, 0);
   float hltSF = tnp_weight_trig_pbpb(pt1, eta1,cent, 0);
   return trackSF * idSF * hltSF;
@@ -87,20 +87,20 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, in
   
   //************************************************************************************
   //Tracking scale factors
-  float trackSF1 =  tnp_weight_glbtrk_pbpb(eta1, cent, 0);
-  float trackSF2 =  tnp_weight_glbtrk_pbpb(eta2, cent, 0);
+  float trackSF1 =  tnp_weight_glbPFtrk_pbpb(eta1, cent, 0);
+  float trackSF2 =  tnp_weight_glbPFtrk_pbpb(eta2, cent, 0);
   
   float trackSF = trackSF1 * trackSF2;
   float trackSF_varied = trackSF;
   
   if(idx == 1){
     //first muon
-    float trkSF1StatU = (tnp_weight_glbtrk_pbpb(eta1, cent , 1) - trackSF1) / trackSF1;// relative stat up uncertainty
-    float trkSF1SystU = (tnp_weight_glbtrk_pbpb(eta1, cent , -1) - trackSF1) / trackSF1;// relative syst up uncertainty
+    float trkSF1StatU = (tnp_weight_glbPFtrk_pbpb(eta1, cent , 1) - trackSF1) / trackSF1;// relative stat up uncertainty
+    float trkSF1SystU = (tnp_weight_glbPFtrk_pbpb(eta1, cent , -1) - trackSF1) / trackSF1;// relative syst up uncertainty
     float trkSF1U_2 = quad2(trkSF1StatU, trkSF1SystU); 
     //second muon
-    float trkSF2StatU = (tnp_weight_glbtrk_pbpb(eta2 , cent,  1) - trackSF2) / trackSF2;// relative stat up uncertainty
-    float trkSF2SystU = (tnp_weight_glbtrk_pbpb(eta2 , cent, -1) - trackSF2) / trackSF2;// relative syst up uncertainty
+    float trkSF2StatU = (tnp_weight_glbPFtrk_pbpb(eta2 , cent,  1) - trackSF2) / trackSF2;// relative stat up uncertainty
+    float trkSF2SystU = (tnp_weight_glbPFtrk_pbpb(eta2 , cent, -1) - trackSF2) / trackSF2;// relative syst up uncertainty
     float trkSF2U_2 = quad2(trkSF2StatU, trkSF2SystU);
    
     trackSF_varied = trkSF1U_2 + trkSF2U_2;//relative uncertainty squared
@@ -111,12 +111,12 @@ float MuonTnP::getZSF(float pt1, float eta1, float pt2, float eta2, int cent, in
   //downward variation
   if(idx == -1){
     //first muon
-    float trkSF1StatD = (tnp_weight_glbtrk_pbpb(eta1 , cent,  2) - trackSF1) / trackSF1;// relative stat down uncertainty
-    float trkSF1SystD = (tnp_weight_glbtrk_pbpb(eta1 , cent, -2) - trackSF1) / trackSF1;// relative syst down uncertainty
+    float trkSF1StatD = (tnp_weight_glbPFtrk_pbpb(eta1 , cent,  2) - trackSF1) / trackSF1;// relative stat down uncertainty
+    float trkSF1SystD = (tnp_weight_glbPFtrk_pbpb(eta1 , cent, -2) - trackSF1) / trackSF1;// relative syst down uncertainty
     float trkSF1D_2 = quad2(trkSF1StatD, trkSF1SystD); 
     //second muon
-    float trkSF2StatD = (tnp_weight_glbtrk_pbpb(eta2 , cent, 2) - trackSF2) / trackSF2;// relative stat down uncertainty
-    float trkSF2SystD = (tnp_weight_glbtrk_pbpb(eta2 , cent,-2) - trackSF2) / trackSF2;// relative syst down uncertainty
+    float trkSF2StatD = (tnp_weight_glbPFtrk_pbpb(eta2 , cent, 2) - trackSF2) / trackSF2;// relative stat down uncertainty
+    float trkSF2SystD = (tnp_weight_glbPFtrk_pbpb(eta2 , cent,-2) - trackSF2) / trackSF2;// relative syst down uncertainty
     float trkSF2D_2 = quad2(trkSF2StatD, trkSF2SystD); 
 
     trackSF_varied = trkSF1D_2 + trkSF2D_2;//relative uncertainty squared

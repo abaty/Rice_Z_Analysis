@@ -1,4 +1,5 @@
 #include "include/RooUnfold/RooUnfoldResponse.h"
+#include "include/RooUnfold/RooUnfoldBayes.h"
 #include "include/RooUnfold/RooUnfoldInvert.h"
 #include "include/RooUnfold/RooUnfold.h"
 #include "include/CMS_lumi.C"
@@ -451,6 +452,14 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   unfoldedDistD->Divide(unfoldedDist);
   unfoldedDistD->SetName("unfoldedDistD");
   unfoldedDistD->Print("All");
+  //regularization check
+  RooUnfoldBayes unfoldObject_B = RooUnfoldBayes(&nominalResponse, massPeakOS_minusAll[25][1][0],5);
+  TH1D * unfoldedDistBayes5 = (TH1D*) unfoldObject_B.Hreco();
+  unfoldedDistBayes5->Divide(unfoldedDist);
+  unfoldedDistBayes5->SetName("unfoldedDistBayes5");
+  
+
+
   TH1D * unfoldingUncert = (TH1D*)unfoldedDistU->Clone("unfoldingUncert_SpectrumShape");
   unfoldingUncert->Reset();
   for(int i = 0; i<unfoldingUncert->GetSize();i++){
@@ -560,6 +569,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
 
  
   unfoldedDist->Write();
+  unfoldedDistBayes5->Write();
   unfoldedRatio->Write();
   unfoldedClosure->Write();
   unfoldedDistWithSmearing->Write();

@@ -173,6 +173,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   for(int i = 0; i<33; i++) theoryRapnCTEQ15[i] = new TH1D(Form("theorynCTEQ15_rap_%d",i),Form("theorynCTEQ15_rap_%d",i),s.nZRapBins,-s.maxZRap,s.maxZRap);
   TH1D * theoryRapEPPS16[97];
   for(int i = 0; i<97; i++) theoryRapEPPS16[i] = new TH1D(Form("theoryEPPS16_rap_%d",i),Form("theoryEPPS16_rap_%d",i),s.nZRapBins,-s.maxZRap,s.maxZRap);
+  TH1D * theoryNetEPPS16[97];
+  for(int i = 0; i<97; i++) theoryNetEPPS16[i] = new TH1D(Form("theoryEPPS16_Net_%d",i),Form("theoryEPPS16_Net_%d",i),1,0,1);
 
   for(int k = 0; k<nBins; k++){
     massPeakOS[k] = new TH1D(Form("massPeakOS_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),";m_{e^{+}e^{-}};counts",s.nZMassBins,s.zMassRange[0],s.zMassRange[1]);
@@ -413,7 +415,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
               theoryRapnCTEQ15[w-1177]->Fill(tempMomThry.Rapidity(),ttbar_w->at(w));
             }
             for(int w = 1080; w<=1176; w++){
-              if(TMath::Abs( tempMomThry.Rapidity() ) < s.maxZRapEle ) theoryPtEPPS16[w-1080]->Fill(mcMomPt->at(j),ttbar_w->at(w));
+              if(TMath::Abs( tempMomThry.Rapidity() ) < s.maxZRapEle ){
+                theoryPtEPPS16[w-1080]->Fill(mcMomPt->at(j),ttbar_w->at(w));
+                theoryNetEPPS16[w-1080]->Fill(0.5,ttbar_w->at(w));
+              }
               theoryRapEPPS16[w-1080]->Fill(tempMomThry.Rapidity(),ttbar_w->at(w));
             }
           }
@@ -1160,6 +1165,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     theoryRapEPPS16[w-1080]->Scale(s.DY_XS*0.5*TAA090/theoryEventWeights.at(w)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
     histHelper.makeDifferential( theoryRapEPPS16[w-1080] );
   }
+  for(int w = 1080; w<=1176; w++){
+    theoryNetEPPS16[w-1080]->Scale(s.DY_XS*0.5/theoryEventWeights.at(w)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
+  }
 
   TH1D* theoryPtCT14_Band = new TH1D("theoryCT14_pt_Band","theoryCT14_pt_Band",s.nZPtBins-1,s.zPtBins);
   TH1D* theoryPtnCTEQ15_Band = new TH1D("theorynCTEQ15_pt_Band","theorynCTEQ15_pt_Band",s.nZPtBins-1,s.zPtBins);
@@ -1167,6 +1175,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D* theoryRapCT14_Band = new TH1D("theoryCT14_rap_Band","theoryCT14_rap_Band",s.nZRapBins,-s.maxZRap,s.maxZRap);
   TH1D* theoryRapnCTEQ15_Band = new TH1D("theorynCTEQ15_rap_Band","theorynCTEQ15_rap_Band",s.nZRapBins,-s.maxZRap,s.maxZRap);
   TH1D* theoryRapEPPS16_Band = new TH1D("theoryEPPS16_rap_Band","theoryEPPS16_rap_Band",s.nZRapBins,-s.maxZRap,s.maxZRap);
+  TH1D* theoryNetEPPS16_Band = new TH1D("theoryEPPS16_Net_Band","theoryEPPS16_Net_Band",1,0,1);
   float max[100];
   float min[100];
   for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
@@ -1245,6 +1254,18 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     theoryRapEPPS16_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + TMath::Power(TAA090RelError * theoryRapEPPS16_Band->GetBinContent(i) ,2)) );//scaled down to 1 sigma level and add TAA
   }
   theoryRapEPPS16_Band->Write();
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 1080; w<=1176; w++){
+    for(int i = 0; i<theoryNetEPPS16_Band->GetSize(); i++){
+      if(theoryNetEPPS16[w-1080]->GetBinContent(i) < min[i]) min[i] = theoryNetEPPS16[w-1080]->GetBinContent(i);
+      if(theoryNetEPPS16[w-1080]->GetBinContent(i) > max[i]) max[i] = theoryNetEPPS16[w-1080]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryNetEPPS16_Band->GetSize(); i++){
+    theoryNetEPPS16_Band->SetBinContent(i,((max[i]+min[i])/2.0));
+    theoryNetEPPS16_Band->SetBinError(i,(max[i]-min[i])/2.0/1.644854) ;//scaled down to 1 sigma level and add TAA
+  }
+  theoryNetEPPS16_Band->Write();
 
   pdfXVsPt->Write();
   pdfXVsRap->Write();

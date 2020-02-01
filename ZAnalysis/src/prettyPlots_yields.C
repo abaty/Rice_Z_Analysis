@@ -11,6 +11,8 @@
 #include "TMath.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+#include "TLine.h"
+#include "TLatex.h"
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -20,6 +22,8 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   Settings s = Settings();
 
   float unitScale = TMath::Power(10,6);
+  float sigmaNN = 0.487585;
+
 
   CentralityTool c = CentralityTool();
   const int nBins = c.getNCentBins();
@@ -314,8 +318,18 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   yieldCombo->Scale(unitScale);
   yieldPlot_mumu->GetYaxis()->SetRangeUser(0.15*TMath::Power(10,-6)*unitScale,0.45*TMath::Power(10,-6)*unitScale*1.6);
   if(doAccept) yieldPlot_mumu->GetYaxis()->SetRangeUser(0,0.72);
-
+  
   yieldPlot_mumu->Draw();
+
+  TLine * line1;
+  line1 = new TLine(yieldPlot_mumu->GetXaxis()->GetBinLowEdge(1),sigmaNN,yieldPlot_mumu->GetXaxis()->GetBinUpEdge(yieldPlot_mumu->GetSize()-2),sigmaNN);
+  line1->SetLineWidth(2);
+  line1->SetLineStyle(2);
+  line1->Draw("same");
+  //TLatex latex;
+  //latex.SetTextSize(0.037);
+  //latex.DrawLatex(9,0.51,"#sigma^{Z}_{NN}");
+
   yieldPlot_mumu->Draw("same");
   //yieldPlot_mumu24->Draw("same");
   yieldPlot_ee->Draw("same");
@@ -328,10 +342,12 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   //HGPythia scaled by 0-90 yield
   TH1D * hgp = new TH1D("HG_PYTHIA","",10,0,10);
   for(int i = 1; i<9; i++){
-    float inclusivePbPb = yieldCombo->GetBinContent(9);
+    //float inclusivePbPb = yieldCombo->GetBinContent(9);
     //float inclusivePbPb_e = TMath::Sqrt(yieldCombo->GetBinError(9) * yieldCombo->GetBinError(9) + TMath::Power( comboSyst[binMap[9-1]]->GetBinContent(1)* scaleFactor_Combo[9-1] , 2) + TMath::Power( yieldCombo->GetBinContent(9) * TAARelErr[9-1]  ,2));
     float inclusivePbPb_e = TMath::Power(10,-7) * 0.025*unitScale;
-    hgp->SetBinContent(i,hgPythia->GetBinContent(i) * inclusivePbPb );
+    //hgp->SetBinContent(i,hgPythia->GetBinContent(i) * inclusivePbPb );
+    //hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
+    hgp->SetBinContent(i,hgPythia->GetBinContent(i) * sigmaNN );
     hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
   }
   hgp->SetFillColor(kGreen-6);
@@ -369,7 +385,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   //Syst Uncertainties
   float width = 0.06;
   for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-2; i++){
-      helper.drawBoxAbsolute(yieldCombo, i , netBox[i], comboSyst[binMap[i-1]]->GetBinContent(1)* scaleFactor_Combo[i-1],width,(Color_t)kBlack); 
+      helper.drawBoxAbsolute(yieldCombo, i , netBox[i], comboSyst[binMap[i-1]]->GetBinContent(1)* scaleFactor_Combo[i-1]*unitScale,width,(Color_t)kBlack); 
       helper.drawBoxAbsolute(yieldPlot_ee, i , eBox[i], yieldPlot_ee->GetBinContent(i) * totalError[binMap[i-1]][0]->GetBinContent(1) ,width ,(Color_t)kRed+1); 
       helper.drawBoxAbsolute(yieldPlot_mumu, i , mu21Box[i], yieldPlot_mumu->GetBinContent(i) * totalError[binMap[i-1]][1]->GetBinContent(1),width,(Color_t)kBlue); 
     //  helper.drawBoxAbsolute(yieldPlot_mumu24, i , mu24Box[i], yieldPlot_mumu24->GetBinContent(i) * totalError[binMap[i-1]][2]->GetBinContent(1),width,(Color_t)kBlue); 
@@ -399,10 +415,10 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   yieldPlot_ee->Print("All");
   yieldCombo->Print("All");  
 
-  TLegend * leg = new TLegend(0.21,0.22,0.83,0.50);
+  TLegend * leg = new TLegend(0.21,0.22,0.83,0.55);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
-  leg->AddEntry((TObject*)0,"p_{T}^{l} > 20 GeV, |y_{Z}| < 2.1","");
+  leg->AddEntry((TObject*)0,"|y_{Z}| < 2.1","");
   if(!doAccept){
     //leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |#eta^{l}| < 2.4","p");
     leg->AddEntry(yieldPlot_mumu,"#mu^{+}#mu^{-} |#eta^{l}| < 2.1","p");
@@ -415,6 +431,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
     leg->AddEntry(yieldCombo,"Combined","p");
   }
   leg->AddEntry(glauberDummy,"Glauber Uncertainties","f");
+  leg->AddEntry(line1,"#sigma^{Z}_{NN} aMC@NLO + EPPS16","l");
   if(!doAccept) leg->AddEntry(ATLAS,"ATLAS pp |#eta^{l}| < 2.5","p");
   leg->AddEntry(hgp,"Scaled HG-PYTHIA","f");
 
