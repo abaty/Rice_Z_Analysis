@@ -10,7 +10,7 @@ MKDIR_BIN=mkdir -p $(PWD)/bin
 ROOUNFOLDPATH=$(PWD)/resources
 ROOUNFOLDLIB=RooUnfold
 
-all: mkdirBin bin/Z_EE_Channel.exe bin/Z_EE_Channel_STARLIGHT.exe bin/Z_mumu_Channel.exe bin/Z_mumu_Channel_STARLIGHT.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe bin/prettyPlots_pTy.exe bin/prettyPlots_yields.exe bin/systematics.exe bin/systematicsV2.exe bin/dataMCCompare.exe
+all: mkdirBin bin/Z_EE_Channel.exe bin/Z_EE_Channel_STARLIGHT.exe bin/Z_mumu_Channel.exe bin/Z_mumu_Channel_STARLIGHT.exe bin/massPeakPlots.exe bin/v2Plots.exe bin/Z_mumu_EfficienciesMC.exe bin/Z_EE_EfficienciesMC.exe bin/MCReweighting.exe bin/efficiencyPlots.exe bin/massPeakPlots_BkgSub.exe bin/massPeakPlots_BkgSub_Combo.exe bin/prettyPlots_pTy.exe bin/prettyPlots_yields.exe bin/systematics.exe bin/systematicsV2.exe bin/dataMCCompare.exe
 
 mkdirBin:
 	$(MKDIR_BIN)
@@ -39,6 +39,9 @@ bin/massPeakPlots.exe: src/massPeakPlots.C
 
 bin/massPeakPlots_BkgSub.exe: src/massPeakPlots_BkgSub.C
 	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -I $(PWD)/include/RooUnfold -L $(ROOUNFOLDPATH) -o bin/massPeakPlots_BkgSub.exe src/massPeakPlots_BkgSub.C -l$(ROOUNFOLDLIB)
+
+bin/massPeakPlots_BkgSub_Combo.exe: src/massPeakPlots_BkgSub_Combo.C
+	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -I $(PWD)/include/RooUnfold -L $(ROOUNFOLDPATH) -o bin/massPeakPlots_BkgSub_Combo.exe src/massPeakPlots_BkgSub_Combo.C -l$(ROOUNFOLDLIB)
 
 bin/v2Plots.exe: src/v2Plots.C
 	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD) -o bin/v2Plots.exe src/v2Plots.C

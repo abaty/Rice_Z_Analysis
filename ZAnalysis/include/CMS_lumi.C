@@ -2,7 +2,7 @@
 #include <iostream>
 
 void 
-CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier )
+CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier, bool doCMS, bool doLumi )
 {            
   bool outOfFrame    = false;
   if( iPosX/10==0 ) 
@@ -87,8 +87,8 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier )
 
   latex.SetTextFont(42);
   latex.SetTextAlign(31); 
-  latex.SetTextSize(lumiTextSize*t*fontMultiplier);    
-  latex.DrawLatex(1-r,1-t+lumiTextOffset*t,lumiText);
+  if(doLumi) latex.SetTextSize(lumiTextSize*t*fontMultiplier);    
+  if(doLumi) latex.DrawLatex(1-r,1-t+lumiTextOffset*t,lumiText);
 
   if( outOfFrame )
     {
@@ -137,7 +137,7 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier )
 	  latex.SetTextFont(cmsTextFont);
 	  latex.SetTextSize(cmsTextSize*t*fontMultiplier);
 	  latex.SetTextAlign(align_);
-	  latex.DrawLatex(posX_, posY_, cmsText);
+	  if(doCMS) latex.DrawLatex(posX_, posY_, cmsText);
 	  if( writeExtraText ) 
 	    {
 	      latex.SetTextFont(extraTextFont);
