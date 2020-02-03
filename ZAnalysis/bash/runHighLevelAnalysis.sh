@@ -28,7 +28,7 @@ source environment.sh
 ./bin/systematicsV2.exe Z2ee.root Z2ee_hiBin1.root Z2ee_hiBin2.root 1
 ./bin/systematicsV2.exe Z2mumu_24_Data_hiBin0_job0.root Z2mumu_24_Data_hiBin1_job0.root Z2mumu_24_Data_hiBin2_job0.root 0
 
-./bin/prettyPlots_yields.exe backgroundSubtraction_ee_isMu0.root backgroundSubtraction_21_isMu1.root backgroundSubtraction_24_isMu1.root systematics_ee_isMu210.root systematics_mu21_isMu211.root systematics_mu24_isMu210.root 
 ./bin/prettyPlots_pTy.exe backgroundSubtraction_ee_isMu0.root backgroundSubtraction_21_isMu1.root backgroundSubtraction_24_isMu1.root systematics_ee_isMu210.root systematics_mu21_isMu211.root systematics_mu24_isMu210.root 
 ./bin/v2Plots.exe Z2ee.root Z2mumu_24_Data_hiBin0_job0.root systematics_v2_isEE1.root  systematics_v2_isEE0.root 
+./bin/prettyPlots_yields.exe backgroundSubtraction_ee_isMu0.root backgroundSubtraction_21_isMu1.root backgroundSubtraction_24_isMu1.root systematics_ee_isMu210.root systematics_mu21_isMu211.root systematics_mu24_isMu210.root 
 

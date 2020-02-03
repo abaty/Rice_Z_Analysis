@@ -55,8 +55,8 @@ double tnp_weight_glbPFtrk_pbpb(double eta, double cent, int idx) //cent 0-100%
 {
 	double num = 1, den = 1;
 
-	if (fabs(eta)>2.4) { cout << "[WARNING] Muon pseudo-rapidity (" << eta << ") outside [-2.4, 2.4]" << endl; return 1.0; }
-	if (cent < 0 || cent>100) { cout << "[ERROR] Centrality (" << cent << ") outside [0%, 100%]" << endl; return 1.0; }
+	if (fabs(eta)>2.4) { std::cout << "[WARNING] Muon pseudo-rapidity (" << eta << ") outside [-2.4, 2.4]" << std::endl; return 1.0; }
+	if (cent < 0 || cent>100) { std::cout << "[ERROR] Centrality (" << cent << ") outside [0%, 100%]" << std::endl; return 1.0; }
 
 	double abseta = fabs(eta);
 
@@ -186,12 +186,12 @@ double tnp_weight_glbPFtrk_pbpb(double eta, double cent, int idx) //cent 0-100%
 
 //              P F    P b P b           //
 
-double tnp_uncertainty_pf_pbpb(double eta, double cent, int idx = 0)
+double tnp_uncertainty_pf_pbpb(double eta, double cent, int idx)
 {
 	double num = 1, den = 1;
 
-	if (fabs(eta) > 2.4) { cout << "[WARNING] Muon pseudo-rapidity (" << eta << ") outside [-2.4, 2.4]" << endl; return 1.0; }
-	if (cent < 0 || cent>100) { cout << "[ERROR] Centrality (" << cent << ") outside [0%, 100%]" << endl; return 1.0; }
+	if (fabs(eta) > 2.4) { std::cout << "[WARNING] Muon pseudo-rapidity (" << eta << ") outside [-2.4, 2.4]" << std::endl; return 1.0; }
+	if (cent < 0 || cent>100) { std::cout << "[ERROR] Centrality (" << cent << ") outside [0%, 100%]" << std::endl; return 1.0; }
 
 	double abseta = fabs(eta);
 
@@ -251,7 +251,7 @@ double tnp_weight_muid_pbpb(double eta, int idx)
 
    double num=1,den=1;
    
-   if (fabs(eta) > 2.4) { cout << "[WARNING] Muon pseudo-rapidity (" << eta << ") outside [-2.4, 2.4]" << endl; return 1.0; }
+   if (fabs(eta) > 2.4) { std::cout << "[WARNING] Muon pseudo-rapidity (" << eta << ") outside [-2.4, 2.4]" << std::endl; return 1.0; }
 
    // MC
    if (eta >= -2.4 && eta <= -2.1) { den = 0.994139; }
@@ -338,9 +338,9 @@ double tnp_weight_trig_pbpb(double pt, double eta, double cent, int idx)
 {
 	// Check input variables
 	double abseta = fabs(eta);
-	if (pt < 15) { cout << "[WARNING] Muon pT (" << pt << ") < 15 GeV/c" << endl; return 1.0; }
-	if (abseta > 2.4) { cout << "[WARNING] Muon pseudo-rapidity (" << eta << ") outside [-2.4, 2.4]" << endl; return 1.0; }
-	if (cent < 0 || cent>100) { cout << "[ERROR] Centrality (" << cent << ") outside [0%, 100%]" << endl; return 1.0; }
+	if (pt < 15) { std::cout << "[WARNING] Muon pT (" << pt << ") < 15 GeV/c" << std::endl; return 1.0; }
+	if (abseta > 2.4) { std::cout << "[WARNING] Muon pseudo-rapidity (" << eta << ") outside [-2.4, 2.4]" << std::endl; return 1.0; }
+	if (cent < 0 || cent>100) { std::cout << "[ERROR] Centrality (" << cent << ") outside [0%, 100%]" << std::endl; return 1.0; }
 
 	double num = 1.0, den = 1.0;
 

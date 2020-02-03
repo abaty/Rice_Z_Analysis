@@ -18,18 +18,30 @@
 #include <fstream>
 #include <string>
 
+float getSigma(float x){
+  if(x>1 || x<0){
+    std::cout << "x should be [0,1]" << std::endl;
+    return -1;
+  }
+  for(int i = 0; i<100000; i++){
+    float p = 1-TMath::Erf((float)i/10000.0 / TMath::Sqrt(2)); //the erf gives the probability of lying within +/- i/1000 sigma
+    if( x > p ) return (float)i/10000.0;
+  }
+  return 10;
+}
+
 void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, std::string ZeeSyst, std::string Zmumu21Syst, std::string Zmumu24Syst, bool doAccept){
-  Settings s = Settings();
+	  Settings s = Settings();
 
-  float unitScale = TMath::Power(10,6);
-  float sigmaNN = 0.487585;
+	  float unitScale = TMath::Power(10,6);
+	  float sigmaNN = 0.487585;
 
 
-  CentralityTool c = CentralityTool();
-  const int nBins = c.getNCentBins();
+	  CentralityTool c = CentralityTool();
+	  const int nBins = c.getNCentBins();
 
-  CombinePoints cp = CombinePoints();
-  HistNameHelper helper = HistNameHelper();
+	  CombinePoints cp = CombinePoints();
+	  HistNameHelper helper = HistNameHelper();
 
   TFile * HGPythia = TFile::Open("resources/HGPythia_hfSum.root","read");
   TH1D * hgPythia = (TH1D*)HGPythia->Get("RAA_hf_rebin");
@@ -448,6 +460,187 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
     c1->SaveAs("plots/prettyPlots/yields_Pretty_withAccept.pdf");
     c1->SaveAs("plots/prettyPlots/yields_Pretty_withAccept.C");
   }
+
+  //calculating probabilities
+  float chi2Flat = 0;
+  float chi2HGPythia = 0;
+  int ndof = 0;
+  for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
+      float point = yieldCombo->GetBinContent(i);
+      float statUncert = yieldCombo->GetBinError(i);
+      float systUncert =  comboSyst[binMap[i-1]]->GetBinContent(1)* scaleFactor_Combo[i-1]*unitScale;
+      float TAAUncert = yieldCombo->GetBinContent(i) * TAARelErr[i-1];
+      float totalUncert = TMath::Sqrt( statUncert * statUncert + systUncert * systUncert + TAAUncert * TAAUncert );
+      float theoryFlat = sigmaNN;
+      float theoryHGPythia = hgp->GetBinContent(i);
+      chi2Flat += TMath::Power( (point-theoryFlat)/totalUncert , 2);
+      chi2HGPythia += TMath::Power( (point-theoryHGPythia)/totalUncert, 2);
+      ndof++;
+  }
+  std::cout << " " << std::endl;
+  std::cout << "All uncorrelated, combined data" << std::endl;
+  std::cout << "Flat Hypothesis: chi2 - " << chi2Flat << "  ndof - " << ndof << "  chi2/ndof - " << chi2Flat/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2Flat,ndof)<< "  sigma - " << getSigma(TMath::Prob(chi2Flat,ndof)) << std::endl;
+  std::cout << "HGPythia Hypothesis: chi2 - " << chi2HGPythia << "  ndof - " << ndof << "  chi2/ndof - " << chi2HGPythia/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2HGPythia,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2HGPythia,ndof)) << std::endl;
+  
+
+  //with correlations....
+  chi2Flat = 0;
+  chi2HGPythia = 0;
+  TMatrixD covarStat = TMatrixD(ndof,ndof);
+  TMatrixD covarSyst = TMatrixD(ndof,ndof);
+  TMatrixD covarTAA = TMatrixD(ndof,ndof);
+  TMatrixD obsFlat = TMatrixD(ndof,1);
+  TMatrixD obsHGPythia = TMatrixD(ndof,1);
+  TMatrixD obsFlatT = TMatrixD(1,ndof);
+  TMatrixD obsHGPythiaT = TMatrixD(1,ndof);
+  ndof = 0;
+  //std::vector< float > obsFlat;
+  //std::vector< float > obsHGPythia;
+  for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
+      float point = yieldCombo->GetBinContent(i);
+      float theoryFlat = sigmaNN;
+      float theoryHGPythia = hgp->GetBinContent(i);
+      obsFlat[i-1][0] = (point-theoryFlat);
+      obsHGPythia[i-1][0] = (point-theoryHGPythia);
+      obsFlatT[0][i-1] = (point-theoryFlat);
+      obsHGPythiaT[0][i-1] = (point-theoryHGPythia);
+
+      float statUncert = yieldCombo->GetBinError(i);
+      float systUncert =  comboSyst[binMap[i-1]]->GetBinContent(1)* scaleFactor_Combo[i-1]*unitScale;
+      float TAAUncert = yieldCombo->GetBinContent(i) * TAARelErr[i-1];
+      
+      covarStat[i-1][i-1] = statUncert*statUncert;
+      for(int j = 1; j<yieldCombo->GetXaxis()->GetNbins()+2-3; j++){
+        covarSyst[i-1][j-1] = systUncert * comboSyst[binMap[j-1]]->GetBinContent(1)* scaleFactor_Combo[j-1]*unitScale;
+        covarTAA[i-1][j-1] = TAAUncert * yieldCombo->GetBinContent(j) * TAARelErr[j-1];
+      }
+      ndof++;
+  }
+  TMatrixD inverseCovar =  covarStat + covarSyst + covarTAA;
+  inverseCovar.Invert();
+  chi2Flat = (float)((obsFlatT * inverseCovar * obsFlat)[0][0]);
+  chi2HGPythia = (float)((obsHGPythiaT * inverseCovar * obsHGPythia)[0][0]);
+  std::cout << " " << std::endl;
+  std::cout << "Syst/TAA Correlated, combined data" << std::endl;
+  std::cout << "Flat Hypothesis: chi2 - " << chi2Flat << "  ndof - " << ndof << "  chi2/ndof - " << chi2Flat/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2Flat,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2Flat,ndof)) << std::endl;
+  std::cout << "HGPythia Hypothesis: chi2 - " << chi2HGPythia << "  ndof - " << ndof << "  chi2/ndof - " << chi2HGPythia/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2HGPythia,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2HGPythia,ndof)) << std::endl;
+  
+  
+  //with both channels instead
+  chi2Flat = 0;
+  chi2HGPythia = 0;
+  ndof = 0;
+  //ee
+  for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
+      float point = yieldPlot_ee->GetBinContent(i);
+      float statUncert = yieldPlot_ee->GetBinError(i);
+      float systUncert =  yieldPlot_ee->GetBinContent(i) * totalError[binMap[i-1]][0]->GetBinContent(1) ;
+      float TAAUncert = yieldPlot_ee->GetBinContent(i) * TAARelErr[i-1];
+      float totalUncert = TMath::Sqrt( statUncert * statUncert + systUncert * systUncert + TAAUncert * TAAUncert );
+      float theoryFlat = sigmaNN;
+      float theoryHGPythia = hgp->GetBinContent(i);
+      chi2Flat += TMath::Power( (point-theoryFlat)/totalUncert , 2);
+      chi2HGPythia += TMath::Power( (point-theoryHGPythia)/totalUncert, 2);
+      ndof++;
+  }
+  //mumu
+  for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
+      float point = yieldPlot_mumu->GetBinContent(i);
+      float statUncert = yieldPlot_mumu->GetBinError(i);
+      float systUncert =  yieldPlot_mumu->GetBinContent(i) * totalError[binMap[i-1]][1]->GetBinContent(1) ;
+      float TAAUncert = yieldPlot_mumu->GetBinContent(i) * TAARelErr[i-1];
+      float totalUncert = TMath::Sqrt( statUncert * statUncert + systUncert * systUncert + TAAUncert * TAAUncert );
+      float theoryFlat = sigmaNN;
+      float theoryHGPythia = hgp->GetBinContent(i);
+      chi2Flat += TMath::Power( (point-theoryFlat)/totalUncert , 2);
+      chi2HGPythia += TMath::Power( (point-theoryHGPythia)/totalUncert, 2);
+      ndof++;
+  }
+  std::cout << " " << std::endl;
+  std::cout << "All uncorrelated, using each separate channel" << std::endl;
+  std::cout << "Flat Hypothesis: chi2 - " << chi2Flat << "  ndof - " << ndof << "  chi2/ndof - " << chi2Flat/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2Flat,ndof)<< "  sigma - " << getSigma(TMath::Prob(chi2Flat,ndof)) << std::endl;
+  std::cout << "HGPythia Hypothesis: chi2 - " << chi2HGPythia << "  ndof - " << ndof << "  chi2/ndof - " << chi2HGPythia/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2HGPythia,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2HGPythia,ndof)) << std::endl;
+  
+  chi2Flat = 0;
+  chi2HGPythia = 0;
+  TMatrixD covarStat2 = TMatrixD(ndof,ndof);
+  TMatrixD covarSyst2 = TMatrixD(ndof,ndof);
+  TMatrixD covarSyst2_uncorr = TMatrixD(ndof,ndof);
+  TMatrixD covarTAA2 = TMatrixD(ndof,ndof);
+  TMatrixD obsFlat2 = TMatrixD(ndof,1);
+  TMatrixD obsHGPythia2 = TMatrixD(ndof,1);
+  TMatrixD obsFlatT2 = TMatrixD(1,ndof);
+  TMatrixD obsHGPythiaT2 = TMatrixD(1,ndof);
+  int tempNDOF = ndof/2;
+  ndof = 0;
+  //std::vector< float > obsFlat;
+  //std::vector< float > obsHGPythia;
+  for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
+      float point = yieldPlot_ee->GetBinContent(i);
+      float theoryFlat = sigmaNN;
+      float theoryHGPythia = hgp->GetBinContent(i);
+      obsFlat2[i-1][0] = (point-theoryFlat);
+      obsHGPythia2[i-1][0] = (point-theoryHGPythia);
+      obsFlatT2[0][i-1] = (point-theoryFlat);
+      obsHGPythiaT2[0][i-1] = (point-theoryHGPythia);
+
+      float statUncert = yieldPlot_ee->GetBinError(i);
+      float systUncert =  yieldPlot_ee->GetBinContent(i) * totalError[binMap[i-1]][0]->GetBinContent(1);
+      float TAAUncert = yieldPlot_ee->GetBinContent(i) * TAARelErr[i-1];
+      
+      covarStat2[i-1][i-1] = statUncert*statUncert;
+      for(int j = 1; j<yieldCombo->GetXaxis()->GetNbins()+2-3; j++){
+        covarSyst2[i-1][j-1] = systUncert * yieldPlot_ee->GetBinContent(j) * totalError[binMap[j-1]][0]->GetBinContent(1);
+        if(i==j) covarSyst2_uncorr[i-1][j-1] = systUncert * yieldPlot_ee->GetBinContent(j) * totalError[binMap[j-1]][0]->GetBinContent(1);
+        covarTAA2[i-1][j-1] = TAAUncert * yieldPlot_ee->GetBinContent(j) * TAARelErr[j-1];
+        //extra for the e-mu cross correlation for TAA
+        covarTAA2[i-1][j-1+tempNDOF] = TAAUncert * yieldPlot_mumu->GetBinContent(j) * TAARelErr[j-1];
+      }
+      ndof++;
+  }
+  for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
+      float point = yieldPlot_mumu->GetBinContent(i);
+      float theoryFlat = sigmaNN;
+      float theoryHGPythia = hgp->GetBinContent(i);
+      obsFlat2[i-1+tempNDOF][0] = (point-theoryFlat);
+      obsHGPythia2[i-1+tempNDOF][0] = (point-theoryHGPythia);
+      obsFlatT2[0][i-1+tempNDOF] = (point-theoryFlat);
+      obsHGPythiaT2[0][i-1+tempNDOF] = (point-theoryHGPythia);
+
+      float statUncert = yieldPlot_mumu->GetBinError(i);
+      float systUncert =  yieldPlot_mumu->GetBinContent(i) * totalError[binMap[i-1]][1]->GetBinContent(1);
+      float TAAUncert = yieldPlot_mumu->GetBinContent(i) * TAARelErr[i-1];
+      
+      covarStat2[i-1+tempNDOF][i-1+tempNDOF] = statUncert*statUncert;
+      for(int j = 1; j<yieldCombo->GetXaxis()->GetNbins()+2-3; j++){
+        covarSyst2[i-1+tempNDOF][j-1+tempNDOF] = systUncert * yieldPlot_mumu->GetBinContent(j) * totalError[binMap[j-1]][1]->GetBinContent(1);
+        if(i==j) covarSyst2_uncorr[i-1+tempNDOF][j-1+tempNDOF] = systUncert * yieldPlot_mumu->GetBinContent(j) * totalError[binMap[j-1]][1]->GetBinContent(1);
+        covarTAA2[i-1+tempNDOF][j-1+tempNDOF] = TAAUncert * yieldPlot_mumu->GetBinContent(j) * TAARelErr[j-1];
+        //extra for the e-mu cross correlation for TAA
+        covarTAA2[i-1+tempNDOF][j-1] = TAAUncert * yieldPlot_ee->GetBinContent(j) * TAARelErr[j-1];
+      }
+      ndof++;
+  }
+  TMatrixD inverseCovar2 =  covarStat2 + covarSyst2 + covarTAA2;
+  inverseCovar2.Invert();
+  chi2Flat = (float)((obsFlatT2 * inverseCovar2 * obsFlat2)[0][0]);
+  chi2HGPythia = (float)((obsHGPythiaT2 * inverseCovar2 * obsHGPythia2)[0][0]);
+  std::cout << " " << std::endl;
+  std::cout << "Syst/TAA Correlated, using each separate channel" << std::endl;
+  std::cout << "Flat Hypothesis: chi2 - " << chi2Flat << "  ndof - " << ndof << "  chi2/ndof - " << chi2Flat/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2Flat,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2Flat,ndof)) << std::endl;
+  std::cout << "HGPythia Hypothesis: chi2 - " << chi2HGPythia << "  ndof - " << ndof << "  chi2/ndof - " << chi2HGPythia/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2HGPythia,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2HGPythia,ndof)) << std::endl;
+  
+  TMatrixD inverseCovar2_uncorrSyst =  covarStat2 + covarSyst2_uncorr + covarTAA2;
+  inverseCovar2_uncorrSyst.Invert();
+  chi2Flat = (float)((obsFlatT2 * inverseCovar2_uncorrSyst * obsFlat2)[0][0]);
+  chi2HGPythia = (float)((obsHGPythiaT2 * inverseCovar2_uncorrSyst * obsHGPythia2)[0][0]);
+  std::cout << " " << std::endl;
+  std::cout << "TAA Correlated, using each separate channel" << std::endl;
+  std::cout << "Flat Hypothesis: chi2 - " << chi2Flat << "  ndof - " << ndof << "  chi2/ndof - " << chi2Flat/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2Flat,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2Flat,ndof)) << std::endl;
+  std::cout << "HGPythia Hypothesis: chi2 - " << chi2HGPythia << "  ndof - " << ndof << "  chi2/ndof - " << chi2HGPythia/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2HGPythia,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2HGPythia,ndof)) << std::endl;
+
+  
+  
 
   return;
 }
