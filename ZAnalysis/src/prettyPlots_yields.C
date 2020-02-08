@@ -1,3 +1,4 @@
+#include "TGraphAsymmErrors.h"
 #include "TExec.h"
 #include "include/CMS_lumi.C"
 #include "include/centralityTool.h"
@@ -43,7 +44,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 	  CombinePoints cp = CombinePoints();
 	  HistNameHelper helper = HistNameHelper();
 
-  TFile * HGPythia = TFile::Open("resources/HGPythia_hfSum.root","read");
+  TFile * HGPythia = TFile::Open("resources/HGPythia_hfSum_doZ0.root","read");
   TH1D * hgPythia = (TH1D*)HGPythia->Get("RAA_hf_rebin");
  
   TH1D * acceptE[1];
@@ -353,14 +354,17 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   
   //HGPythia scaled by 0-90 yield
   TH1D * hgp = new TH1D("HG_PYTHIA","",10,0,10);
-  for(int i = 1; i<9; i++){
+  TH1D * hgpDiv = new TH1D("HG_PYTHIA_Div","",10,0,10);
+  for(int i = 1; i<10; i++){
     //float inclusivePbPb = yieldCombo->GetBinContent(9);
     //float inclusivePbPb_e = TMath::Sqrt(yieldCombo->GetBinError(9) * yieldCombo->GetBinError(9) + TMath::Power( comboSyst[binMap[9-1]]->GetBinContent(1)* scaleFactor_Combo[9-1] , 2) + TMath::Power( yieldCombo->GetBinContent(9) * TAARelErr[9-1]  ,2));
     float inclusivePbPb_e = TMath::Power(10,-7) * 0.025*unitScale;
     //hgp->SetBinContent(i,hgPythia->GetBinContent(i) * inclusivePbPb );
     //hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
     hgp->SetBinContent(i,hgPythia->GetBinContent(i) * sigmaNN );
+    hgpDiv->SetBinContent(i,hgPythia->GetBinContent(i) * sigmaNN );
     hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
+    hgpDiv->SetBinError(i,0 );
   }
   hgp->SetFillColor(kGreen-6);
   hgp->SetLineWidth(0);
@@ -639,9 +643,164 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   std::cout << "Flat Hypothesis: chi2 - " << chi2Flat << "  ndof - " << ndof << "  chi2/ndof - " << chi2Flat/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2Flat,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2Flat,ndof)) << std::endl;
   std::cout << "HGPythia Hypothesis: chi2 - " << chi2HGPythia << "  ndof - " << ndof << "  chi2/ndof - " << chi2HGPythia/(float)ndof << "  Prob (chi2/ndof > observed) - " << TMath::Prob(chi2HGPythia,ndof) << "  sigma - " << getSigma(TMath::Prob(chi2HGPythia,ndof)) << std::endl;
 
-  
-  
 
+  //revised plot fo PRL
+  
+  TCanvas * c2 = new TCanvas("c2","c2",800,600);
+  c2->SetBorderSize(0);
+  TPad * p1 = new TPad("p1","p1",0,0.23,1,1,0);
+  TPad * p2 = new TPad("p2","p2",0,0,1,0.23,0);
+  c2->SetLineWidth(0);
+  p1->SetBottomMargin(0);
+  p1->SetLeftMargin(0.15);
+  p1->SetRightMargin(0.05);
+  p1->SetBorderSize(0);
+  p1->Draw();
+  p2->SetTopMargin(0);
+  p2->SetLeftMargin(0.15);
+  p2->SetRightMargin(0.05);
+  p2->SetBottomMargin(0.5);
+  p2->SetBorderSize(0);
+  p2->Draw();
+  p1->cd();
+
+  const int nGPts = 9;
+  float xOff = 0.5;
+  float x[nGPts] = {2.5,7.5,15,25,35,45,60,80,100};
+  float xErr[nGPts] = {2.5-xOff, 2.5-xOff, 5.-xOff, 5.-xOff, 5.-xOff, 5.-xOff, 10.-xOff, 10.-xOff, 0};
+  float xErr_TAA[nGPts] = {2,2,2,2,2,2,2,2,2};
+  float xErr_Syst[nGPts] = {1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5};
+  float xErr_hgp[nGPts] = {2.5, 2.5, 5., 5., 5., 5., 10., 10., 7.5};
+  float y[nGPts] = {0};
+  float y_hgp[nGPts] = {0};
+  float y_hgpDiv[nGPts] = {0};
+  float yErr[nGPts] = {0};
+  float yErr_hgp[nGPts] = {0};
+  float yErr_hgpDiv[nGPts] = {0};
+  float yErr_hgpDivTAA[nGPts] = {0};
+  float yErr_hgpDivSyst[nGPts] = {0};
+  float yErr_Syst[nGPts] = {0};
+  float yErr_TAA[nGPts] = {0};
+  for(int i = 0; i<nGPts; i++){
+    y[i] = yieldCombo->GetBinContent(i+1);
+    yErr[i] = yieldCombo->GetBinError(i+1);
+    y_hgp[i] = hgp->GetBinContent(i+1);
+    yErr_hgp[i] = hgp->GetBinError(i+1);
+    yErr_TAA[i] = yieldCombo->GetBinContent(i+1) * TAARelErr[i];
+    yErr_Syst[i] = comboSyst[binMap[i]]->GetBinContent(1)* scaleFactor_Combo[i]*unitScale ;
+  }
+
+  TGraphAsymmErrors * cg = new TGraphAsymmErrors(nGPts, x, y, xErr, xErr, yErr, yErr);  
+  TGraphAsymmErrors * cg_TAA = new TGraphAsymmErrors(nGPts,x,y,xErr_TAA,xErr_TAA,yErr_TAA,yErr_TAA);
+  TGraphAsymmErrors * cg_Syst = new TGraphAsymmErrors(nGPts,x,y,xErr_Syst,xErr_Syst,yErr_Syst,yErr_Syst);
+
+  TGraphAsymmErrors * hgp_G = new TGraphAsymmErrors(nGPts,x,y_hgp,xErr_hgp,xErr_hgp,yErr_hgp,yErr_hgp);
+  cg->SetMarkerStyle(8);
+  cg->SetMarkerSize(1.);
+  cg->SetMarkerColor(kBlack);
+  cg->SetLineColor(kBlack);
+  cg->SetLineWidth(1);  
+  cg->GetYaxis()->CenterTitle();
+  cg->GetYaxis()->SetTitle("#frac{1}{N_{evt}} #frac{1}{T_{AA}} N_{Z} (nb)");
+  cg->GetYaxis()->SetTitleSize(0.07);
+  cg->GetYaxis()->SetTitleOffset(0.9);
+  cg->GetYaxis()->SetLabelSize(0.055);
+  cg->GetYaxis()->SetRangeUser(0.201,0.65);
+  cg->GetXaxis()->SetRangeUser(-1,110);
+  cg->SetTitle("");
+  cg->Draw("p a");  
+
+  hgp_G->SetFillColor(kGreen-6);
+  cg_TAA->SetFillColor(kGray+1);
+  cg_Syst->SetLineColor(kBlack);
+  cg_Syst->SetFillStyle(0);
+  cg_TAA->Draw("2 same");
+  hgp_G->Draw("2 same");
+  cg_Syst->Draw("5 same");
+
+  line1->SetX2(110);
+  line1->SetX1(-1);
+  line1->Draw("same");
+  TLine * line4;
+  line4 = new TLine(90,0.201,90,0.65);
+  line4->SetLineWidth(1);
+  line4->SetLineStyle(1);
+  line4->Draw("same");  
+  
+  cg->Draw("p same");  
+ 
+  TLegend * leg2 = new TLegend(0.2,0.1,0.7,0.4);
+  leg2->SetBorderSize(0);
+  leg2->SetFillStyle(0);
+  cg->SetFillColor(kGray+1);
+  hgp_G->SetLineWidth(0);
+  leg2->AddEntry(cg,"Z Data","lpef"); 
+  leg2->AddEntry(line1,"#sigma^{Z}_{NN} aMC@NLO + EPPS16","l");
+  leg2->AddEntry(hgp_G,"Scaled HG-PYTHIA","f");
+  leg2->Draw("same");
+ 
+  p2->cd();
+  TH1D * hgpRatio = (TH1D*) yieldCombo->Clone("hgpRatio");
+  hgpRatio->Divide(hgpDiv);
+  for(int i = 0; i<nGPts; i++){
+    y_hgpDiv[i] = hgpRatio->GetBinContent(i+1);
+    yErr_hgpDiv[i] = hgpRatio->GetBinError(i+1);
+    yErr_hgpDivTAA[i] = hgpRatio->GetBinContent(i+1)* TAARelErr[i];
+    yErr_hgpDivSyst[i] = hgpRatio->GetBinContent(i+1) * yErr_Syst[i]/y[i] ;
+  }
+
+  TGraphAsymmErrors * hgpRatioG = new TGraphAsymmErrors(nGPts, x, y_hgpDiv, xErr, xErr, yErr_hgpDiv, yErr_hgpDiv);
+  TGraphAsymmErrors * hgpRatioGTAA = new TGraphAsymmErrors(nGPts, x, y_hgpDiv, xErr_TAA, xErr_TAA, yErr_hgpDivTAA, yErr_hgpDivTAA);
+  TGraphAsymmErrors * hgpRatioGSyst = new TGraphAsymmErrors(nGPts, x, y_hgpDiv, xErr_Syst, xErr_Syst, yErr_hgpDivSyst, yErr_hgpDivSyst);
+  hgpRatioG->SetMarkerStyle(8);
+  hgpRatioG->SetMarkerSize(1.);
+  hgpRatioG->SetMarkerColor(kBlack);
+  hgpRatioG->SetLineColor(kBlack);
+  hgpRatioG->SetLineWidth(1);  
+  hgpRatioG->GetXaxis()->CenterTitle();  
+  hgpRatioG->GetYaxis()->CenterTitle();  
+  hgpRatioG->GetYaxis()->SetTitle("#frac{Data}{Model}");  
+  hgpRatioG->GetYaxis()->SetTitleSize(0.17);  
+  hgpRatioG->GetYaxis()->SetTitleOffset(0.35);  
+  hgpRatioG->GetXaxis()->SetTitleSize(0.3);  
+  hgpRatioG->GetXaxis()->SetTitleOffset(0.8);  
+  hgpRatioG->GetYaxis()->SetLabelSize(0.17);  
+  hgpRatioG->GetXaxis()->SetLabelSize(0.2);  
+  hgpRatioG->GetYaxis()->SetRangeUser(0.75,1.25);  
+  hgpRatioG->GetXaxis()->SetRangeUser(-1,110);  
+  hgpRatioG->GetXaxis()->SetTitle("Centrality (%)");  
+  hgpRatioG->SetTitle("");  
+  hgpRatioG->GetYaxis()->SetNdivisions(4,4,0,kTRUE);
+  TAxis* a = hgpRatioG->GetXaxis();
+  a->ChangeLabel(6,-1,-1,-1,-1,-1,"Inclusive");
+  hgpRatioG->Draw("p a same");
+ 
+  hgpRatioGTAA->SetFillColor(kGray+1);
+  hgpRatioGSyst->SetLineColor(kBlack);
+  hgpRatioGSyst->SetFillStyle(0);
+  hgpRatioGTAA->Draw("2 same");
+  hgpRatioGSyst->Draw("5 same");
+ 
+  hgpRatioG->Draw("p same");
+
+  TLine * line3;
+  line3 = new TLine(-1,1.0,110,1.0);
+  line3->SetLineWidth(2);
+  line3->SetLineStyle(2);
+  line3->Draw("same");
+  TLine * line5 = new TLine(90,0.75,90,1.25);
+  line5->SetLineWidth(1);
+  line5->SetLineStyle(1);
+  line5->Draw("same");  
+
+  c2->cd();
+  p1->cd();
+  CMS_lumi(p1,0,10,1.5);
+
+  c2->SaveAs("plots/prettyPlots/yields_Pretty_withAccept_PRL.png");
+  c2->SaveAs("plots/prettyPlots/yields_Pretty_withAccept_PRL.pdf");
+  c2->SaveAs("plots/prettyPlots/yields_Pretty_withAccept_PRL.C");
+  
   return;
 }
 

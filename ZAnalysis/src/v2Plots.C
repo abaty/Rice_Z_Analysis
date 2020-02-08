@@ -1,3 +1,6 @@
+#include "TAxis.h"
+#include "TGaxis.h"
+#include "TGraphAsymmErrors.h"
 #include "include/CMS_lumi.C"
 #include "include/combinePoints.h"
 #include "include/centralityTool.h"
@@ -243,7 +246,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   gStyle->SetPadTickY(1);
 
   v2Plot->SetStats(0);
-  v2Plot->GetYaxis()->SetRangeUser(-0.07,0.12);
+  v2Plot->GetYaxis()->SetRangeUser(-0.05,0.12);
 
   v2Plot->SetMarkerStyle(8);
   v2Plot->SetMarkerSize(1.3);
@@ -328,6 +331,166 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   c1->SaveAs("plots/v2/v2Summary.pdf");
   c1->SaveAs("plots/v2/v2Summary.C");
  
+  TCanvas * c2 = new TCanvas("c2","c2",800,600);
+  c2->SetLeftMargin(0.15);
+  c2->SetBottomMargin(0.15);
+  float xOff = 0.5;
+  //float xOffSyst = 1;
+  float centersX[5] = {5,20,40,70,97.5};
+  float centersXE[5] = {2.5,17.5,37.5,67.5,95.0};
+  float centersXMu[5] = {7.5,22.5,42.5,72.5,100.0};
+  float xErrs[5] = {5-xOff,10-xOff,10-xOff,20-xOff,0};
+  //float xSystErrs[5] = {5-xOffSyst,10-xOffSyst,10-xOffSyst,20-xOffSyst,1};
+  float xSystErrs[5] = {2.,2.,2.,2.,2.};
+  float centersY[5] = {0};
+  float yErrs[5] = {0};
+  float ySystErrs[5] = {0};
+  float centersYE[5] = {0};
+  float yErrsE[5] = {0};
+  float ySystErrsE[5] = {0};
+  float centersYMu[5] = {0};
+  float yErrsMu[5] = {0};
+  float ySystErrsMu[5] = {0};
+  for(int i = 0; i<4; i++){
+    yErrs[i] = v2ComboPlot->GetBinError(i+3);
+    ySystErrs[i] = totalSystErrorCombo->GetBinContent(totalSystErrorCombo->FindBin(binMapping[i+3]));
+    centersY[i] = v2ComboPlot->GetBinContent(i+3);
+    yErrsE[i] = v2EEPlot->GetBinError(i+3);
+    ySystErrsE[i] = totalErrorEE->GetBinContent(totalSystErrorCombo->FindBin(binMapping[i+3]));
+    centersYE[i] = v2EEPlot->GetBinContent(i+3);
+    yErrsMu[i] = v2Plot->GetBinError(i+3);
+    ySystErrsMu[i] = totalErrorMuMu->GetBinContent(totalSystErrorCombo->FindBin(binMapping[i+3]));
+    centersYMu[i] = v2Plot->GetBinContent(i+3);
+  }
+  yErrs[4] = v2ComboPlot->GetBinError(2);
+  centersY[4] = v2ComboPlot->GetBinContent(2);
+  yErrsE[4] = v2EEPlot->GetBinError(2);
+  centersYE[4] = v2EEPlot->GetBinContent(2);
+  yErrsMu[4] = v2Plot->GetBinError(2);
+  centersYMu[4] = v2Plot->GetBinContent(2);
+
+  TGraphAsymmErrors * v2ComboGraph = new TGraphAsymmErrors(5, centersX, centersY, xErrs, xErrs, yErrs, yErrs );
+  TGraphAsymmErrors * v2ComboGraph_noX = new TGraphAsymmErrors(5, centersX, centersY, 0, 0, yErrs, yErrs );
+  TGraphAsymmErrors * v2ComboGraphSyst = new TGraphAsymmErrors(5, centersX, centersY, xSystErrs, xSystErrs, ySystErrs, ySystErrs );
+  v2ComboGraph->SetMarkerStyle(8);
+  v2ComboGraph->SetMarkerSize(1.);
+  v2ComboGraph->SetMarkerColor(kBlack);
+  v2ComboGraph->SetLineColor(kBlack);
+  v2ComboGraph->SetLineWidth(1);  
+  v2ComboGraph_noX->SetMarkerStyle(8);
+  v2ComboGraph_noX->SetMarkerSize(1.);
+  v2ComboGraph_noX->SetMarkerColor(kBlack);
+  v2ComboGraph_noX->SetLineColor(kBlack);
+  v2ComboGraph_noX->SetLineWidth(1);  
+  TGraphAsymmErrors * v2EGraph = new TGraphAsymmErrors(5, centersXE, centersYE, 0, 0, yErrsE, yErrsE );
+  TGraphAsymmErrors * v2EGraphSyst = new TGraphAsymmErrors(5, centersXE, centersYE, xSystErrs, xSystErrs, ySystErrsE, ySystErrsE );
+  v2EGraph->SetMarkerStyle(24);
+  v2EGraph->SetMarkerSize(1.);
+  v2EGraph->SetMarkerColor(kRed);
+  v2EGraph->SetLineColor(kRed);
+  v2EGraph->SetLineWidth(1);  
+  TGraphAsymmErrors * v2MuGraph = new TGraphAsymmErrors(5, centersXMu, centersYMu, 0, 0, yErrsMu, yErrsMu );
+  TGraphAsymmErrors * v2MuGraphSyst = new TGraphAsymmErrors(5, centersXMu, centersYMu, xSystErrs, xSystErrs, ySystErrsMu, ySystErrsMu );
+  v2MuGraph->SetMarkerStyle(25);
+  v2MuGraph->SetMarkerSize(1.);
+  v2MuGraph->SetMarkerColor(kBlue);
+  v2MuGraph->SetLineColor(kBlue);
+  v2MuGraph->SetLineWidth(1);  
+
+  v2EGraphSyst->SetFillColor(0);
+  v2MuGraphSyst->SetFillColor(0);
+  v2EGraphSyst->SetLineColor(kRed);
+  v2MuGraphSyst->SetLineColor(kBlue);
+  v2ComboGraphSyst->SetFillStyle(0);
+  v2ComboGraphSyst->SetLineColor(kBlack);
+  
+  TGraphAsymmErrors * ATLASg = new TGraphAsymmErrors(1);
+  ATLASg->SetPoint(0,105,-0.015);
+  ATLASg->SetPointError(0,0,0,0.018,0.018);
+  ATLASg->SetLineColor(kViolet-1);
+  ATLASg->SetMarkerColor(kViolet-1);
+  ATLASg->SetMarkerStyle(21);
+  TGraphAsymmErrors * ATLASSyst = new TGraphAsymmErrors(1);
+  ATLASSyst->SetPoint(0,105,-0.015);
+  ATLASSyst->SetPointError(0,2.5,2.5,0.014,0.014);
+  ATLASSyst->SetLineColor(kViolet-1);
+  ATLASSyst->SetFillStyle(0);
+
+  TH1D * d = new TH1D("d",";Centrality (%); v_{2}",1,0,110);
+  d->SetLineColor(kWhite);
+  d->GetYaxis()->SetRangeUser(-0.05,0.07);
+  d->SetStats(0);
+  d->GetYaxis()->CenterTitle();
+  d->GetXaxis()->CenterTitle();
+  d->GetYaxis()->SetTitle("v_{2}");
+  d->GetYaxis()->SetTitleOffset(0.9);
+  d->GetYaxis()->SetTitleSize(0.08);
+  d->GetYaxis()->SetLabelSize(0.055);
+  d->GetXaxis()->SetTitle("Centrality (%)");
+  d->GetXaxis()->SetTitleOffset(1.0);
+  d->GetXaxis()->SetTitleSize(0.065);
+  d->GetXaxis()->SetLabelSize(0.06);
+  d->GetXaxis()->SetLabelOffset(0.007);
+  TAxis* a = d->GetXaxis();
+  a->ChangeLabel(6,-1,-1,-1,-1,-1,"Inclusive");
+
+  d->Draw();
+ 
+  v2ComboGraphSyst->Draw("same 5");
+  ATLASSyst->Draw("same 2"); 
+
+  TLine * l2= new TLine(0,0,110,0);
+  l2->SetLineColor(kBlack);
+  l2->SetLineStyle(1);
+  l2->Draw("same"); 
+  TLine * l3= new TLine(90,-0.05,90,0.07);
+  l3->SetLineColor(kBlack);
+  l3->SetLineStyle(7);
+  l3->Draw("same"); 
+ 
+  v2ComboGraph->Draw("same p");
+  ATLASg->Draw("same p");
+
+  gStyle->SetLegendBorderSize(0);
+  TLegend * leg2 = new TLegend(0.3,0.67,0.7,0.87);
+  leg2->SetTextSize(0.06);
+  leg2->AddEntry(v2ComboGraph,"Z Data", "ep");
+  leg2->AddEntry(ATLASg,"ATLAS 0-80\%","ep");
+  leg2->Draw("same");
+ 
+  CMS_lumi(c2,0,10,1.5);
+  c2->SaveAs("plots/v2/v2Summary_PRL.png");
+  c2->SaveAs("plots/v2/v2Summary_PRL.pdf");
+  c2->SaveAs("plots/v2/v2Summary_PRL.C");
+  
+  delete v2ComboGraph;
+
+  d->GetYaxis()->SetRangeUser(-0.07,0.16);
+  //v2ComboGraph->SetFillColor(0);
+  v2EGraphSyst->SetFillStyle(0);
+  v2MuGraphSyst->SetFillStyle(0);
+  v2EGraphSyst->Draw("same 5");
+  v2MuGraphSyst->Draw("same 5");
+  v2EGraph->Draw("same p");
+  v2MuGraph->Draw("same p");
+  v2ComboGraph_noX->Draw("same p");
+
+  l3->SetY1(-0.07);
+  l3->SetY2(0.16);
+  l3->Draw("same");
+  delete leg2;
+  TLegend * leg3 = new TLegend(0.4,0.57,0.8,0.87);
+  leg3->SetTextSize(0.06);
+  leg3->AddEntry(v2ComboGraph_noX,"Z Data", "ep");
+  leg3->AddEntry(ATLASg,"ATLAS 0-80\%","ep");
+  leg3->AddEntry(v2EGraph,"Z#rightarrow e^{+}e^{-}","ep");
+  leg3->AddEntry(v2MuGraph,"Z#rightarrow #mu^{+}#mu^{-}","ep");
+  leg3->SetFillStyle(0);
+  leg3->Draw("same");
+  CMS_lumi(c2,0,10,1.5,true,true,true);
+  c2->SaveAs("plots/v2/v2Summary_PRL_AllChannels.png");
+  c2->SaveAs("plots/v2/v2Summary_PRL_AllChannels.pdf");
+  c2->SaveAs("plots/v2/v2Summary_PRL_AllChannels.C");
 
   return;
 }

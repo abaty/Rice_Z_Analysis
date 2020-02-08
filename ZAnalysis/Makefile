@@ -56,7 +56,7 @@ bin/prettyPlots_pTy.exe: src/prettyPlots_pTy.C
 	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD)  -o bin/prettyPlots_pTy.exe src/prettyPlots_pTy.C 
 
 bin/prettyPlots_yields.exe: src/prettyPlots_yields.C
-	$(CXX) $(CXXFLAGS) -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD)  -o bin/prettyPlots_yields.exe src/prettyPlots_yields.C
+	$(CXX) $(CXXFLAGS) -Wno-error=narrowing -Wno-error=maybe-uninitialized $(ROOT) -I $(PWD)  -o bin/prettyPlots_yields.exe src/prettyPlots_yields.C
 
 bin/systematics.exe: src/systematics.C
 	$(CXX) $(CXXFLAGS) $(ROOT) -I $(PWD) -o bin/systematics.exe src/systematics.C

@@ -16,6 +16,8 @@ source environment.sh
 ./bin/massPeakPlots_BkgSub.exe Z2ee_hiBin1.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root resources/Z2ee_EfficiencyMC_0.root 0 eehiBin1
 ./bin/massPeakPlots_BkgSub.exe Z2ee_hiBin2.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root resources/Z2ee_EfficiencyMC_0.root 0 eehiBin2
 ./bin/massPeakPlots_BkgSub.exe Z2ee.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root resources/Z2ee_EfficiencyMC_0.root 0 ee
+
+./bin/massPeakPlots_BkgSub_Combo.exe Z2mumu_24_Data_hiBin0_job0.root Z2mumu_MC_24_DY_job0.root Z2mumu_MC_24_TTbar_job0.root Z2mumu_MC_24_WJet_job0.root Z2ee.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root
 #./bin/massPeakPlots_BkgSub.exe Z2ee_Data_hiBinZDC0.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root 0 eehiBin1
 #./bin/massPeakPlots_BkgSub.exe Z2ee_Data_hiBinZDC0.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root 0 eehiBin2
 #./bin/massPeakPlots_BkgSub.exe Z2ee_Data_hiBinZDC0.root Z2ee_MC_DY.root Z2ee_MC_TTbar.root Z2ee_MC_WJet.root 0 ee

@@ -12,7 +12,7 @@ TString cmsText     = "CMS";
 float cmsTextFont   = 61;  // default is helvetic-bold
 
 bool writeExtraText = false;
-TString extraText   = "Preliminary";
+TString extraText   = "Supplementary";
 float extraTextFont = 52;  // default is helvetica-italics
 
 // text sizes and text offsets with respect to the top frame
@@ -38,5 +38,5 @@ TString lumi_sqrtS = "1.8 nb^{-1} (5.02 TeV PbPb)";
 
 bool drawLogo      = false;
 
-void CMS_lumi( TPad* pad, int iPeriod=3, int iPosX=10, float fontMultiplier = 1.0, bool doCMS = true, bool doLumi = true );
+void CMS_lumi( TPad* pad, int iPeriod=3, int iPosX=10, float fontMultiplier = 1.0, bool doCMS = true, bool doLumi = true, bool doExtraText = false );
 
