@@ -331,7 +331,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   c1->SaveAs("plots/v2/v2Summary.pdf");
   c1->SaveAs("plots/v2/v2Summary.C");
  
-  TCanvas * c2 = new TCanvas("c2","c2",800,600);
+  TCanvas * c2 = new TCanvas("c2","c2",800,500);
   c2->SetLeftMargin(0.15);
   c2->SetBottomMargin(0.15);
   float xOff = 0.5;
