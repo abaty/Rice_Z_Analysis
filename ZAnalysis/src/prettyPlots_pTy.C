@@ -311,6 +311,43 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     c1->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept.C"); 
   }
  
+  TCanvas * c2 = new TCanvas("c2","c2",800,350);
+  c2->SetLeftMargin(0.15);
+  c2->SetRightMargin(0.05);
+  c2->SetBottomMargin(0.2);  
+  c2->SetTopMargin(0.1);  
+  y_e->SetLineColor(kWhite);
+  y_e->SetMarkerColor(kWhite);
+  y_e->GetXaxis()->SetRangeUser(-2.1,2.1);
+  y_e->GetYaxis()->SetRangeUser(0.3,0.9);
+  y_e->GetYaxis()->SetTitleSize(0.08);
+  y_e->GetYaxis()->SetTitleOffset(0.8);
+  y_e->GetYaxis()->SetLabelSize(0.07);
+  y_e->GetXaxis()->SetTitleSize(0.09);
+  y_e->GetXaxis()->SetLabelSize(0.09);
+  y_e->Draw("p");
+  setex2->Draw();
+  EPPS16Rap->Draw("same E2");
+  nCTEQ15Rap->Draw("same E2");
+  combo[2]->Draw("p same");
+  for(int i = 1; i<combo[2]->GetSize()-1; i++){
+      helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.1,(Color_t)kBlack); 
+  }
+  TLegend *ly2 = new TLegend(0.325,0.225,0.805,0.6);
+  ly2->SetBorderSize(0);
+  ly2->SetFillStyle(0);
+  ly2->AddEntry(combo[2],"Z data","ple");
+  ly2->AddEntry(EPPS16Rap,"aMC@NLO + EPPS16","F");
+  ly2->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
+  ly2->Draw("same");
+  
+  c2->RedrawAxis();
+  CMS_lumi(c2,0,10,2.0);
+  c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.png"); 
+  c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.pdf"); 
+  c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.C"); 
+
+
   delete c1;
   c1 = new TCanvas("c1","c1",800,800);
   TPad * p1 = new TPad("p1","p1",0,0.2,1,1,0);
@@ -509,6 +546,103 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     cRat->SaveAs("plots/prettyPlots/ptChannelRatio_Pretty_withAccept.C"); 
   }
   
+  delete p1;
+  delete p2;
+  delete c1;
+  c1 = new TCanvas("c1","c1",800,600);
+  p1 = new TPad("p1","p1",0,0.3,1,1,0);
+  p2 = new TPad("p2","p2",0,0,1,0.3,0);
+  c1->SetLineWidth(0);
+  p1->SetBottomMargin(0);
+  p1->SetLeftMargin(0.15);
+  p1->SetRightMargin(0.05);
+  p1->SetTopMargin(0.09);
+  p1->SetBorderSize(0);
+  p1->Draw();
+  p2->SetTopMargin(0);
+  p2->SetLeftMargin(0.15);
+  p2->SetRightMargin(0.05);
+  p2->SetBottomMargin(0.35);
+  p2->SetBorderSize(0);
+  p2->Draw();
+  p1->cd();
+  c1->SetLeftMargin(0.2);
+  c1->SetBottomMargin(0.2);
+  dummy->SetBinContent(1,pt_mu24->GetMaximum());
+  dummy->SetBinContent(2,pt_e->GetMinimum());
+  dummy->SetLineColor(kWhite);
+  dummy->SetMarkerColor(kWhite);
+  dummy->GetXaxis()->CenterTitle();
+  dummy->GetYaxis()->CenterTitle();
+  dummy->GetYaxis()->SetTitleSize(0.07);
+  dummy->GetYaxis()->SetTitleOffset(0.95);
+  dummy->GetYaxis()->SetLabelSize(0.065);
+  dummy->GetYaxis()->SetLabelOffset(0.00);
+  dummy->GetYaxis()->SetRangeUser(0.0005*pt_mu24->GetMaximum() , pt_mu24->GetMaximum()*1.4 ); 
+  dummy->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dp_{T}} (GeV^{-1})");
+  dummy->DrawCopy();
+ 
+  setex2->Draw();
+  EPPS16Pt->Draw("same E2"); 
+  nCTEQ15Pt->Draw("same E2"); 
+  for(int i = 1; i<combo[1]->GetSize()-1; i++){
+      float width = (comboSyst[1]->GetXaxis()->GetBinCenter(i)-comboSyst[1]->GetXaxis()->GetBinLowEdge(i));
+      float width2 = (comboSyst[1]->GetXaxis()->GetBinUpEdge(i)-comboSyst[1]->GetXaxis()->GetBinCenter(i));
+      helper.drawBoxAbsolute(combo[1], i , netBoxpt[i], comboSyst[1]->GetBinContent(i),width,(Color_t)kBlack,true,0,width2); 
+  }
+  setex1->Draw();
+  combo[1]->Draw("p same");
+  p1->SetLogy();
+  p1->SetLogx();
+
+
+  TLegend *lpt2 = new TLegend(0.225,0.125,0.875,0.475);
+  lpt2->SetBorderSize(0);
+  lpt2->SetFillStyle(0);
+  lpt2->AddEntry(combo[1],"Z data","lep");
+  lpt2->AddEntry(EPPS16Pt,"aMC@NLO + EPPS16","F");
+  lpt2->AddEntry(nCTEQ15Pt,"aMC@NLO + nCTEQ15","F");
+  lpt2->Draw("same");
+  
+  p1->RedrawAxis();
+  CMS_lumi(p1,0,10,2.0);
+  
+  p2->cd();
+  p2->SetLogx();
+  dummy->GetYaxis()->SetTitle("#frac{MC}{Data}");
+  dummy->GetYaxis()->SetNdivisions(4,4,0,kTRUE);
+  dummy->GetYaxis()->SetTitleOffset(0.4);
+  dummy->GetYaxis()->SetRangeUser(0.35,1.65);
+  dummy->GetYaxis()->SetTitleSize(0.20);
+  dummy->GetYaxis()->SetTitleOffset(0.3);
+  dummy->GetXaxis()->SetTitleSize(0.18);
+  dummy->GetXaxis()->SetTitleOffset(0.8);
+  dummy->GetYaxis()->SetLabelSize(0.16);
+  dummy->GetYaxis()->SetLabelOffset(0.005);
+  dummy->GetXaxis()->SetLabelSize(0.17);
+  dummy->GetXaxis()->SetLabelOffset(0.0);
+  dummy->Draw();
+  
+  setex2->Draw();
+  datErr->Draw("same E2");
+  setex1->Draw();
+  line1->Draw("same");
+
+  ratioEPPS16->Draw("same");
+  ratioNCTEQ15->Draw("same p");
+  p2->RedrawAxis();
+  
+  TLegend *lptR2 = new TLegend(0.175,0.3,0.6,0.65);
+  lptR2->SetBorderSize(0);
+  lptR2->SetFillStyle(0);
+  lptR2->SetNColumns(2);
+  lptR2->AddEntry(ratioEPPS16,"EPPS16","p");
+  lptR2->AddEntry(ratioNCTEQ15,"nCTEQ15","p");
+  lptR2->Draw("same");
+
+  c1->SaveAs("plots/prettyPlots/pt_Pretty_withAccept_PRL.png"); 
+  c1->SaveAs("plots/prettyPlots/pt_Pretty_withAccept_PRL.pdf"); 
+  c1->SaveAs("plots/prettyPlots/pt_Pretty_withAccept_PRL.C"); 
 
   return;
 }
