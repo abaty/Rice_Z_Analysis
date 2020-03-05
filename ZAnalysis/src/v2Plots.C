@@ -333,6 +333,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
  
   TCanvas * c2 = new TCanvas("c2","c2",800,500);
   c2->SetLeftMargin(0.15);
+  c2->SetRightMargin(0.05);
   c2->SetBottomMargin(0.15);
   float xOff = 0.5;
   //float xOffSyst = 1;
@@ -373,7 +374,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   TGraphAsymmErrors * v2ComboGraph_noX = new TGraphAsymmErrors(5, centersX, centersY, 0, 0, yErrs, yErrs );
   TGraphAsymmErrors * v2ComboGraphSyst = new TGraphAsymmErrors(5, centersX, centersY, xSystErrs, xSystErrs, ySystErrs, ySystErrs );
   v2ComboGraph->SetMarkerStyle(8);
-  v2ComboGraph->SetMarkerSize(1.);
+  v2ComboGraph->SetMarkerSize(1.5);
   v2ComboGraph->SetMarkerColor(kBlack);
   v2ComboGraph->SetLineColor(kBlack);
   v2ComboGraph->SetLineWidth(1);  
@@ -410,6 +411,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   ATLASg->SetLineColor(kViolet-1);
   ATLASg->SetMarkerColor(kViolet-1);
   ATLASg->SetMarkerStyle(21);
+  ATLASg->SetMarkerSize(1.5);
   TGraphAsymmErrors * ATLASSyst = new TGraphAsymmErrors(1);
   ATLASSyst->SetPoint(0,105,-0.015);
   ATLASSyst->SetPointError(0,2.5,2.5,0.014,0.014);

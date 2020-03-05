@@ -696,7 +696,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 
   TGraphAsymmErrors * hgp_G = new TGraphAsymmErrors(nGPts,x,y_hgp,xErr_hgp,xErr_hgp,yErr_hgp,yErr_hgp);
   cg->SetMarkerStyle(8);
-  cg->SetMarkerSize(1.);
+  cg->SetMarkerSize(1.5);
   cg->SetMarkerColor(kBlack);
   cg->SetLineColor(kBlack);
   cg->SetLineWidth(1);  
@@ -753,7 +753,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   TGraphAsymmErrors * hgpRatioGTAA = new TGraphAsymmErrors(nGPts, x, y_hgpDiv, xErr_TAA, xErr_TAA, yErr_hgpDivTAA, yErr_hgpDivTAA);
   TGraphAsymmErrors * hgpRatioGSyst = new TGraphAsymmErrors(nGPts, x, y_hgpDiv, xErr_Syst, xErr_Syst, yErr_hgpDivSyst, yErr_hgpDivSyst);
   hgpRatioG->SetMarkerStyle(8);
-  hgpRatioG->SetMarkerSize(1.);
+  hgpRatioG->SetMarkerSize(1.5);
   hgpRatioG->SetMarkerColor(kBlack);
   hgpRatioG->SetLineColor(kBlack);
   hgpRatioG->SetLineWidth(1);  

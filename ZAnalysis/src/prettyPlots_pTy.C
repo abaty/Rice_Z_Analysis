@@ -549,7 +549,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   delete p1;
   delete p2;
   delete c1;
-  c1 = new TCanvas("c1","c1",800,600);
+  c1 = new TCanvas("c1","c1",800,500);
   p1 = new TPad("p1","p1",0,0.3,1,1,0);
   p2 = new TPad("p2","p2",0,0,1,0.3,0);
   c1->SetLineWidth(0);

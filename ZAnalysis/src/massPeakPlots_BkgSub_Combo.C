@@ -348,33 +348,33 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     //gStyle->SetErrorX(0);
     TCanvas * c1 = new TCanvas("c1","c1",1600,800);
     c1->SetBorderSize(0);
-    TPad * p1 = new TPad("p1","p1",0,0.2,0.5,1,0);
-    TPad * p2 = new TPad("p2","p2",0,0,0.5,0.2,0);
-    TPad * p3 = new TPad("p3","p3",0.5,0.2,1,1,0);
-    TPad * p4 = new TPad("p4","p4",0.5,0,1,0.2,0);
+    TPad * p1 = new TPad("p1","p1",0,0.24,0.53,1,0);
+    TPad * p2 = new TPad("p2","p2",0,0,0.53,0.24,0);
+    TPad * p3 = new TPad("p3","p3",0.53,0.24,1,1,0);
+    TPad * p4 = new TPad("p4","p4",0.53,0,1,0.24,0);
     c1->SetLineWidth(0);
     p1->SetBottomMargin(0);
     p1->SetLeftMargin(0.15);
     p1->SetRightMargin(0);
-    p1->SetTopMargin(0.07);
+    p1->SetTopMargin(0.1);
     p1->SetBorderSize(0);
     p1->Draw();
     p2->SetTopMargin(0);
     p2->SetLeftMargin(0.15);
     p2->SetRightMargin(0.0);
-    p2->SetBottomMargin(0.42);
+    p2->SetBottomMargin(0.5);
     p2->SetBorderSize(0);
     p2->Draw();
     p3->SetBottomMargin(0);
     p3->SetLeftMargin(0);
-    p3->SetRightMargin(0.15);
-    p3->SetTopMargin(0.07);
+    p3->SetRightMargin(0.04);
+    p3->SetTopMargin(0.1);
     p3->SetBorderSize(0);
     p3->Draw();
     p4->SetTopMargin(0);
     p4->SetLeftMargin(0);
-    p4->SetRightMargin(0.15);
-    p4->SetBottomMargin(0.42);
+    p4->SetRightMargin(0.04);
+    p4->SetBottomMargin(0.5);
     p4->SetBorderSize(0);
     p4->Draw();
     p1->cd();
@@ -399,9 +399,9 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     massPeakOSE[i][j][0]->SetStats(0);
 
     if(j==0){
-      massPeakOS[i][j][0]->GetYaxis()->SetLabelSize(0.06);
-      massPeakOS[i][j][0]->GetYaxis()->SetTitleSize(0.08);
-      massPeakOS[i][j][0]->GetYaxis()->SetTitleOffset(0.89);
+      massPeakOS[i][j][0]->GetYaxis()->SetLabelSize(0.07);
+      massPeakOS[i][j][0]->GetYaxis()->SetTitleSize(0.09);
+      massPeakOS[i][j][0]->GetYaxis()->SetTitleOffset(0.79);
     }
    
     float maxmassOS = massPeakOS[i][j][0]->GetMaximum(); 
@@ -475,26 +475,34 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     massPeakOS[i][j][0]->Draw("p same");
 
     p3->cd();
-    TLegend *leg = new TLegend(0.585,0.735,0.88,0.90);
+    TLegend *leg = new TLegend(0.65,0.625,0.95,0.85);
     leg->AddEntry(bkg_tau[i][j][0],"Z #rightarrow #tau^{+}#tau^{-}","f");
     leg->AddEntry(bkg_Wjet[i][j][0],"W^{#pm} + X","f");
     leg->AddEntry(bkg_ttbar[i][j][0],"t#bar{t}","f");
     leg->SetBorderSize(0);
     leg->SetFillStyle(0);
-    leg->SetTextSize(0.045);
+    leg->SetTextSize(0.065);
     leg->Draw("same");
     
-    TLegend *legE = new TLegend(0.03,0.68,0.33,0.90);
-    legE->AddEntry(massPeakOS[i][j][0],Form("Data (%d-%d%%)",c.getCentBinLow(i),c.getCentBinHigh(i)),"p");
-    legE->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z MC","f");
+    TLegend *legE = new TLegend(0.03,0.7,0.33,0.85);
     //if(!isMu) leg->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z #rightarrow e^{+}e^{-}","f");
     legE->AddEntry(massPeakSS_ChargeFlipCorrected[i][j][0],"Same sign (QCD)","f");
     legE->AddEntry(massPeakOS_photons[i][j][0],"EM background","f");
     legE->SetBorderSize(0);
     legE->SetFillStyle(0);
-    legE->SetTextSize(0.045);
+    legE->SetTextSize(0.065);
     legE->Draw("same");
-    
+   
+    p1->cd();
+    TLegend * leg2 = new TLegend(0.65,0.7,0.9,0.85);
+    leg2->AddEntry(massPeakOS[i][j][0],Form("Data (%d-%d%%)",c.getCentBinLow(i),c.getCentBinHigh(i)),"p");
+    leg2->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z MC","f");
+    leg2->SetBorderSize(0);
+    leg2->SetFillStyle(0);
+    leg2->SetTextSize(0.065);
+    leg2->Draw("same");
+    p3->cd(); 
+
     massPeakOS_DYsignalMinusPhotonE[i][j]->Draw("HIST same");
     massPeakSS_ChargeFlipCorrectedE[i][j][0]->Draw("HIST same");
     massPeakOS_photonsE[i][j][0]->Draw("HIST same");
@@ -511,12 +519,12 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     tempRatio->GetYaxis()->SetTitle("#frac{Data}{MC}");
     tempRatio->GetYaxis()->SetTitleOffset(0.4);
     tempRatio->GetYaxis()->SetRangeUser(0.25,1.75);
-    tempRatio->GetYaxis()->SetTitleSize(0.2);
-    tempRatio->GetYaxis()->SetTitleOffset(0.32);
-    tempRatio->GetYaxis()->SetLabelSize(0.18);
-    tempRatio->GetXaxis()->SetTitleSize(0.19);
-    tempRatio->GetXaxis()->SetTitleOffset(1.0);
-    tempRatio->GetXaxis()->SetLabelSize(0.19);
+    tempRatio->GetYaxis()->SetTitleSize(0.23);
+    tempRatio->GetYaxis()->SetTitleOffset(0.29);
+    tempRatio->GetYaxis()->SetLabelSize(0.21);
+    tempRatio->GetXaxis()->SetTitleSize(0.27);
+    tempRatio->GetXaxis()->SetTitleOffset(0.82);
+    tempRatio->GetXaxis()->SetLabelSize(0.23);
     tempRatio->GetXaxis()->SetRangeUser(60,120);
     tempRatio->Draw("same");
    
@@ -525,9 +533,9 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     box.SetLineColor(kWhite);
     box.DrawBox(117,-0.35,119.999,0.23);
     TLatex lat = TLatex();
-    lat.SetTextSize(0.19);
+    lat.SetTextSize(0.24);
     lat.SetTextFont(42);
-    lat.DrawLatexNDC(.983,0.265,"60");    
+    lat.DrawLatexNDC(.971,0.305,"60");    
 
     TH1D * tempRatioE = (TH1D*)massPeakOSE[i][j][0]->Clone("tempRatio");
     tempRatioE->Divide(massPeakOS_DYsignalMinusPhotonE[i][j]);
@@ -539,9 +547,9 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     tempRatioE->GetYaxis()->SetTitleSize(0.2);
     tempRatioE->GetYaxis()->SetTitleOffset(0.32);
     tempRatioE->GetYaxis()->SetLabelSize(0.18);
-    tempRatioE->GetXaxis()->SetTitleSize(0.19);
-    tempRatioE->GetXaxis()->SetTitleOffset(1.0);
-    tempRatioE->GetXaxis()->SetLabelSize(0.19);
+    tempRatioE->GetXaxis()->SetTitleSize(0.27);
+    tempRatioE->GetXaxis()->SetTitleOffset(0.82);
+    tempRatioE->GetXaxis()->SetLabelSize(0.23);
     tempRatioE->GetXaxis()->SetRangeUser(60,120);
     tempRatioE->Draw("same");
  
@@ -565,8 +573,8 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
 
     p1->SetLogy();
     p3->SetLogy();
-    CMS_lumi(p3,0,10,1.8,false,true);
-    CMS_lumi(p1,0,10,1.8,true,false);
+    CMS_lumi(p3,0,10,1.9,false,true);
+    CMS_lumi(p1,0,10,1.9,true,false);
 
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log_Combined.png",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)1, c.getCentBinLow(i),c.getCentBinHigh(i)));
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log_Combined.pdf",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)1, c.getCentBinLow(i),c.getCentBinHigh(i)));
