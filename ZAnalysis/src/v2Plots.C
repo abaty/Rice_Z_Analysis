@@ -456,7 +456,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   gStyle->SetLegendBorderSize(0);
   TLegend * leg2 = new TLegend(0.3,0.67,0.7,0.87);
   leg2->SetTextSize(0.06);
-  leg2->AddEntry(v2ComboGraph,"Z Data", "ep");
+  leg2->AddEntry(v2ComboGraph,"Z #rightarrow l^{+}l^{-}", "ep");
   leg2->AddEntry(ATLASg,"ATLAS 0-80\%","ep");
   leg2->Draw("same");
  
@@ -483,7 +483,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   delete leg2;
   TLegend * leg3 = new TLegend(0.4,0.57,0.8,0.87);
   leg3->SetTextSize(0.06);
-  leg3->AddEntry(v2ComboGraph_noX,"Z Data", "ep");
+  leg3->AddEntry(v2ComboGraph_noX,"Z #rightarrow l^{+}l^{-}", "ep");
   leg3->AddEntry(ATLASg,"ATLAS 0-80\%","ep");
   leg3->AddEntry(v2EGraph,"Z#rightarrow e^{+}e^{-}","ep");
   leg3->AddEntry(v2MuGraph,"Z#rightarrow #mu^{+}#mu^{-}","ep");

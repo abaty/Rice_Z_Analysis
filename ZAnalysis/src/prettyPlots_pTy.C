@@ -54,19 +54,23 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TH1D * EPPS16Rap = (TH1D*)theory->Get("theoryEPPS16_rap_Band");
   TH1D * nCTEQ15Pt = (TH1D*)theory->Get("theorynCTEQ15_pt_Band");
   TH1D * nCTEQ15Rap = (TH1D*)theory->Get("theorynCTEQ15_rap_Band");
-  EPPS16Pt->SetFillColor(kGray+1);
-  EPPS16Pt->SetLineColor(kGray+1);
-  EPPS16Pt->SetMarkerColor(kGray+1);
-  EPPS16Rap->SetFillColor(kGray+1);
-  EPPS16Rap->SetLineColor(kGray+1);
-  EPPS16Rap->SetMarkerColor(kGray+1);
-  nCTEQ15Pt->SetFillColor(kGreen+2);
+  EPPS16Pt->SetFillColor(kBlue);
+  EPPS16Pt->SetLineColor(kBlue);
+  EPPS16Pt->SetMarkerColor(kBlue);
+  EPPS16Pt->SetFillStyle(1001);
+  EPPS16Pt->SetFillColorAlpha(kBlue,0.5);
+  EPPS16Rap->SetFillColor(kBlue);
+  EPPS16Rap->SetLineColor(kBlue);
+  EPPS16Rap->SetMarkerColor(kBlue);
+  EPPS16Rap->SetFillStyle(1001);
+  EPPS16Rap->SetFillColorAlpha(kBlue,0.5);
+  nCTEQ15Pt->SetFillColor(kRed+1);
   nCTEQ15Pt->SetFillStyle(3244);
-  nCTEQ15Pt->SetLineColor(kGreen+2);
+  nCTEQ15Pt->SetLineColor(kRed+1);
   nCTEQ15Pt->SetMarkerSize(0);
-  nCTEQ15Rap->SetFillColor(kGreen+2);
+  nCTEQ15Rap->SetFillColor(kRed+1);
   nCTEQ15Rap->SetFillStyle(3244);
-  nCTEQ15Rap->SetLineColor(kGreen+2);
+  nCTEQ15Rap->SetLineColor(kRed+1);
   nCTEQ15Rap->SetMarkerSize(0);
   
   //gStyle->SetErrorX(0);
@@ -311,7 +315,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     c1->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept.C"); 
   }
  
-  TCanvas * c2 = new TCanvas("c2","c2",800,350);
+  TCanvas * c2 = new TCanvas("c2","c2",800,500);
   c2->SetLeftMargin(0.15);
   c2->SetRightMargin(0.05);
   c2->SetBottomMargin(0.2);  
@@ -319,12 +323,13 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_e->SetLineColor(kWhite);
   y_e->SetMarkerColor(kWhite);
   y_e->GetXaxis()->SetRangeUser(-2.1,2.1);
-  y_e->GetYaxis()->SetRangeUser(0.3,0.9);
-  y_e->GetYaxis()->SetTitleSize(0.08);
-  y_e->GetYaxis()->SetTitleOffset(0.8);
+  y_e->GetYaxis()->SetRangeUser(0.5,0.9);
+  y_e->GetYaxis()->SetTitleSize(0.06);
+  y_e->GetYaxis()->SetTitleOffset(1.01);
   y_e->GetYaxis()->SetLabelSize(0.07);
-  y_e->GetXaxis()->SetTitleSize(0.09);
-  y_e->GetXaxis()->SetLabelSize(0.09);
+  y_e->GetXaxis()->SetTitleSize(0.08);
+  y_e->GetXaxis()->SetLabelSize(0.08);
+  y_e->GetYaxis()->SetNdivisions(5,5,0,true);
   y_e->Draw("p");
   setex2->Draw();
   EPPS16Rap->Draw("same E2");
@@ -333,16 +338,16 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   for(int i = 1; i<combo[2]->GetSize()-1; i++){
       helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.1,(Color_t)kBlack); 
   }
-  TLegend *ly2 = new TLegend(0.325,0.225,0.805,0.6);
+  TLegend *ly2 = new TLegend(0.325,0.225,0.805,0.575);
   ly2->SetBorderSize(0);
   ly2->SetFillStyle(0);
-  ly2->AddEntry(combo[2],"Z data","ple");
+  ly2->AddEntry(combo[2],"Z #rightarrow l^{+}l^{-} (0-90%)","ple");
   ly2->AddEntry(EPPS16Rap,"aMC@NLO + EPPS16","F");
   ly2->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
   ly2->Draw("same");
   
   c2->RedrawAxis();
-  CMS_lumi(c2,0,10,2.0);
+  CMS_lumi(c2,0,10,1.5);
   c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.png"); 
   c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.pdf"); 
   c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.C"); 
@@ -496,15 +501,15 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   
   TH1D * ratioEPPS16 = (TH1D*)EPPS16Pt->Clone("ratioEPPS16");
   ratioEPPS16->Divide(combo[1]);
-  ratioEPPS16->SetLineColor(kBlack);
+  ratioEPPS16->SetLineColor(kBlue);
   ratioEPPS16->SetLineWidth(2);
-  ratioEPPS16->SetMarkerColor(kBlack);
+  ratioEPPS16->SetMarkerColor(kBlue);
   ratioEPPS16->SetMarkerStyle(8);
   ratioEPPS16->Draw("same");
   TH1D * ratioNCTEQ15 = (TH1D*)nCTEQ15Pt->Clone("ratioNCTEQ15");
   ratioNCTEQ15->Divide(combo[1]);
-  ratioNCTEQ15->SetLineColor(kGreen+2);
-  ratioNCTEQ15->SetMarkerColor(kGreen+2);
+  ratioNCTEQ15->SetLineColor(kRed+1);
+  ratioNCTEQ15->SetMarkerColor(kRed+1);
   ratioNCTEQ15->SetMarkerStyle(25);
   ratioNCTEQ15->SetMarkerSize(1);
   ratioNCTEQ15->Draw("same p");
@@ -599,7 +604,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TLegend *lpt2 = new TLegend(0.225,0.125,0.875,0.475);
   lpt2->SetBorderSize(0);
   lpt2->SetFillStyle(0);
-  lpt2->AddEntry(combo[1],"Z data","lep");
+  lpt2->AddEntry(combo[1],"Z #rightarrow l^{+}l^{-} (0-90%)","lep");
   lpt2->AddEntry(EPPS16Pt,"aMC@NLO + EPPS16","F");
   lpt2->AddEntry(nCTEQ15Pt,"aMC@NLO + nCTEQ15","F");
   lpt2->Draw("same");
@@ -632,12 +637,13 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ratioNCTEQ15->Draw("same p");
   p2->RedrawAxis();
   
-  TLegend *lptR2 = new TLegend(0.175,0.3,0.6,0.65);
+  TLegend *lptR2 = new TLegend(0.175,0.35,0.8,0.6);
   lptR2->SetBorderSize(0);
   lptR2->SetFillStyle(0);
-  lptR2->SetNColumns(2);
+  lptR2->SetNColumns(3);
   lptR2->AddEntry(ratioEPPS16,"EPPS16","p");
   lptR2->AddEntry(ratioNCTEQ15,"nCTEQ15","p");
+  lptR2->AddEntry(datErr,"Syst. Uncertainty","f");
   lptR2->Draw("same");
 
   c1->SaveAs("plots/prettyPlots/pt_Pretty_withAccept_PRL.png"); 

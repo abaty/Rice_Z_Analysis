@@ -538,7 +538,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   dummy4->Draw();
   dummy4->SetStats(0);
   respC->SetLogx();
-  dummy4->GetYaxis()->SetRangeUser(0.8,1.2);
+  dummy4->GetYaxis()->SetRangeUser(0.5,2.0);
   unfoldedRatio->SetLineColor(kBlack);
   unfoldedRatio->SetMarkerStyle(8);
   unfoldedRatio->SetMarkerColor(kBlack);

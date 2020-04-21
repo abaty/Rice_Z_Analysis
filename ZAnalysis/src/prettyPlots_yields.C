@@ -734,7 +734,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   leg2->SetFillStyle(0);
   cg->SetFillColor(kGray+1);
   hgp_G->SetLineWidth(0);
-  leg2->AddEntry(cg,"Z Data","lpef"); 
+  leg2->AddEntry(cg,"Z #rightarrow l^{+}l^{-}","lpef"); 
   leg2->AddEntry(line1,"#sigma^{Z}_{NN} aMC@NLO + EPPS16","l");
   leg2->AddEntry(hgp_G,"Scaled HG-PYTHIA","f");
   leg2->Draw("same");
