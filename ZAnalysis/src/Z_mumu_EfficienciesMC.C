@@ -341,6 +341,14 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         if( !(v.tightCand(indx,"POG"))) continue;//tight Muon 1 && tight Muon 2      
         if( !(v.VtxProb()[indx] >0.001)) continue; 
 
+        //for electron acceptance xcheck
+        /*
+        if( TMath::Abs(v.EtaD1()[indx]) > 1.442 && TMath::Abs(v.EtaD1()[indx]) < 1.556 ) continue;
+        if( TMath::Abs(v.EtaD2()[indx]) > 1.442 && TMath::Abs(v.EtaD2()[indx]) < 1.556 ) continue;
+        if( v.EtaD1()[indx] < -1.39 && v.PhiD1()[indx] > -1.6 && v.PhiD1()[indx] < -0.9) continue;
+        if( v.EtaD2()[indx] < -1.39 && v.PhiD2()[indx] > -1.6 && v.PhiD2()[indx] < -0.9) continue;
+        */
+
         //we have 3 different aco cuts for variations
         bool passesAco[3] = {1 , 1, 1};
         float acoplanarity =1 - TMath::Abs(TMath::ACos(TMath::Cos( v.PhiD1()[indx] - v.PhiD2()[indx] )))/TMath::Pi(); 

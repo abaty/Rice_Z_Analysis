@@ -85,8 +85,21 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   
   TH1D * recoEff_y_pass[nBins];
   TH1D * recoEff_y_net[nBins];
+  TH1D * recoEff_y_net_smeared[nBins];
   TH1D * recoEff_y[nBins];  
   TEfficiency * eff_y[nBins];
+
+  //EE EB BB heck
+  TH1D * recoEff_yEE_pass[nBins];
+  TH1D * recoEff_yEE_net[nBins];
+  TH1D * recoEff_yEE[nBins];  
+  TH1D * recoEff_yEB_pass[nBins];
+  TH1D * recoEff_yEB_net[nBins];
+  TH1D * recoEff_yEB[nBins];  
+  TH1D * recoEff_yBB_pass[nBins];
+  TH1D * recoEff_yBB_net[nBins];
+  TH1D * recoEff_yBB[nBins];  
+
   
   TH1D * recoEff_phi_pass[nBins];
   TH1D * recoEff_phi_net[nBins];
@@ -199,12 +212,21 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_pt_noPtWeight_net[k] = new TH1D(Form("recoEff_pt_noPtWeight_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins4Eff-1,s.zPtBins4Eff);
     recoEff_y_pass[k] = new TH1D(Form("recoEff_y_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
     recoEff_y_net[k] = new TH1D(Form("recoEff_y_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    recoEff_y_net_smeared[k] = new TH1D(Form("recoEff_y_net_smeared_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
     recoEff_phi_pass[k] = new TH1D(Form("recoEff_phi_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",30,-TMath::Pi(),TMath::Pi());
     recoEff_phi_net[k] = new TH1D(Form("recoEff_phi_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",30,-TMath::Pi(),TMath::Pi());
     recoEff_cent_pass[k] = new TH1D(Form("recoEff_cent_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",20,0,100);
     recoEff_cent_net[k] = new TH1D(Form("recoEff_cent_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",20,0,100);
-  
-    
+ 
+    //EE EB BB check
+    recoEff_yEE_pass[k] = new TH1D(Form("recoEff_yEE_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    recoEff_yEE_net[k] = new TH1D(Form("recoEff_yEE_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    recoEff_yEB_pass[k] = new TH1D(Form("recoEff_yEB_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    recoEff_yEB_net[k] = new TH1D(Form("recoEff_yEB_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    recoEff_yBB_pass[k] = new TH1D(Form("recoEff_yBB_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+    recoEff_yBB_net[k] = new TH1D(Form("recoEff_yBB_net_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap);
+ 
+     
     recoEff_pt_pass_forReso_Reco[k] = new TH1D(Form("recoEff_pt_pass_forReso_Reco_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
     recoEff_pt_pass_forReso_RecoSmeared[k] = new TH1D(Form("recoEff_pt_pass_forReso_RecoSmeared_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
     recoEff_pt_pass_forReso_Gen[k] = new TH1D(Form("recoEff_pt_pass_forReso_Gen_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZPtBins-1,s.zPtBins);
@@ -287,7 +309,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   std::vector< float > * mcMomMass = 0;
 
   unsigned int nFiles = files.size();
-  if(isTest) nFiles = 25;
+  if(isTest) nFiles = 660;
   for(unsigned int f = 0; f<nFiles; f++){
     timer.StartSplit("Opening Files");
 
@@ -389,6 +411,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
       bool foundGen = false;
       bool foundZforTheory = false;
 
+      double firstEleEta = -99;
       for(int j = 0; j<nMC; j++){
         //break out if you find a Z->tautau
         if( mcGMomPID->at(j) == 23 && TMath::Abs(mcMomPID->at(j)) == 15) break;
@@ -452,6 +475,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           accept21_pt_noPtWeight_net->Fill( tempMom.Pt(), acceptWeight[0]); 
         }     
         nGenElectronsFound++;
+        if(nGenElectronsFound==1) firstEleEta = mcEta->at(j);
 
         //if they are not in our acceptance, break out
         if( mcPt->at(j) < s.minElectronPt ) break; 
@@ -487,6 +511,12 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
               recoEff_pt_net[k]->Fill( mom.Pt(), eventWeight);
               recoEff_pt_noPtWeight_net[k]->Fill( mom.Pt(), eventWeight/ptWeight);
               recoEff_y_net[k]->Fill( mom.Rapidity(), eventWeight);
+              recoEff_y_net_smeared[k]->Fill( mom.Rapidity() * r->Gaus(1,0.01) , eventWeight);
+              //EE EB BB check
+              if( TMath::Abs(mcEta->at(j)) < 1.5 && TMath::Abs(firstEleEta) < 1.5 ) recoEff_yBB_net[k]->Fill( mom.Rapidity(), eventWeight);
+              else if( TMath::Abs(mcEta->at(j)) > 1.5 && TMath::Abs(firstEleEta) > 1.5 )  recoEff_yEE_net[k]->Fill( mom.Rapidity(), eventWeight);
+              else recoEff_yEB_net[k]->Fill( mom.Rapidity(), eventWeight);
+
               recoEff_cent_net[k]->Fill( hiBin/2.0, eventWeight);
               recoEff_phi_net[k]->Fill( mom.Phi(), eventWeight);
 
@@ -619,6 +649,12 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                   recoEff_pt_pass[k]->Fill( mom.Pt(), eventWeight * scaleFactor);
                   recoEff_pt_noPtWeight_pass[k]->Fill(  mom.Pt(), eventWeight/ptWeight * scaleFactor );
                   recoEff_y_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
+                  
+                  //EE EB BB check
+                  if(TMath::Abs( eleEta->at(goodElectrons.at(j)) ) < 1.5 && TMath::Abs( eleEta->at(goodElectrons.at(j2)) ) < 1.5 ) recoEff_yBB_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
+                  else if(TMath::Abs( eleEta->at(goodElectrons.at(j)) ) > 1.5 && TMath::Abs( eleEta->at(goodElectrons.at(j2)) ) > 1.5) recoEff_yEE_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
+                  else recoEff_yEB_pass[k]->Fill( mom.Rapidity(), eventWeight * scaleFactor);
+                  
                   recoEff_cent_pass[k]->Fill( hiBin/2.0, eventWeight * scaleFactor);
                   recoEff_phi_pass[k]->Fill( mom.Phi(), eventWeight * scaleFactor);
              
@@ -634,6 +670,13 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
                     unfolding_recoPt->Fill(Zcand.Pt(),eventWeight*scaleFactor/efficiency);
                     unfolding_genPt->Fill(mom.Pt(),eventWeight*scaleFactor/efficiency);
                     unfolding_response->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor/efficiency);
+ 
+                    if(mom.Pt() > Zcand.Pt() + 80){
+                      std::cout << "Response anomaly detected!" << std::endl;
+                      std::cout << mom.Pt() << " " << mom.Eta() << " " << mom.Phi() << " " << Zcand.Pt() << " " << Zcand.Eta() << " " << Zcand.Phi() << std::endl;
+                      std::cout << f << " " <<  i << " " << j << " " << j2 << std::endl;
+                    }
+                  
                     unfolding_recoPtU->Fill(Zcand.Pt(),eventWeight*scaleFactor*ptWeightU/ptWeight/efficiency);
                     unfolding_genPtU->Fill(mom.Pt(),eventWeight*scaleFactor*ptWeightU/ptWeight/efficiency);
                     unfolding_responseU->Fill(Zcand.Pt(), mom.Pt() ,eventWeight*scaleFactor*ptWeightU/ptWeight/efficiency);
@@ -832,6 +875,21 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_y[i] = (TH1D*)recoEff_y_pass[i]->Clone(Form("recoEff_y_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
     recoEff_y[i]->Divide(recoEff_y_net[i]);
     recoEff_y[i]->SetDirectory(0);
+    
+    forceConsistency(recoEff_yEE_pass[i], recoEff_yEE_net[i]);
+    recoEff_yEE[i] = (TH1D*)recoEff_yEE_pass[i]->Clone(Form("recoEff_yEE_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_yEE[i]->Divide(recoEff_yEE_net[i]);
+    recoEff_yEE[i]->SetDirectory(0);
+    
+    forceConsistency(recoEff_yBB_pass[i], recoEff_yBB_net[i]);
+    recoEff_yBB[i] = (TH1D*)recoEff_yBB_pass[i]->Clone(Form("recoEff_yBB_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_yBB[i]->Divide(recoEff_yBB_net[i]);
+    recoEff_yBB[i]->SetDirectory(0);
+    
+    forceConsistency(recoEff_yEB_pass[i], recoEff_yEB_net[i]);
+    recoEff_yEB[i] = (TH1D*)recoEff_yEB_pass[i]->Clone(Form("recoEff_yEB_%d_%d",c.getCentBinLow(i),c.getCentBinHigh(i)));
+    recoEff_yEB[i]->Divide(recoEff_yEB_net[i]);
+    recoEff_yEB[i]->SetDirectory(0);
 
     if( TEfficiency::CheckConsistency(*(recoEff_y_pass[i]), *(recoEff_y_net[i]),"w") ){
       eff_y[i] = new TEfficiency(*(recoEff_y_pass[i]), *(recoEff_y_net[i]));
@@ -947,7 +1005,18 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     recoEff_y[i]->Write();
     recoEff_y_pass[i]->Write();
     recoEff_y_net[i]->Write();
+    recoEff_y_net_smeared[i]->Write();
     eff_y[i]->Write();
+    
+    recoEff_yEE[i]->Write();
+    recoEff_yEE_pass[i]->Write();
+    recoEff_yEE_net[i]->Write();
+    recoEff_yBB[i]->Write();
+    recoEff_yBB_pass[i]->Write();
+    recoEff_yBB_net[i]->Write();
+    recoEff_yEB[i]->Write();
+    recoEff_yEB_pass[i]->Write();
+    recoEff_yEB_net[i]->Write();
     
     recoEff_phi[i]->Write();
     recoEff_phi_pass[i]->Write();
@@ -1138,8 +1207,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   unfolding_responseD->Write();
 
   float TAA090 = 6.274;
-  //float TAA090RelError = 0.022;
-  float TAA090RelError = 0.0;//do not include TAA for now
+  float TAA090RelError = 0.022;
+  //float TAA090RelError = 0.0;//do not include TAA for now
   float unitConversion = TMath::Power(10,9);
   for(int w = 282; w<=338; w++){
     theoryPtCT14[w-282]->Scale(s.DY_XS*0.5*TAA090/theoryEventWeights.at(w)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel

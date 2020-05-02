@@ -177,8 +177,8 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 
 
   const char * labels[10] = {"0-5%","5-10%","10-20%","20-30%","30-40%","40-50%", "50-70%", "70-90%", "0-90%","pp"};
-  float TAA[9] = {25.82, 20.36, 14.36, 8.778, 5.099, 2.778, 1.010, 0.1674, 6.274};
-  float TAARelErr[9] = {0.018, 0.021, 0.023, 0.027, 0.033, 0.041, 0.045, 0.046, 0.022};
+  float TAA[9] = {25.70, 20.40, 14.39, 8.798, 5.124, 2.777, 0.9957, 0.1650, 6.274};
+  float TAARelErr[9] = {0.018, 0.020, 0.021, 0.025, 0.031, 0.038, 0.050, 0.047, 0.022};
   float scaleFactor_mumu[9];
   for(int i = 0; i<9; i++){
     scaleFactor_mumu[i] = 1.0/TAA[i];
@@ -729,11 +729,12 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   
   cg->Draw("p same");  
  
-  TLegend * leg2 = new TLegend(0.2,0.1,0.7,0.4);
+  TLegend * leg2 = new TLegend(0.2,0.1,0.7,0.5);
   leg2->SetBorderSize(0);
   leg2->SetFillStyle(0);
   cg->SetFillColor(kGray+1);
   hgp_G->SetLineWidth(0);
+  leg2->AddEntry((TObject*)0,"|y_{Z}| < 2.1",""); 
   leg2->AddEntry(cg,"Z #rightarrow l^{+}l^{-}","lpef"); 
   leg2->AddEntry(line1,"#sigma^{Z}_{NN} aMC@NLO + EPPS16","l");
   leg2->AddEntry(hgp_G,"Scaled HG-PYTHIA","f");
@@ -772,7 +773,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   hgpRatioG->SetTitle("");  
   hgpRatioG->GetYaxis()->SetNdivisions(4,4,0,kTRUE);
   TAxis* a = hgpRatioG->GetXaxis();
-  a->ChangeLabel(6,-1,-1,-1,-1,-1,"Inclusive");
+  a->ChangeLabel(6,-1,-1,-1,-1,-1,"0-90%");
   hgpRatioG->Draw("p a same");
  
   hgpRatioGTAA->SetFillColor(kGray+1);

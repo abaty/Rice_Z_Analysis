@@ -168,16 +168,31 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     //tau
     for(int k = 0; k<5; k++){
       if(j==0 && k>0) continue;
-      bkg_tau[i][j][k] = (TH1D*) fraction_tau[i][j]->Clone(Form("%sBkg_tau%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-      bkg_tau[i][j][k]->Multiply(massPeakOS_minusSSAndPhoton[i][j][k]);
-    
-      //ttbar
-      bkg_ttbar[i][j][k] = (TH1D*) fraction_ttbar[i][j]->Clone(Form("%sBkg_ttbar%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-      bkg_ttbar[i][j][k]->Multiply(massPeakOS_minusSSAndPhoton[i][j][k]);
+      //old method
+      //bkg_tau[i][j][k] = (TH1D*) fraction_tau[i][j]->Clone(Form("%sBkg_tau%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+      //bkg_tau[i][j][k]->Multiply(massPeakOS_minusSSAndPhoton[i][j][k]);
+      //if(i==0 && k==0 && j==0) bkg_tau[i][j][k]->Print("All");   
 
+      //lumi normalized
+      bkg_tau[i][j][k] = (TH1D*) massPeakOS_DYtautau[i][j]->Clone(Form("%sBkg_tau%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+      if(isMu) bkg_tau[i][j][k]->Scale(s.muLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9 *67.6/70.0); //mulitply by Nmb divided by 0.9 (0-90% nmb), last fraction is because we used older Ncol scaling values that had sigma of 70 for MB pp
+      else bkg_tau[i][j][k]->Scale(s.eLumi/ s.netLumi * 11.536e9 / 0.9 * 5.649e-9  * 67.6/70.0); //5.649 is 0-100% TAA, 7644 is the total MB xsection for PbPb in mb, last fraction is because we used older Ncol scaling values that had sigma of 70 for MB pp
+      //if(i==0 && k==0 && j==0) bkg_tau[i][j][k]->Print("All");   
+
+ 
+      //ttbar
+      //bkg_ttbar[i][j][k] = (TH1D*) fraction_ttbar[i][j]->Clone(Form("%sBkg_ttbar%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+      //bkg_ttbar[i][j][k]->Multiply(massPeakOS_minusSSAndPhoton[i][j][k]);
+      bkg_ttbar[i][j][k] = (TH1D*) massPeakOS_ttbar[i][j]->Clone(Form("%sBkg_ttbar%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+      if(isMu) bkg_ttbar[i][j][k]->Scale(s.muLumi/ s.netLumi * 11.536e9 / 0.9 * 5.649e-9 * 67.6/70.0);//see tau tau comment above
+      else     bkg_ttbar[i][j][k]->Scale(s.eLumi/ s.netLumi * 11.536e9 / 0.9 * 5.649e-9 * 67.6/70.0);//see tau tau comment above
+   
       //Wjet
-      bkg_Wjet[i][j][k] = (TH1D*) fraction_Wjet[i][j]->Clone(Form("%sBkg_Wjet%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-      bkg_Wjet[i][j][k]->Multiply(massPeakOS_minusSSAndPhoton[i][j][k]);
+      //bkg_Wjet[i][j][k] = (TH1D*) fraction_Wjet[i][j]->Clone(Form("%sBkg_Wjet%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+      //bkg_Wjet[i][j][k]->Multiply(massPeakOS_minusSSAndPhoton[i][j][k]);
+      bkg_Wjet[i][j][k] = (TH1D*) massPeakOS_Wjet[i][j]->Clone(Form("%sBkg_Wjet%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+      if(isMu) bkg_Wjet[i][j][k]->Scale(s.muLumi/ s.netLumi * 11.536e9 / 0.9 * 5.649e-9 * 67.6/70.0);//see W jet comment
+      else bkg_Wjet[i][j][k]->Scale(s.eLumi/ s.netLumi * 11.536e9 / 0.9 * 5.649e-9 * 67.6/70.0);//see W jet comment
 
     //remove these backgrounds
       massPeakOS_minusAll[i][j][k] = (TH1D*) massPeakOS_minusSSAndPhoton[i][j][k]->Clone(Form("%sOS_minusAll%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
@@ -292,9 +307,15 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     massPeakSS_ChargeFlipCorrected[i][j][0]->SetLineColor(kBlack); 
 
     //normalize our signal to the number of data events minus the ones already accounted for
-    float integralDYSignal = massPeakOS_DYsignalMinusPhoton[i][j]->Integral();
-    float dataIntegral = massPeakOS[i][j][0]->Integral() - massPeakSS_ChargeFlipCorrected[i][j][0]->Integral();
-    massPeakOS_DYsignalMinusPhoton[i][j]->Scale(dataIntegral/integralDYSignal);
+    //float integralDYSignal = massPeakOS_DYsignalMinusPhoton[i][j]->Integral();
+    //float dataIntegral = massPeakOS[i][j][0]->Integral() - massPeakSS_ChargeFlipCorrected[i][j][0]->Integral();
+    //std::cout << dataIntegral << " " << integralDYSignal << " " << dataIntegral/integralDYSignal << std::endl;
+    //massPeakOS_DYsignalMinusPhoton[i][j]->Scale(dataIntegral/integralDYSignal);
+    
+    //newer way using lumi scaling
+    if(isMu) massPeakOS_DYsignalMinusPhoton[i][j]->Scale(s.muLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9 * 67.6/70.0);//see tau tau background comment for magic numbers;
+    else  massPeakOS_DYsignalMinusPhoton[i][j]->Scale(s.eLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9* 67.6/70.0);//see tau tau background comment for magic numbers;
+
     massPeakOS_DYsignalMinusPhoton[i][j]->Add(massPeakSS_ChargeFlipCorrected[i][j][0]);
     massPeakOS_DYsignalMinusPhoton[i][j]->SetFillColor(kOrange+1);
     massPeakOS_DYsignalMinusPhoton[i][j]->SetLineColor(kBlack);

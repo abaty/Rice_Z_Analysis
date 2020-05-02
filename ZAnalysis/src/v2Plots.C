@@ -1,3 +1,4 @@
+#include "TMathText.h"
 #include "TAxis.h"
 #include "TGaxis.h"
 #include "TGraphAsymmErrors.h"
@@ -325,7 +326,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   v2ComboPlot->Draw("same");
   
   c1->RedrawAxis();
-  CMS_lumi(c1,0,10);
+  CMS_lumi(c1,0,10,1.0,true,true,false,false);
  
   c1->SaveAs("plots/v2/v2Summary.png");
   c1->SaveAs("plots/v2/v2Summary.pdf");
@@ -434,7 +435,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   d->GetXaxis()->SetLabelSize(0.06);
   d->GetXaxis()->SetLabelOffset(0.007);
   TAxis* a = d->GetXaxis();
-  a->ChangeLabel(6,-1,-1,-1,-1,-1,"Inclusive");
+  a->ChangeLabel(6,-1,-1,-1,-1,-1,"0-90%");
 
   d->Draw();
  
@@ -454,13 +455,14 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   ATLASg->Draw("same p");
 
   gStyle->SetLegendBorderSize(0);
-  TLegend * leg2 = new TLegend(0.3,0.67,0.7,0.87);
+  TLegend * leg2 = new TLegend(0.3,0.57,0.7,0.87);
   leg2->SetTextSize(0.06);
+  leg2->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "");
   leg2->AddEntry(v2ComboGraph,"Z #rightarrow l^{+}l^{-}", "ep");
-  leg2->AddEntry(ATLASg,"ATLAS 0-80\%","ep");
+  leg2->AddEntry(ATLASg,"PRL 110, 022301 (2013)","ep");
   leg2->Draw("same");
  
-  CMS_lumi(c2,0,10,1.5);
+  CMS_lumi(c2,0,10,1.5, true, true, false, false);
   c2->SaveAs("plots/v2/v2Summary_PRL.png");
   c2->SaveAs("plots/v2/v2Summary_PRL.pdf");
   c2->SaveAs("plots/v2/v2Summary_PRL.C");
@@ -483,13 +485,14 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   delete leg2;
   TLegend * leg3 = new TLegend(0.4,0.57,0.8,0.87);
   leg3->SetTextSize(0.06);
+  leg3->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "ep");
   leg3->AddEntry(v2ComboGraph_noX,"Z #rightarrow l^{+}l^{-}", "ep");
-  leg3->AddEntry(ATLASg,"ATLAS 0-80\%","ep");
+  leg3->AddEntry(ATLASg,"PRL 110, 022301 (2013)","ep");
   leg3->AddEntry(v2EGraph,"Z#rightarrow e^{+}e^{-}","ep");
   leg3->AddEntry(v2MuGraph,"Z#rightarrow #mu^{+}#mu^{-}","ep");
   leg3->SetFillStyle(0);
   leg3->Draw("same");
-  CMS_lumi(c2,0,10,1.5,true,true,true);
+  CMS_lumi(c2,0,10,1.5,true,true,true,false);
   c2->SaveAs("plots/v2/v2Summary_PRL_AllChannels.png");
   c2->SaveAs("plots/v2/v2Summary_PRL_AllChannels.pdf");
   c2->SaveAs("plots/v2/v2Summary_PRL_AllChannels.C");

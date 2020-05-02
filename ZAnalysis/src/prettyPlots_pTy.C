@@ -322,7 +322,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   c2->SetTopMargin(0.1);  
   y_e->SetLineColor(kWhite);
   y_e->SetMarkerColor(kWhite);
-  y_e->GetXaxis()->SetRangeUser(-2.1,2.1);
+  y_e->GetXaxis()->SetRangeUser(-2.4,2.4);
   y_e->GetYaxis()->SetRangeUser(0.5,0.9);
   y_e->GetYaxis()->SetTitleSize(0.06);
   y_e->GetYaxis()->SetTitleOffset(1.01);
@@ -341,13 +341,13 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TLegend *ly2 = new TLegend(0.325,0.225,0.805,0.575);
   ly2->SetBorderSize(0);
   ly2->SetFillStyle(0);
-  ly2->AddEntry(combo[2],"Z #rightarrow l^{+}l^{-} (0-90%)","ple");
+  ly2->AddEntry(combo[2],"Z #rightarrow l^{+}l^{-}","ple");
   ly2->AddEntry(EPPS16Rap,"aMC@NLO + EPPS16","F");
   ly2->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
   ly2->Draw("same");
   
   c2->RedrawAxis();
-  CMS_lumi(c2,0,10,1.5);
+  CMS_lumi(c2,0,10,1.5, true, true, false, true);
   c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.png"); 
   c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.pdf"); 
   c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.C"); 
@@ -459,7 +459,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   
 
   p1->RedrawAxis();
-  CMS_lumi(p1,0,10,1.8);
+  CMS_lumi(p1,0,10,1.8, true, true, false, true);
   
   p2->cd();
   p2->SetLogx();
@@ -601,16 +601,17 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   p1->SetLogx();
 
 
-  TLegend *lpt2 = new TLegend(0.225,0.125,0.875,0.475);
+  TLegend *lpt2 = new TLegend(0.225,0.125,0.875,0.575);
   lpt2->SetBorderSize(0);
   lpt2->SetFillStyle(0);
-  lpt2->AddEntry(combo[1],"Z #rightarrow l^{+}l^{-} (0-90%)","lep");
+  lpt2->AddEntry((TObject*)0,"|y_{Z}| > 2.1","");
+  lpt2->AddEntry(combo[1],"Z #rightarrow l^{+}l^{-}","lep");
   lpt2->AddEntry(EPPS16Pt,"aMC@NLO + EPPS16","F");
   lpt2->AddEntry(nCTEQ15Pt,"aMC@NLO + nCTEQ15","F");
   lpt2->Draw("same");
   
   p1->RedrawAxis();
-  CMS_lumi(p1,0,10,2.0);
+  CMS_lumi(p1,0,10,2.0, true, true, false, true);
   
   p2->cd();
   p2->SetLogx();

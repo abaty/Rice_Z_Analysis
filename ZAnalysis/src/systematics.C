@@ -24,6 +24,16 @@
 #include <fstream>
 #include <string>
 
+void addInQuad(TH1D * h, float uncert){
+
+  for(int i = 0; i<h->GetSize(); i++){
+    float sign = 1;
+    if( h->GetBinContent(i) < 1) sign = -1;
+    float newValue = TMath::Sqrt( ( h->GetBinContent(i)-1 ) * ( h->GetBinContent(i)-1 ) + uncert * uncert );//quading here
+    h->SetBinContent( i , 1 + sign*newValue); 
+  }
+}
+
 void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::string effTable, std::string outputTag, bool isMu21, bool isEE){
   Timer timer = Timer();
   timer.Start();
@@ -68,10 +78,12 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   for(int i = 0; i<nBins; i++){
     for(int j = 1; j<4; j++){
       result[i][j][0][1]->Divide(result[i][j][0][0]);//cent up, include Nmb scaling here
-      result[i][j][0][1]->Scale(1.01);
+      //result[i][j][0][1]->Scale(1.01);
+      addInQuad(result[i][j][0][1], 0.012); //adding Nmb uncertainty
 
       result[i][j][0][2]->Divide(result[i][j][0][0]);//cent down, include Nmb scaling here
-      result[i][j][0][2]->Scale(0.995);
+      //result[i][j][0][2]->Scale(0.995);
+      addInQuad(result[i][j][0][2], 0.012); //adding Nmb uncertainty
     }
   }
 

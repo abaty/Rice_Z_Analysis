@@ -74,6 +74,10 @@ void effPlots(std::string Zmumu, std::string Zee){
     g_y[i]->GetXaxis()->SetTitle("y");
     g_phi[i]->GetXaxis()->SetTitle("#phi");
     g_cent[i]->GetXaxis()->SetTitle("centrality");
+      
+    g_cent[i]->RemovePoint(18);
+    g_cent[i]->RemovePoint(18);
+    if(i==0) g_cent[i]->Print("All");
 
     if(i==1){
       g_pt[i]->SetMarkerColor(kRed+1);
@@ -84,6 +88,7 @@ void effPlots(std::string Zmumu, std::string Zee){
       g_y[i]->SetLineColor(kRed+1);
       g_phi[i]->SetLineColor(kRed+1);
       g_cent[i]->SetLineColor(kRed+1);
+
     }
   }
 
