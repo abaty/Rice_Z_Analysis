@@ -5,6 +5,7 @@
 #include "TGraphAsymmErrors.h"
 #include <iostream>
 #include "TMath.h"
+#include "TH2D.h"
 
 class ElectronTnP{
 
@@ -12,8 +13,10 @@ public:
 
   ElectronTnP();
   ~ElectronTnP();
-  float getZSF(int hiBin, float pt1, float eta, float pt2, float eta2, int idx, bool doCorrelations=true);
+  float getZSF(int hiBin, float pt1, float eta1, float pt2, float eta2, int idx, bool doCorrelations=true);
   float getESF(int hiBin, float pt1, float eta1);
+
+  void fillCovariance(float pt1, float eta1, float pt2, float eta2, TH2D * h);
 
 private:
 
@@ -23,6 +26,7 @@ private:
  float systGetSingleSF(int hiBin, float x, float eta, int idx = 0);
  float systGetSingleSF_Reco(int hiBin, float x, float eta, int idx = 0);
  float getSingleSF_HLT(float x, float eta,bool isData, int idx = 0);
+
 
  TFile * EE_030_f, *EE_30100_f, *EB_030_f, *EB_30100_f;
  TFile * EE_030_fR, *EE_30100_fR, *EB_030_fR, *EB_30100_fR;
@@ -209,6 +213,75 @@ float ElectronTnP::getSingleSF_HLT(float x, float eta, bool isData, int idx){
   return 1.0;
 }
 
+void ElectronTnP::fillCovariance(float pt1, float eta1, float pt2, float eta2, TH2D * h){
+
+  //if we are >150 GeV, treat it like it's 150 GeV
+  if(pt1 >= 150){
+    pt1 = 149;
+  }
+
+  if(pt2 >= 150){
+    pt2 = 149;
+  }
+  
+  float covarianceArray[8] = {1*2,6*2,11*2,21*2,31*2,41*2,51*2,71*2};
+  for(int i = 0; i<8; i++){
+      //Muon reco scale factors:
+      float recoSF1 = getSingleSF_Reco(covarianceArray[i], pt1, eta1);
+      float recoSF1_var = recoSF1;
+      float recoSF1_Systvar = recoSF1;
+        recoSF1_var = (getSingleSF_Reco(covarianceArray[i], pt1, eta1, -1) - recoSF1)/recoSF1;
+        recoSF1_Systvar = (systGetSingleSF_Reco(covarianceArray[i], pt1, eta1, -1) - recoSF1)/recoSF1;
+    
+      float recoSF2 = getSingleSF_Reco(covarianceArray[i], pt2, eta2);
+      float recoSF2_var = recoSF2;
+      float recoSF2_Systvar = recoSF2;
+        recoSF2_var = (getSingleSF_Reco(covarianceArray[i], pt2, eta2, -1) - recoSF2)/recoSF2;
+        recoSF2_Systvar = (systGetSingleSF_Reco(covarianceArray[i], pt2, eta2, -1) - recoSF2)/recoSF2;
+
+
+      float idSF1 = getSingleSF(covarianceArray[i], pt1, eta1);
+      float idSF1_var = idSF1;
+      float idSF1_Systvar = idSF1;
+        idSF1_var = (getSingleSF(covarianceArray[i], pt1, eta1, -1) - idSF1)/idSF1;
+        idSF1_Systvar = (systGetSingleSF(covarianceArray[i], pt1, eta1, -1) - idSF1)/idSF1;
+    
+      float idSF2 = getSingleSF(covarianceArray[i], pt2, eta2);
+      float idSF2_var = idSF2;
+      float idSF2_Systvar = idSF2;
+        idSF2_var = (getSingleSF(covarianceArray[i], pt2, eta2, -1) - idSF2)/idSF2;
+        idSF2_Systvar = (systGetSingleSF(covarianceArray[i], pt2, eta2, -1) - idSF2)/idSF2;
+
+    
+    for(int j = 0; j<8; j++){
+      float recoSF1j = getSingleSF_Reco(covarianceArray[j], pt1, eta1);
+      float recoSF1_varj = recoSF1j;
+        recoSF1_varj = (getSingleSF_Reco(covarianceArray[j], pt1, eta1, -1) - recoSF1j)/recoSF1j;
+    
+      float recoSF2j = getSingleSF_Reco(covarianceArray[j], pt2, eta2);
+      float recoSF2_varj = recoSF2j;
+        recoSF2_varj = (getSingleSF_Reco(covarianceArray[j], pt2, eta2, -1) - recoSF2j)/recoSF2j;
+      
+      float idSF1j = getSingleSF(covarianceArray[j], pt1, eta1);
+      float idSF1_varj = idSF1j;
+        idSF1_varj = (getSingleSF(covarianceArray[j], pt1, eta1, -1) - idSF1j)/idSF1j;
+    
+      float idSF2j = getSingleSF(covarianceArray[j], pt2, eta2);
+      float idSF2_varj = idSF2j;
+        idSF2_varj = (getSingleSF(covarianceArray[j], pt2, eta2, -1) - idSF2j)/idSF2j;
+      //std::cout << pt1 << " " << pt2 << " " << eta1 << " " << eta2 << std::endl;
+      //std::cout << recoSF1_Systvar << " " << recoSF2_Systvar << std::endl;
+      //std::cout << h->GetBinContent(i+1,j+1) + recoSF1_Systvar*recoSF1_Systvar + recoSF2_Systvar*recoSF2_Systvar + 2 * TMath::Abs(recoSF1_Systvar * recoSF2_Systvar) << std::endl;
+      if(i==j){
+        h->SetBinContent( i+1, j+1, h->GetBinContent(i+1,j+1) + recoSF1_Systvar*recoSF1_Systvar + recoSF2_Systvar*recoSF2_Systvar + 2 * TMath::Abs(recoSF1_Systvar * recoSF2_Systvar));
+        h->SetBinContent( i+1, j+1, h->GetBinContent(i+1,j+1) + idSF1_Systvar*idSF1_Systvar + idSF2_Systvar*idSF2_Systvar + 2 * TMath::Abs(idSF1_Systvar * idSF2_Systvar));
+      } 
+      h->SetBinContent( i+1, j+1, h->GetBinContent(i+1,j+1) + TMath::Sqrt(recoSF1_var*recoSF1_var + recoSF2_var*recoSF2_var + 2 * TMath::Abs(recoSF1_var * recoSF2_var))*TMath::Sqrt(recoSF1_varj*recoSF1_varj + recoSF2_varj*recoSF2_varj + 2 * TMath::Abs(recoSF1_varj * recoSF2_varj)));
+      h->SetBinContent( i+1, j+1, h->GetBinContent(i+1,j+1) + TMath::Sqrt(idSF1_Systvar*idSF1_var + idSF2_Systvar*idSF2_var + 2 * TMath::Abs(idSF1_var * idSF2_var))*TMath::Sqrt(idSF1_varj*idSF1_varj + idSF2_varj*idSF2_varj + 2 * TMath::Abs(idSF1_varj * idSF2_varj)));
+    }
+  }
+}
+
 float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta2, int idx, bool doCorrelations){
 
   //for sysetmatic variations eventually;
@@ -237,7 +310,7 @@ float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta
   float recoSF2_Systvar = recoSF2;
   if(idx != 0){
     recoSF2_var = (getSingleSF_Reco(hiBin, pt2, eta2, idx) - recoSF2)/recoSF2;
-    recoSF2_Systvar = (getSingleSF_Reco(hiBin, pt2, eta2, idx) - recoSF2)/recoSF2;
+    recoSF2_Systvar = (systGetSingleSF_Reco(hiBin, pt2, eta2, idx) - recoSF2)/recoSF2;
   }
 
   float recoSF = recoSF1 * recoSF2;

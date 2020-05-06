@@ -29,6 +29,63 @@
 #include <fstream>
 #include <string>
 
+void fillCovariance( float eta1, float eta2, TH2D * covariance){
+  float covarianceCentralities[8] = {1,6,11,21,31,41,51,71};
+  for(int i = 0; i<8; i++){
+    for(int j = 0; j<8; j++){
+      float total = 0;
+      if(i==j){
+        //tracking  syst uncorr
+        float trking = 0.02*0.02;
+        total += trking;
+
+        //I.D syst uncorr
+        float id1 = tnp_weight_muid_pbpb(eta1 , -1)/tnp_weight_muid_pbpb(eta1 , 0) - 1;
+        id1 = id1*id1;
+        float id2 = tnp_weight_muid_pbpb(eta2 , -1)/tnp_weight_muid_pbpb(eta2 , 0) - 1;
+        id2 = id2*id2;
+        total += id1 + id2 + 2*TMath::Sqrt(id1*id2);
+
+        //glb trking syst uncorr
+        float glb1 = tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[i] , -1)/tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[i] ,0) - 1;
+        glb1 = glb1*glb1;
+        float glb2 = tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[i],  -1)/tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[i],  0) - 1;
+        glb2 = glb2*glb2;
+        total += glb1 + glb2 + 2*TMath::Sqrt(glb1*glb2);
+      }
+ 
+      if(i!=j){
+        //glb trking (PF corr)
+        float glb1 = tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[i] , -5)/tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[i] ,0) - 1;
+        float glb1j = tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[j] , -5)/tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[j] ,0) - 1;
+        glb1 = glb1*glb1j;
+        float glb2 = tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[i],  -5)/tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[i],  0) - 1;
+        float glb2j = tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[j],  -5)/tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[j],  0) - 1;
+        glb2 = glb2*glb2j;
+        total += glb1 + glb2 + 2*TMath::Sqrt(TMath::Abs(glb1*glb2)); 
+      }
+        
+      //statistical (corr)
+      float glb1stat = tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[i] , 1)/tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[i] ,0) - 1;
+      float glb1jstat = tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[j] , 1)/tnp_weight_glbPFtrk_pbpb(eta1 , covarianceCentralities[j] ,0) - 1;
+      glb1stat = glb1stat*glb1jstat;
+      float glb2stat = tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[i],  1)/tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[i],  0) - 1;
+      float glb2jstat = tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[j],  1)/tnp_weight_glbPFtrk_pbpb(eta2 , covarianceCentralities[j],  0) - 1;
+      glb2stat = glb2stat*glb2jstat;
+      total += glb1stat + glb2stat; 
+        
+      float id1stat = tnp_weight_muid_pbpb(eta1 , 1)/tnp_weight_muid_pbpb(eta1 , 0) - 1;
+      id1stat = id1stat*id1stat;
+      float id2stat = tnp_weight_muid_pbpb(eta2 , 1)/tnp_weight_muid_pbpb(eta2 , 0) - 1;
+      id2stat = id2stat*id2stat;
+      total += id1stat + id2stat;
+
+      float bin = covariance->GetBinContent(i+1,j+1);
+      covariance->SetBinContent(i+1,j+1,bin+total);
+    }
+  } 
+}
+
 float getPhi(float pt1, float eta1, float phi1, float pt2, float eta2, float phi2){
   TLorentzVector v1 = TLorentzVector();
   v1.SetPtEtaPhiM(pt1, eta1, phi1, 0.1056);
@@ -156,6 +213,10 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   TH1D * unfolding_genPtD;
   TH1D * unfolding_recoPtD;
   TH2D * unfolding_responseD;
+
+  TH2D * covariance = new TH2D("correlation_TnP","correlation_TnP",8,0,8,8,0,8);
+  float covarianceSum = 0;
+
 
   for(int k = 0; k<nBins; k++){
     recoEff_pass[k] = new TH2D(Form("recoEff_pass_%d_%d",c.getCentBinLow(k),c.getCentBinHigh(k)),"",s.nZRapBins,-s.maxZRap,s.maxZRap,s.nZPtBins4Eff-1,s.zPtBins4Eff);
@@ -285,6 +346,9 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
         //require both muons to be > 20 GeV
         if( v.pTD1_gen()[j] < s.minMuonPt ) continue;
         if( v.pTD2_gen()[j] < s.minMuonPt ) continue;
+
+        fillCovariance( v.EtaD1_gen()[j], v.EtaD2_gen()[j], covariance);
+        covarianceSum++;
 
         for(int w = 0; w<weightHelper.getSize(); w++){
           accept24_yields_pass[w]->Fill(0.5, acceptWeight[w] * ptWeight);
@@ -1051,6 +1115,18 @@ void doZ2mumuMC(std::vector< std::string > files, bool isTest){
   unfolding_recoPtD->Write();
   unfolding_genPtD->Write();
   unfolding_responseD->Write();
+
+  covariance->Scale(1.0/covarianceSum);
+  float diagonals[8] = {0};
+  for(int i = 0; i<8; i++){
+    diagonals[i] = TMath::Sqrt(covariance->GetBinContent(i+1,i+1));
+  }  
+  for(int i = 0; i<8; i++){
+    for(int j = 0; j<8; j++){
+      covariance->SetBinContent(i+1,j+1, covariance->GetBinContent(i+1,j+1)/diagonals[i]/diagonals[j]);
+    }
+  }
+  covariance->Write();
 
   output->Close();
 

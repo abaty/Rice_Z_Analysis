@@ -2,7 +2,7 @@
 #include <iostream>
 
 void 
-CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier, bool doCMS, bool doLumi, bool doExtraText )
+CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier, bool doCMS, bool doLumi, bool doExtraText, bool do090Lumi )
 {            
   bool outOfFrame    = false;
   if( iPosX/10==0 ) 
@@ -73,7 +73,8 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier, bool doCMS, b
     }
   else if ( iPeriod==0 )
     {
-      lumiText += lumi_sqrtS;
+      if(!do090Lumi) lumiText += lumi_sqrtS;
+      if(do090Lumi) lumiText += lumi_sqrtS090;
     }
    
   std::cout << lumiText << std::endl;

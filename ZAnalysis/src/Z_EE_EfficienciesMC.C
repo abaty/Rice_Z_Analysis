@@ -161,6 +161,8 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D * unfolding_recoPtD;
   TH2D * unfolding_responseD;
 
+  TH2D * covariance = new TH2D("correlation_TnP","correlation_TnP",8,0,8,8,0,8);
+
   const int pdfXnbins = 40;
   const double pdfXbins[pdfXnbins] = {0.0001,0.00015,0.0002,0.00025,0.0003,0.0004,0.0005,0.0006,0.0008,0.001,0.003,0.005,0.007,0.01,0.013,0.016,0.02,0.028,0.036,0.044,0.052,0.06,0.07,0.08,0.09,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.5, 0.6, 0.7, 0.85, 1.0};
 
@@ -309,7 +311,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   std::vector< float > * mcMomMass = 0;
 
   unsigned int nFiles = files.size();
-  if(isTest) nFiles = 660;
+  if(isTest) nFiles = 662;
   for(unsigned int f = 0; f<nFiles; f++){
     timer.StartSplit("Opening Files");
 
@@ -412,6 +414,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
       bool foundZforTheory = false;
 
       double firstEleEta = -99;
+      double firstElePt = -1;
       for(int j = 0; j<nMC; j++){
         //break out if you find a Z->tautau
         if( mcGMomPID->at(j) == 23 && TMath::Abs(mcMomPID->at(j)) == 15) break;
@@ -475,7 +478,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           accept21_pt_noPtWeight_net->Fill( tempMom.Pt(), acceptWeight[0]); 
         }     
         nGenElectronsFound++;
-        if(nGenElectronsFound==1) firstEleEta = mcEta->at(j);
+        if(nGenElectronsFound==1){
+          firstEleEta = mcEta->at(j);
+          firstElePt = mcPt->at(j);
+        }
 
         //if they are not in our acceptance, break out
         if( mcPt->at(j) < s.minElectronPt ) break; 
@@ -503,6 +509,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
           accept21_yields_noPtWeight_pass->Fill(0.5, acceptWeight[0]);
           accept21_y_noPtWeight_pass->Fill(tempMom.Rapidity(), acceptWeight[0]);
           accept21_pt_noPtWeight_pass->Fill(tempMom.Pt(), acceptWeight[0]);
+         
+          eTnP.fillCovariance(firstElePt, firstEleEta, mcPt->at(j), mcEta->at(j) ,covariance);
+          //if(i%1000==0) covariance->Print("All"); 
           
           for(int k = 0; k<nBins; k++){ 
             if(c.isInsideBin(hiBin,k)){
@@ -1346,6 +1355,18 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
 
   pdfX1X2LowPt->Write();
   pdfX1X2HighPt->Write();
+
+  
+  float diagonals[8] = {0};
+  for(int i = 0; i<8; i++){
+    diagonals[i] = TMath::Sqrt(covariance->GetBinContent(i+1,i+1));
+  }  
+  for(int i = 0; i<8; i++){
+    for(int j = 0; j<8; j++){
+      covariance->SetBinContent(i+1,j+1, covariance->GetBinContent(i+1,j+1)/diagonals[i]/diagonals[j]);
+    }
+  }
+  covariance->Write();
 
   output->Close();
 

@@ -34,7 +34,15 @@ void addInQuad(TH1D * h, float uncert){
   }
 }
 
-void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::string effTable, std::string outputTag, bool isMu21, bool isEE){
+void averageHists( TH1D * h1, TH1D * h2, bool isMu21, bool isEE, bool isY){
+  if(isMu21 || isEE || !isY){
+    for(int i = 0; i<h1->GetSize(); i++){
+      h1->SetBinContent( i , (h1->GetBinContent(i) + h2->GetBinContent(i)) / 2.0); 
+    }
+  }
+}
+
+void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::string effTable, std::string outputTag, bool isMu21, bool isEE, std::string file2, std::string hiBin1_2, std::string hiBin2_2){
   Timer timer = Timer();
   timer.Start();
   timer.StartSplit("Start Up");
@@ -49,8 +57,14 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   inFile[0] = TFile::Open(file.c_str(),"read");
   inFile[1] = TFile::Open(hiBin1.c_str(),"read");
   inFile[2] = TFile::Open(hiBin2.c_str(),"read");
+  
+  TFile * inFile2[3];
+  inFile2[0] = TFile::Open(file2.c_str(),"read");
+  inFile2[1] = TFile::Open(hiBin1_2.c_str(),"read");
+  inFile2[2] = TFile::Open(hiBin2_2.c_str(),"read");
 
   TH1D * result[nBins][4][5][3];
+  TH1D * result2[nBins][4][5][3];
   TH1D * backgroundYields[nBins][4][3];//nBin cent bins, 4 observables, 3 backgrounds
 
   //get a lot of stuff from the variations
@@ -61,6 +75,7 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
           if(f>0 && k>0) continue;//skip variations of centrality variations
   
           result[i][j][k][f] = (TH1D*)inFile[f]->Get(Form("%sOS_minusAll%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
+          result2[i][j][k][f] = (TH1D*)inFile2[f]->Get(Form("%sOS_minusAll%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
 
           if(f==0){
             backgroundYields[i][j][0] = (TH1D*) inFile[f]->Get(Form("%sBkg_Wjet_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
@@ -78,11 +93,15 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
   for(int i = 0; i<nBins; i++){
     for(int j = 1; j<4; j++){
       result[i][j][0][1]->Divide(result[i][j][0][0]);//cent up, include Nmb scaling here
+      result2[i][j][0][1]->Divide(result2[i][j][0][0]);//cent up, include Nmb scaling here
       //result[i][j][0][1]->Scale(1.01);
+      averageHists( result[i][j][0][1], result2[i][j][0][1], isMu21, isEE, j==2 );//j==2 is rapidity plots
       addInQuad(result[i][j][0][1], 0.012); //adding Nmb uncertainty
 
       result[i][j][0][2]->Divide(result[i][j][0][0]);//cent down, include Nmb scaling here
+      result2[i][j][0][2]->Divide(result2[i][j][0][0]);//cent down, include Nmb scaling here
       //result[i][j][0][2]->Scale(0.995);
+      averageHists( result[i][j][0][2], result2[i][j][0][2], isMu21, isEE, j==2  );//j==2 is rapidity plots
       addInQuad(result[i][j][0][2], 0.012); //adding Nmb uncertainty
     }
   }
@@ -392,9 +411,9 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 8)
+  if(argc != 11)
   {
-    std::cout << "Usage: systematics.exe <nominalFile> <hiBin1 File> <hiBin2 File> <effTable> <tag> <isMu21> <isEE>" << std::endl;
+    std::cout << "Usage: systematics.exe <nominalFile> <hiBin1 File> <hiBin2 File> <effTable> <tag> <isMu21> <isEE> <secondary nominal> <secondary hiBin1> <secondary hiBin2>" << std::endl;
     return 1;
   }  
 
@@ -405,6 +424,9 @@ int main(int argc, const char* argv[])
   std::string outputTag = argv[5];
   bool isMu21 = (bool)std::atoi(argv[6]);
   bool isEE = (bool)std::atoi(argv[7]);
-  systematics(file, hiBin1, hiBin2, effTable, outputTag, isMu21, isEE);
+  std::string file2  =     argv[8];
+  std::string hiBin1_2    = argv[9];
+  std::string hiBin2_2    = argv[10];
+  systematics(file, hiBin1, hiBin2, effTable, outputTag, isMu21, isEE, file2, hiBin1_2, hiBin2_2);
   return 0; 
 }

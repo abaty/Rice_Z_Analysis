@@ -323,7 +323,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_e->SetLineColor(kWhite);
   y_e->SetMarkerColor(kWhite);
   y_e->GetXaxis()->SetRangeUser(-2.4,2.4);
-  y_e->GetYaxis()->SetRangeUser(0.5,0.9);
+  y_e->GetYaxis()->SetRangeUser(0.4,0.85);
   y_e->GetYaxis()->SetTitleSize(0.06);
   y_e->GetYaxis()->SetTitleOffset(1.01);
   y_e->GetYaxis()->SetLabelSize(0.07);
@@ -331,23 +331,60 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_e->GetXaxis()->SetLabelSize(0.08);
   y_e->GetYaxis()->SetNdivisions(5,5,0,true);
   y_e->Draw("p");
+
+  for(int i = 0; i<y_mu24->GetSize(); i++){
+    if(i!=1 && (i != y_mu24->GetSize()-2)){
+      y_mu24->SetBinContent(i,0);
+      y_mu24->SetBinError(i,0);
+    }
+  }
+
+  y_mu24->SetMarkerStyle(25);
+  y_mu24->SetMarkerColor(kBlack);
+  y_mu24->SetLineColor(kBlack);
   setex2->Draw();
   EPPS16Rap->Draw("same E2");
   nCTEQ15Rap->Draw("same E2");
   combo[2]->Draw("p same");
+  y_mu24->Draw("p same");
   for(int i = 1; i<combo[2]->GetSize()-1; i++){
       helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.1,(Color_t)kBlack); 
+  }
+  for(int i = 1; i<y_mu24->GetSize()-1; i++){
+      if(i==1 || i==y_mu24->GetSize()-2){
+        helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kBlack); 
+      }
   }
   TLegend *ly2 = new TLegend(0.325,0.225,0.805,0.575);
   ly2->SetBorderSize(0);
   ly2->SetFillStyle(0);
   ly2->AddEntry(combo[2],"Z #rightarrow l^{+}l^{-}","ple");
+  ly2->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-}","ple");
   ly2->AddEntry(EPPS16Rap,"aMC@NLO + EPPS16","F");
   ly2->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
   ly2->Draw("same");
   
   c2->RedrawAxis();
   CMS_lumi(c2,0,10,1.5, true, true, false, true);
+
+  std::cout << "Rapidity Compatibility" << std::endl;
+  float maxDeviationY = -99;
+  for(int i = 1; i<combo[2]->GetSize()-1; i++){
+    float e = y_e->GetBinContent(i);
+    float mu = y_mu21->GetBinContent(i);
+    float difference = TMath::Abs(e-mu);
+ 
+    float eStat = y_e->GetBinError(i);
+    float muStat = y_mu21->GetBinError(i);
+    float eSyst = y_e->GetBinContent(i) * totalError_0_90[0][2]->GetBinContent(i);
+    float muSyst = y_mu21->GetBinContent(i) * totalError_0_90[1][2]->GetBinContent(i);
+    float err = TMath::Sqrt( eStat * eStat + muStat * muStat + eSyst * eSyst + muSyst * muSyst );
+    std::cout << i << " " << difference/err << " sigma" << std::endl;
+
+    if(difference/err > maxDeviationY) maxDeviationY = difference/err;
+  }
+  std::cout << "Max deviation: " << maxDeviationY << std::endl;
+
   c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.png"); 
   c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.pdf"); 
   c2->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept_PRL.C"); 
@@ -522,6 +559,25 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   lptR->AddEntry(ratioEPPS16,"EPPS16","p");
   lptR->AddEntry(ratioNCTEQ15,"nCTEQ15","p");
   lptR->Draw("same");
+
+  std::cout << "pT Compatibility" << std::endl;
+  float maxDeviationPT = -99;
+  for(int i = 1; i<combo[1]->GetSize()-1; i++){
+    float e = pt_e->GetBinContent(i);
+    float mu = pt_mu21->GetBinContent(i);
+    float difference = TMath::Abs(e-mu);
+ 
+    float eStat = pt_e->GetBinError(i);
+    float muStat = pt_mu21->GetBinError(i);
+    float eSyst = pt_e->GetBinContent(i) * totalError_0_90[0][1]->GetBinContent(i);
+    float muSyst = pt_mu21->GetBinContent(i) * totalError_0_90[1][1]->GetBinContent(i);
+    float err = TMath::Sqrt( eStat * eStat + muStat * muStat + eSyst * eSyst + muSyst * muSyst );
+    std::cout << i << " " << difference/err << " sigma" << std::endl;
+    
+    if(difference/err > maxDeviationPT) maxDeviationPT = difference/err;
+  }
+  std::cout << "Max deviation: " << maxDeviationPT << std::endl;
+
 
   if(!doAccept){
     c1->SaveAs("plots/prettyPlots/pt_Pretty.png"); 
