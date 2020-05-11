@@ -96,13 +96,15 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       result2[i][j][0][1]->Divide(result2[i][j][0][0]);//cent up, include Nmb scaling here
       //result[i][j][0][1]->Scale(1.01);
       averageHists( result[i][j][0][1], result2[i][j][0][1], isMu21, isEE, j==2 );//j==2 is rapidity plots
-      addInQuad(result[i][j][0][1], 0.012); //adding Nmb uncertainty
+      if(j==1 || j==2) addInQuad(result[i][j][0][1], 0.019); //adding lumi uncertainty
+      else addInQuad(result[i][j][0][1], 0.012); //adding Nmb uncertainty
 
       result[i][j][0][2]->Divide(result[i][j][0][0]);//cent down, include Nmb scaling here
       result2[i][j][0][2]->Divide(result2[i][j][0][0]);//cent down, include Nmb scaling here
       //result[i][j][0][2]->Scale(0.995);
       averageHists( result[i][j][0][2], result2[i][j][0][2], isMu21, isEE, j==2  );//j==2 is rapidity plots
-      addInQuad(result[i][j][0][2], 0.012); //adding Nmb uncertainty
+      if(j==1 || j==2) addInQuad(result[i][j][0][2], 0.019); //adding lumi uncertainty
+      else  addInQuad(result[i][j][0][2], 0.012);//Nmb uncertainty
     }
   }
 
@@ -213,8 +215,8 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       } 
 
       //MC Stats
-      if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j] = (TH1D*) mcStatRelErr_pt->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i))); 
-      if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j] = (TH1D*) mcStatRelErr_y->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i))); 
+      if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==100) mcStatError[i][j] = (TH1D*) mcStatRelErr_pt->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i))); 
+      if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==100) mcStatError[i][j] = (TH1D*) mcStatRelErr_y->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i))); 
       if(j==3) mcStatError[i][j] = (TH1D*) mcStatRelErr[i]->Clone(Form("%s_mcStatError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
 
       totalError[i][j] = (TH1D*)effError[i][j]->Clone(Form("%s_totalError_%d_%d",h.name.at(j).c_str(), c.getCentBinLow(i),c.getCentBinHigh(i)));
@@ -222,8 +224,8 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       if(j!=1) h.addInQuadrature3( totalError[i][j], acoError[i][j], hfError[i][j]);
       if(j==1) h.addInQuadrature4( totalError[i][j], acoError[i][j], hfError[i][j], ptSmearError[i][j]);
  
-      if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
-      if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
+      if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==100) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
+      if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==100) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]); 
       if(j==3) h.addInQuadrature2( totalError[i][j], mcStatError[i][j]);
       
       h.addInQuadrature2(totalError[i][j], acceptError[i][j]);
@@ -253,8 +255,8 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       hfUError[i][j]->Write();
       hfDError[i][j]->Write();
       if(j==1) ptSmearError[i][j]->Write();
-      if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j]->Write(); 
-      if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) mcStatError[i][j]->Write(); 
+      if(j==1 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==100) mcStatError[i][j]->Write(); 
+      if(j==2 && c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==100) mcStatError[i][j]->Write(); 
       if(j==3) mcStatError[i][j]->Write();
       wError[i][j]->Write();
       ttbarError[i][j]->Write();
@@ -299,7 +301,7 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
         ptSmearError[i][j]->Draw("same");
       }
 
-      if( ( (j==1 || j==2) && (c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) ) || j==3 ){
+      if( ( (j==1 || j==2) && (c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==100) ) || j==3 ){
         mcStatError[i][j]->SetLineColor(kOrange);
         mcStatError[i][j]->Draw("same");
       }     
@@ -325,7 +327,7 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       leg->AddEntry(acoError[i][j],"EM Background Cut","l");
       leg->AddEntry(hfError[i][j], "HF Uncert. (N_{MB} + centrality)","l");
       if(j==1) leg->AddEntry(ptSmearError[i][j], "p_{T} unfolding","l");
-      if( ( (j==1 || j==2) && (c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==90) ) || j==3 ){
+      if( ( (j==1 || j==2) && (c.getCentBinLow(i)==0 && c.getCentBinHigh(i)==100) ) || j==3 ){
         leg->AddEntry(mcStatError[i][j],"MC stat uncertainty","l");
       }
       if(isEE) leg->AddEntry(chargeSwapError[i][j],"Charge Swapping","l");

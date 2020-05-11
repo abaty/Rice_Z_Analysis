@@ -372,7 +372,10 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
     for(unsigned int i = 0; i < eTree->GetEntries(); i++){
       timer.StartSplit("Checking Evt Selections");
       skimTree->GetEntry(i);
-      if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
+      
+      //moved hfCoinc below to relax it for 0-100% measurement
+      //if(! (pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter)) continue;
+      if(! (pprimaryVertexFilter && pclusterCompatibilityFilter)) continue;
       
       //event selections
       evtTree->GetEntry(i);
@@ -512,6 +515,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
           if(moreThan2) std::cout << j << " " << j2 << " " << Zcand.M() <<" " << Zcand.Pt() << " isOS? " << (int)isOppositeSign << std::endl;
           if( isOppositeSign){
             for(int k = 0; k<nBins; k++){
+   
+              if( (!phfCoincFilter2Th4) && c.getCentBinHigh(k)!=100 ) continue;
+ 
               if(c.isInsideBin(hiBinZDC,k)){
                 if(!isMC){
                   pTOS_withEff_energyScale[k][0]->Fill(Zcand.Pt(), 1.0/efficiencyArray[0] * eventWeight);
@@ -606,6 +612,9 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isMC, std::str
             }//end for loop
           }else{
             for(int k = 0; k<nBins; k++){
+              
+              if( (!phfCoincFilter2Th4) && c.getCentBinHigh(k)!=100 ) continue;
+              
               if(c.isInsideBin(hiBinZDC,k)){
                 if((isMC && !isTau) || (!isMC && bothElectronPassNominalPtCut)){
                   massPeakSS[k]->Fill( Zcand.M() );

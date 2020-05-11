@@ -459,22 +459,22 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     nominalResponseLargeErr[i] = RooUnfoldResponse(0,0,unf_responseLargeErrors[i]);
   }
 
-  h.undoDifferential( massPeakOS_minusAll[25][1][0] );
-  RooUnfoldInvert unfoldObject = RooUnfoldInvert(&nominalResponse, massPeakOS_minusAll[25][1][0]);
+  h.undoDifferential( massPeakOS_minusAll[11][1][0] );
+  RooUnfoldInvert unfoldObject = RooUnfoldInvert(&nominalResponse, massPeakOS_minusAll[11][1][0]);
   TH1D * unfoldedDist = (TH1D*) unfoldObject.Hreco();
   unfoldedDist->Print("All");
-  RooUnfoldInvert unfoldObjectU = RooUnfoldInvert(&nominalResponseU, massPeakOS_minusAll[25][1][0]);
+  RooUnfoldInvert unfoldObjectU = RooUnfoldInvert(&nominalResponseU, massPeakOS_minusAll[11][1][0]);
   TH1D * unfoldedDistU = (TH1D*) unfoldObjectU.Hreco();
   unfoldedDistU->Divide(unfoldedDist);
   unfoldedDistU->SetName("unfoldedDistU");
   unfoldedDistU->Print("All");
-  RooUnfoldInvert unfoldObjectD = RooUnfoldInvert(&nominalResponseD, massPeakOS_minusAll[25][1][0]);
+  RooUnfoldInvert unfoldObjectD = RooUnfoldInvert(&nominalResponseD, massPeakOS_minusAll[11][1][0]);
   TH1D * unfoldedDistD = (TH1D*) unfoldObjectD.Hreco();
   unfoldedDistD->Divide(unfoldedDist);
   unfoldedDistD->SetName("unfoldedDistD");
   unfoldedDistD->Print("All");
   //regularization check
-  RooUnfoldBayes unfoldObject_B = RooUnfoldBayes(&nominalResponse, massPeakOS_minusAll[25][1][0],5);
+  RooUnfoldBayes unfoldObject_B = RooUnfoldBayes(&nominalResponse, massPeakOS_minusAll[11][1][0],5);
   TH1D * unfoldedDistBayes5 = (TH1D*) unfoldObject_B.Hreco();
   unfoldedDistBayes5->Divide(unfoldedDist);
   unfoldedDistBayes5->SetName("unfoldedDistBayes5");
@@ -493,7 +493,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
   TH1D * unfoldedDist_LargeErrors[nToys];
   RooUnfoldInvert unfoldObjectLargeErrors[nToys];
   for(int i = 0; i<nToys; i++){
-    unfoldObjectLargeErrors[i] = RooUnfoldInvert(&nominalResponseLargeErr[i], massPeakOS_minusAll[25][1][0]);
+    unfoldObjectLargeErrors[i] = RooUnfoldInvert(&nominalResponseLargeErr[i], massPeakOS_minusAll[11][1][0]);
     unfoldedDist_LargeErrors[i] = (TH1D*) unfoldObjectLargeErrors[i].Hreco();
     unfoldedDist_LargeErrors[i]->Divide(unfoldedDist);
   }
@@ -523,18 +523,18 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     } 
   }
   unfoldedDistWithSmearing->Print("All");
-  unfoldedDistWithSmearing->Divide(massPeakOS_minusAll[25][1][0]);
+  unfoldedDistWithSmearing->Divide(massPeakOS_minusAll[11][1][0]);
   unfoldedDistWithSmearing->Print("All");
 
-  h.makeDifferential( massPeakOS_minusAll[25][1][0] );
-  massPeakOS_minusAll[25][1][0]->Print("All");
+  h.makeDifferential( massPeakOS_minusAll[11][1][0] );
+  massPeakOS_minusAll[11][1][0]->Print("All");
 
   unfoldedDist->SetName("unfoldedDist");
   h.makeDifferential(unfoldedDist);
   unfoldedDist->Print("All");
 
   TH1D * unfoldedRatio = (TH1D*) unfoldedDist->Clone("unfoldedRatio");
-  unfoldedRatio->Divide(massPeakOS_minusAll[25][1][0]);
+  unfoldedRatio->Divide(massPeakOS_minusAll[11][1][0]);
   unfoldedRatio->Print("All");
  
   //closure

@@ -22,7 +22,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   CombinePoints cp = CombinePoints();
   HistNameHelper helper = HistNameHelper();
 
-  float unitScale  = TMath::Power(10,6);
+  float unitScale  = 1.0;
 
   //ptCorrector ptCorr = ptCorrector("resources/Z2mumu_Efficiencies.root","resources/Z2ee_EfficiencyMC_0.root");
 
@@ -79,19 +79,19 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
   //mumu channel first
   TFile * mu24 = TFile::Open(Zmumu24.c_str(),"read");
-  TH1D * y_mu24 = (TH1D*)mu24->Get("yOS_minusAll_0_90");
+  TH1D * y_mu24 = (TH1D*)mu24->Get("yOS_minusAll_0_100");
   TH1D * pt_mu24 = (TH1D*)mu24->Get("unfoldedDist");
 
   //pt_mu24->Divide( ptCorr.correction[0] );
  
   TFile * mu21 = TFile::Open(Zmumu21.c_str(),"read");
-  TH1D * y_mu21 = (TH1D*)mu21->Get("yOS_minusAll_0_90");
+  TH1D * y_mu21 = (TH1D*)mu21->Get("yOS_minusAll_0_100");
   TH1D * pt_mu21 = (TH1D*)mu21->Get("unfoldedDist");
   
   //pt_mu21->Divide( ptCorr.correction[2] );
   
   TFile * e = TFile::Open(Zee.c_str(),"read");
-  TH1D * y_e = (TH1D*)e->Get("yOS_minusAll_0_90");
+  TH1D * y_e = (TH1D*)e->Get("yOS_minusAll_0_100");
   TH1D * pt_e = (TH1D*)e->Get("unfoldedDist");
   
   //pt_e->Divide( ptCorr.correction[1] );
@@ -111,34 +111,34 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TH1D * acceptError_0_90[3][3];
 
   TH1D * combo[3];
-  combo[1] = (TH1D*) pt_e->Clone("combined_pT_0_90"); 
-  combo[2] = (TH1D*) y_e->Clone("combined_y_0_90"); 
+  combo[1] = (TH1D*) pt_e->Clone("combined_pT_0_100"); 
+  combo[2] = (TH1D*) y_e->Clone("combined_y_0_100"); 
   TH1D * comboSyst[3];
-  comboSyst[1] = (TH1D*) pt_e->Clone("combinedSyst_pT_0_90"); 
-  comboSyst[2] = (TH1D*) y_e->Clone("combinedSyst_y_0_90"); 
+  comboSyst[1] = (TH1D*) pt_e->Clone("combinedSyst_pT_0_100"); 
+  comboSyst[2] = (TH1D*) y_e->Clone("combinedSyst_y_0_100"); 
 
   for(int i = 0; i<3; i++){
     for(int j = 1; j<3; j++){
       std::cout << i << " " << j << std::endl;
-      efficiencyError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_efficiencyError_0_90",helper.name.at(j).c_str()));
-      emError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_emError_0_90",helper.name.at(j).c_str()));
-      hfError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_hfError_0_90",helper.name.at(j).c_str()));
-      if(j==1) ptSmearError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_ptSmearError_0_90",helper.name.at(j).c_str()));
-      mcStatError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_mcStatError_0_90",helper.name.at(j).c_str()));
-      acceptError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_acceptError_0_90",helper.name.at(j).c_str()));
-      totalError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_totalError_0_90",helper.name.at(j).c_str()));
+      efficiencyError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_efficiencyError_0_100",helper.name.at(j).c_str()));
+      emError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_emError_0_100",helper.name.at(j).c_str()));
+      hfError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_hfError_0_100",helper.name.at(j).c_str()));
+      if(j==1) ptSmearError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_ptSmearError_0_100",helper.name.at(j).c_str()));
+      mcStatError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_mcStatError_0_100",helper.name.at(j).c_str()));
+      acceptError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_acceptError_0_100",helper.name.at(j).c_str()));
+      totalError_0_90[i][j] = (TH1D*) systFile[i]->Get(Form("%s_totalError_0_100",helper.name.at(j).c_str()));
     }
   }
   //plots here
 
   
   //scaling
-  y_mu24->Scale(unitScale*s.netLumi/(s.muLumi * s.Nmb));
-  y_mu21->Scale(unitScale*s.netLumi/(s.muLumi * s.Nmb));
-  y_e->Scale(unitScale*s.netLumi/(s.eLumi * s.Nmb));
-  pt_mu24->Scale(s.netLumi/(s.muLumi * s.Nmb));
-  pt_mu21->Scale(s.netLumi/(s.muLumi * s.Nmb));
-  pt_e->Scale(s.netLumi/(s.eLumi * s.Nmb));
+  y_mu24->Scale(unitScale/(s.muLumi));
+  y_mu21->Scale(unitScale/(s.muLumi));
+  y_e->Scale(unitScale/(s.eLumi));
+  pt_mu24->Scale(1.0/(s.muLumi));
+  pt_mu21->Scale(1.0/(s.muLumi));
+  pt_e->Scale(1.0/(s.eLumi));
 
   if(doAccept){
     pt_e->Divide(acceptE[0]);
@@ -148,6 +148,8 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     y_mu21->Divide(acceptMu21[1]);
     y_mu24->Divide(acceptMu24[1]);
   }
+
+  y_e->Print("All");
 
   //combination
   for(int j = 1; j<3; j++){
@@ -212,7 +214,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
 
   //make muon plot
-  y_e->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dy} #times 10^{6}");
+  y_e->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{dy} (#mub)");
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
   c1->SetLeftMargin(0.2);
@@ -248,8 +250,10 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
   TExec *setex2 = new TExec("setex2","gStyle->SetErrorX(0.5)");
   setex2->Draw();
-  EPPS16Rap->Scale(unitScale);
-  nCTEQ15Rap->Scale(unitScale);
+  float TAA090 = 6.274;
+  float TAA0100 = 5.649;
+  EPPS16Rap->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  nCTEQ15Rap->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
   EPPS16Rap->Draw("same E2");
   nCTEQ15Rap->Draw("same E2");
   TExec *setex1 = new TExec("setex1","gStyle->SetErrorX(0)");
@@ -285,7 +289,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TLegend *ly = new TLegend(0.225,0.225,0.705,0.5);
   ly->SetBorderSize(0);
   ly->SetFillStyle(0);
-  ly->AddEntry((TObject*)0,"0-90%","");
+  ly->AddEntry((TObject*)0,"0-100%","");
   if(!doAccept){
     ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
     //ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
@@ -323,7 +327,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_e->SetLineColor(kWhite);
   y_e->SetMarkerColor(kWhite);
   y_e->GetXaxis()->SetRangeUser(-2.4,2.4);
-  y_e->GetYaxis()->SetRangeUser(0.4,0.85);
+  y_e->GetYaxis()->SetRangeUser(3.0,5.8);
   y_e->GetYaxis()->SetTitleSize(0.06);
   y_e->GetYaxis()->SetTitleOffset(1.01);
   y_e->GetYaxis()->SetLabelSize(0.07);
@@ -412,7 +416,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   c1->SetBottomMargin(0.2);
  
   //make pt plot
-  pt_e->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dp_{T}} (GeV^{-1})");
+  pt_e->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{dp_{T}} (#mub/GeV)");
   
   pt_mu24->SetMarkerColor(kBlue);
   pt_mu24->SetMarkerStyle(21);
@@ -426,7 +430,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   pt_e->SetMarkerStyle(25);
   pt_e->SetLineColor(kRed+1);
     
-  TH1D * dummy = new TH1D("dummy",";p_{T} (GeV);#frac{1}{N_{MB}} #frac{dN_{Z}}{dp_{T}} (GeV^{-1})",2,0.1,200);
+  TH1D * dummy = new TH1D("dummy",";p_{T} (GeV);#frac{d#sigma_{Z}}{dp_{T}} (#mub/GeV)",2,0.1,200);
   dummy->SetBinContent(1,pt_mu24->GetMaximum());
   dummy->SetBinContent(2,pt_e->GetMinimum());
   dummy->SetLineColor(kWhite);
@@ -441,6 +445,10 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   dummy->DrawCopy();
  
   setex2->Draw();
+  
+  EPPS16Pt->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  nCTEQ15Pt->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  
   EPPS16Pt->Draw("same E2"); 
   nCTEQ15Pt->Draw("same E2"); 
   setex1->Draw();
@@ -478,7 +486,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TLegend *lpt = new TLegend(0.225,0.125,0.675,0.475);
   lpt->SetBorderSize(0);
   lpt->SetFillStyle(0);
-  lpt->AddEntry((TObject*)0,"0-90%, |y_{Z}|<2.1","");
+  lpt->AddEntry((TObject*)0,"0-100%, |y_{Z}|<2.1","");
   if(!doAccept){
     //lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
     lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
@@ -640,7 +648,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   dummy->GetYaxis()->SetLabelSize(0.065);
   dummy->GetYaxis()->SetLabelOffset(0.00);
   dummy->GetYaxis()->SetRangeUser(0.0005*pt_mu24->GetMaximum() , pt_mu24->GetMaximum()*1.4 ); 
-  dummy->GetYaxis()->SetTitle("#frac{1}{N_{MB}} #frac{dN_{Z}}{dp_{T}} (GeV^{-1})");
+  dummy->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{dp_{T}} (#mub/GeV)");
   dummy->DrawCopy();
  
   setex2->Draw();

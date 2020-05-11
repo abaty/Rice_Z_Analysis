@@ -230,7 +230,10 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
       if(i%5000==0) std::cout << i << "/" << maxEvt << std::endl;
 
       //event selection
-      if( !(v.evtSel()[ PbPb::R5TeV::Y2018::hfCoincFilter2Th4 ])) continue;
+      //relax this for 0-100%
+      bool hfCoincFilter = v.evtSel()[ PbPb::R5TeV::Y2018::hfCoincFilter2Th4 ];
+      //if( !(v.evtSel()[ PbPb::R5TeV::Y2018::hfCoincFilter2Th4 ])) continue;
+
       if( !(v.evtSel()[ PbPb::R5TeV::Y2018::primaryVertexFilter ])) continue;
       if( !(v.evtSel()[ PbPb::R5TeV::Y2018::clusterCompatibilityFilter ])) continue;
       if( TMath::Abs(v.bestvtxZ()) > 15 ) continue;
@@ -293,6 +296,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
 
         if( isOppositeSign){
           for(int k = 0; k<nBins; k++){
+            if( (!hfCoincFilter) && c.getCentBinHigh(k)!=100 ) continue;
             if(c.isInsideBin( hiBinZDC ,k)){
     
               if((isMC && !isTau) || !isMC){
@@ -364,6 +368,7 @@ void doZ2mumu(std::vector< std::string > files, float etaCut, bool isMC, Setting
           }
         }else{
           for(int k = 0; k<nBins; k++){
+            if( (!hfCoincFilter) && c.getCentBinHigh(k)!=100 ) continue;
             if(c.isInsideBin( hiBinZDC ,k)){
               if((isMC && !isTau) || !isMC){
                 candPtFine[k]->Fill(v.pT()[j],-1);

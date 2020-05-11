@@ -5,13 +5,15 @@
 class Settings{
 public:
 
+  double sigmaMBPbPb = 7.644;
+
   double Nmb = 11536000857;
   double NmbUp = 1.012*11536000857;
   double NmbDown = 0.988*11536000857;
 
-  double muLumi = 1738.58;
-  double eLumi = 1726.095684561 ;
-  double netLumi = 1751.83;
+  double muLumi = 1682.8;
+  double eLumi = 1670.7 ;
+  double netLumi = 1695.6;
 
 
   double minMuonPt = 20;
