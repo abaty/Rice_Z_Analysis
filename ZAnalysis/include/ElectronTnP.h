@@ -310,7 +310,7 @@ float ElectronTnP::getZSF(int hiBin, float pt1, float eta1, float pt2, float eta
   float recoSF2_Systvar = recoSF2;
   if(idx != 0){
     recoSF2_var = (getSingleSF_Reco(hiBin, pt2, eta2, idx) - recoSF2)/recoSF2;
-    recoSF2_Systvar = (systGetSingleSF_Reco(hiBin, pt2, eta2, idx) - recoSF2)/recoSF2;
+    recoSF2_Systvar = (getSingleSF_Reco(hiBin, pt2, eta2, idx) - recoSF2)/recoSF2;
   }
 
   float recoSF = recoSF1 * recoSF2;
