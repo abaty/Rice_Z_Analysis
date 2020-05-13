@@ -436,9 +436,16 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   d->GetXaxis()->SetLabelOffset(0.007);
   TAxis* a = d->GetXaxis();
   a->ChangeLabel(6,-1,-1,-1,-1,-1,"0-90%");
+  a->SetTickLength(0);
+  TGaxis * aClone = new TGaxis(0,-0.05,90,-0.05,0,90,505,"");
+  aClone->SetTickLength(0.02);
+  aClone->SetLabelSize(0);
+  TGaxis * aClone2 = new TGaxis(0,0.07,90,0.07,0,90,505,"-");
+  aClone2->SetTickLength(0.02);
+  aClone2->SetLabelSize(0);
 
   d->Draw();
- 
+
   v2ComboGraphSyst->Draw("same 5");
   ATLASSyst->Draw("same 2"); 
 
@@ -463,27 +470,8 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   leg2->AddEntry(ATLASg,"PRL 110, 022301 (2013)","ep");
   leg2->Draw("same");
 
-  TBox * tickHider3 = new TBox(91,-0.0497,109.8,-0.046);
-  tickHider3->SetFillColor(kWhite);
-  tickHider3->SetLineColor(kWhite);
-  tickHider3->SetLineWidth(0);
-  tickHider3->Draw("same");
-  TBox * tickHider5 = new TBox(91,-0.047,101.5,-0.035);
-  tickHider5->SetFillColor(kWhite);
-  tickHider5->SetLineColor(kWhite);
-  tickHider5->SetLineWidth(0);
-  tickHider5->Draw("same");
-  TBox * tickHider4 = new TBox(91,0.066,109.8,0.0696);
-  tickHider4->SetFillColor(kWhite);
-  tickHider4->SetLineColor(kWhite);
-  tickHider4->SetLineWidth(0);
-  tickHider4->Draw("same");
-  TBox * tickHider6 = new TBox(91,0.06,101.5,0.067);
-  tickHider6->SetFillColor(kWhite);
-  tickHider6->SetLineColor(kWhite);
-  tickHider6->SetLineWidth(0);
-  tickHider6->Draw("same");
-
+  aClone->Draw(); 
+  aClone2->Draw(); 
  
   CMS_lumi(c2,0,10,1.5, true, true, false, false);
   c2->SaveAs("plots/v2/v2Summary_PRL.png");

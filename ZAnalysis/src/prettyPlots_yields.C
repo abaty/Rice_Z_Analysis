@@ -1,4 +1,5 @@
 #include "TGraphAsymmErrors.h"
+#include "TGaxis.h"
 #include "TExec.h"
 #include "include/CMS_lumi.C"
 #include "include/centralityTool.h"
@@ -1036,6 +1037,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   cg->GetYaxis()->SetRangeUser(0.201,0.6);
   cg->GetXaxis()->SetRangeUser(-1,110);
   cg->SetTitle("");
+  cg->GetXaxis()->SetTickLength(0);
   cg->Draw("p a");  
   
   sigmaBox->SetX2(111);
@@ -1117,6 +1119,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   hgpRatioG->GetYaxis()->SetNdivisions(4,4,0,kTRUE);
   TAxis* a = hgpRatioG->GetXaxis();
   a->ChangeLabel(6,-1,-1,-1,-1,-1,"0-90%");
+  hgpRatioG->GetXaxis()->SetTickLength(0);
   hgpRatioG->Draw("p a same");
  
   hgpRatioGTAA->SetFillColor(kGray+1);
@@ -1137,37 +1140,26 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   line5->SetLineStyle(1);
   line5->Draw("same");  
 
-  TBox * tickHider = new TBox(90.5,0.76,110.5,0.78);
-  tickHider->SetFillColor(kWhite);
-  tickHider->SetLineColor(kWhite);
-  tickHider->SetLineWidth(0);
-  tickHider->Draw("same");
-  TBox * tickHider2 = new TBox(90.5,1.201,110.5,1.242);
-  tickHider2->SetFillColor(kWhite);
-  tickHider2->SetLineColor(kWhite);
-  tickHider2->SetLineWidth(0);
-  tickHider2->Draw("same");
+  TGaxis * aClone4 = new TGaxis(0,0.75,90,0.75,0,90,505,"+");
+  aClone4->SetTickLength(0.02);
+  aClone4->SetLabelSize(0);
+  TGaxis * aClone3 = new TGaxis(0,1.25,90,1.25,0,90,505,"-");
+  aClone3->SetTickLength(0.02);
+  aClone3->SetLabelSize(0);
+
+  aClone3->Draw();
+  aClone4->Draw();
+  
   p1->cd();
-  TBox * tickHider3 = new TBox(90.5,0.202,110.5,0.209);
-  tickHider3->SetFillColor(kWhite);
-  tickHider3->SetLineColor(kWhite);
-  tickHider3->SetLineWidth(0);
-  tickHider3->Draw("same");
-  TBox * tickHider5 = new TBox(90.5,0.208,105.5,0.211);
-  tickHider5->SetFillColor(kWhite);
-  tickHider5->SetLineColor(kWhite);
-  tickHider5->SetLineWidth(0);
-  tickHider5->Draw("same");
-  TBox * tickHider4 = new TBox(90.5,0.591,110.5,0.599);
-  tickHider4->SetFillColor(kWhite);
-  tickHider4->SetLineColor(kWhite);
-  tickHider4->SetLineWidth(0);
-  tickHider4->Draw("same");
-  TBox * tickHider6 = new TBox(90.5,0.591,105.5,0.589);
-  tickHider6->SetFillColor(kWhite);
-  tickHider6->SetLineColor(kWhite);
-  tickHider6->SetLineWidth(0);
-  tickHider6->Draw("same");
+  TGaxis * aClone = new TGaxis(0,0.2,90,0.2,0,90,505,"+");
+  aClone->SetTickLength(0.02);
+  aClone->SetLabelSize(0);
+  TGaxis * aClone2 = new TGaxis(0,0.6,90,0.6,0,90,505,"-");
+  aClone2->SetTickLength(0.02);
+  aClone2->SetLabelSize(0);
+
+  aClone->Draw();
+  aClone2->Draw();
 
   c2->cd();
   p1->cd();
