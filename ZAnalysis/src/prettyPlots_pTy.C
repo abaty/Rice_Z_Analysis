@@ -291,16 +291,16 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ly->SetFillStyle(0);
   ly->AddEntry((TObject*)0,"0-100%","");
   if(!doAccept){
-    ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
+    ly->AddEntry(y_mu24,"Z/#gamma* #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
     //ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
-    ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
+    ly->AddEntry(y_e,"Z/#gamma* #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
     ly->AddEntry(combo[2],"Combined (|#eta_{l}|<2.1)","p");
   }else{
-    ly->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-}","p");
+    ly->AddEntry(y_mu24,"Z/#gamma* #rightarrow #mu^{+}#mu^{-}","p");
     //ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
-    ly->AddEntry(y_e,"Z #rightarrow e^{+}e^{-}","p");
+    ly->AddEntry(y_e,"Z/#gamma* #rightarrow e^{+}e^{-}","p");
     ly->AddEntry(combo[2],"Combined","p");
-    ly->AddEntry(EPPS16Rap,"aMC@NLO + EPPS16","F");
+    ly->AddEntry(EPPS16Rap,"aMC@NLO + CT14 + EPPS16","F");
     ly->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
   }
   ly->Draw("same");
@@ -327,7 +327,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_e->SetLineColor(kWhite);
   y_e->SetMarkerColor(kWhite);
   y_e->GetXaxis()->SetRangeUser(-2.4,2.4);
-  y_e->GetYaxis()->SetRangeUser(3.0,5.8);
+  y_e->GetYaxis()->SetRangeUser(3.0,6.0);
   y_e->GetYaxis()->SetTitleSize(0.06);
   y_e->GetYaxis()->SetTitleOffset(1.01);
   y_e->GetYaxis()->SetLabelSize(0.07);
@@ -359,14 +359,19 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
         helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kBlack); 
       }
   }
-  TLegend *ly2 = new TLegend(0.325,0.225,0.805,0.575);
+  TLegend *ly2 = new TLegend(0.305,0.225,0.905,0.575);
   ly2->SetBorderSize(0);
   ly2->SetFillStyle(0);
-  ly2->AddEntry(combo[2],"Z #rightarrow l^{+}l^{-}","ple");
-  ly2->AddEntry(y_mu24,"Z #rightarrow #mu^{+}#mu^{-}","ple");
-  ly2->AddEntry(EPPS16Rap,"aMC@NLO + EPPS16","F");
+  ly2->AddEntry(combo[2],"Z/#gamma* #rightarrow l^{+}l^{-}","ple");
+  ly2->AddEntry(y_mu24,"Z/#gamma* #rightarrow #mu^{+}#mu^{-}","ple");
+  ly2->AddEntry(EPPS16Rap,"aMC@NLO + CT14 + EPPS16","F");
   ly2->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
   ly2->Draw("same");
+  TLegend * ly3 = new TLegend(0.5,0.8,0.9,0.875);
+  ly3->SetBorderSize(0);
+  ly3->SetFillStyle(0);
+  ly3->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV","");
+  ly3->Draw("same");
   
   c2->RedrawAxis();
   CMS_lumi(c2,0,10,1.5, true, true, false, true);
@@ -489,15 +494,15 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   lpt->AddEntry((TObject*)0,"0-100%, |y_{Z}|<2.1","");
   if(!doAccept){
     //lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.4)","p");
-    lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
-    lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
+    lpt->AddEntry(pt_mu21,"Z/#gamma* #rightarrow #mu^{+}#mu^{-} (|#eta_{#mu}|<2.1)","p");
+    lpt->AddEntry(pt_e,"Z/#gamma* #rightarrow e^{+}e^{-} (|#eta_{e}|<2.1)","p");
     lpt->AddEntry(combo[1],"Combined (|#eta_{l}|<2.1)","p");
   }else{
     //lpt->AddEntry(pt_mu24,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.4)","p");
-    lpt->AddEntry(pt_mu21,"Z #rightarrow #mu^{+}#mu^{-}","p");
-    lpt->AddEntry(pt_e,"Z #rightarrow e^{+}e^{-}","p");
+    lpt->AddEntry(pt_mu21,"Z/#gamma* #rightarrow #mu^{+}#mu^{-}","p");
+    lpt->AddEntry(pt_e,"Z/#gamma* #rightarrow e^{+}e^{-}","p");
     lpt->AddEntry(combo[1],"Combined","p");
-    lpt->AddEntry(EPPS16Pt,"aMC@NLO + EPPS16","F");
+    lpt->AddEntry(EPPS16Pt,"aMC@NLO + CT14 + EPPS16","F");
     lpt->AddEntry(nCTEQ15Pt,"aMC@NLO + nCTEQ15","F");
   }
   lpt->Draw("same");
@@ -564,7 +569,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   lptR->SetBorderSize(0);
   lptR->SetFillStyle(0);
   lptR->SetNColumns(2);
-  lptR->AddEntry(ratioEPPS16,"EPPS16","p");
+  lptR->AddEntry(ratioEPPS16,"CT14 + EPPS16","p");
   lptR->AddEntry(ratioNCTEQ15,"nCTEQ15","p");
   lptR->Draw("same");
 
@@ -665,12 +670,13 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   p1->SetLogx();
 
 
-  TLegend *lpt2 = new TLegend(0.225,0.125,0.875,0.575);
+  TLegend *lpt2 = new TLegend(0.175,0.05,0.775,0.675);
   lpt2->SetBorderSize(0);
   lpt2->SetFillStyle(0);
   lpt2->AddEntry((TObject*)0,"|y_{Z}| > 2.1","");
-  lpt2->AddEntry(combo[1],"Z #rightarrow l^{+}l^{-}","lep");
-  lpt2->AddEntry(EPPS16Pt,"aMC@NLO + EPPS16","F");
+  lpt2->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV","");
+  lpt2->AddEntry(combo[1],"Z/#gamma* #rightarrow l^{+}l^{-}","lep");
+  lpt2->AddEntry(EPPS16Pt,"aMC@NLO + CT14 + EPPS16","F");
   lpt2->AddEntry(nCTEQ15Pt,"aMC@NLO + nCTEQ15","F");
   lpt2->Draw("same");
   
@@ -702,11 +708,11 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ratioNCTEQ15->Draw("same p");
   p2->RedrawAxis();
   
-  TLegend *lptR2 = new TLegend(0.175,0.35,0.8,0.6);
+  TLegend *lptR2 = new TLegend(0.175,0.35,0.85,0.6);
   lptR2->SetBorderSize(0);
   lptR2->SetFillStyle(0);
   lptR2->SetNColumns(3);
-  lptR2->AddEntry(ratioEPPS16,"EPPS16","p");
+  lptR2->AddEntry(ratioEPPS16,"CT14 + EPPS16","p");
   lptR2->AddEntry(ratioNCTEQ15,"nCTEQ15","p");
   lptR2->AddEntry(datErr,"Syst. Uncertainty","f");
   lptR2->Draw("same");

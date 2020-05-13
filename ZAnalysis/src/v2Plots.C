@@ -338,9 +338,9 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   c2->SetBottomMargin(0.15);
   float xOff = 0.5;
   //float xOffSyst = 1;
-  float centersX[5] = {5,20,40,70,97.5};
-  float centersXE[5] = {2.5,17.5,37.5,67.5,95.0};
-  float centersXMu[5] = {7.5,22.5,42.5,72.5,100.0};
+  float centersX[5] = {5,20,40,70,95.0};
+  float centersXE[5] = {2.5,17.5,37.5,67.5,92.5};
+  float centersXMu[5] = {7.5,22.5,42.5,72.5,97.5};
   float xErrs[5] = {5-xOff,10-xOff,10-xOff,20-xOff,0};
   //float xSystErrs[5] = {5-xOffSyst,10-xOffSyst,10-xOffSyst,20-xOffSyst,1};
   float xSystErrs[5] = {2.,2.,2.,2.,2.};
@@ -455,12 +455,35 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   ATLASg->Draw("same p");
 
   gStyle->SetLegendBorderSize(0);
-  TLegend * leg2 = new TLegend(0.3,0.57,0.7,0.87);
+  TLegend * leg2 = new TLegend(0.3,0.57,0.7,0.89);
   leg2->SetTextSize(0.06);
+  leg2->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV", "");
   leg2->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "");
-  leg2->AddEntry(v2ComboGraph,"Z #rightarrow l^{+}l^{-}", "ep");
+  leg2->AddEntry(v2ComboGraph,"Z/#gamma* #rightarrow l^{+}l^{-}", "ep");
   leg2->AddEntry(ATLASg,"PRL 110, 022301 (2013)","ep");
   leg2->Draw("same");
+
+  TBox * tickHider3 = new TBox(91,-0.0497,109.8,-0.046);
+  tickHider3->SetFillColor(kWhite);
+  tickHider3->SetLineColor(kWhite);
+  tickHider3->SetLineWidth(0);
+  tickHider3->Draw("same");
+  TBox * tickHider5 = new TBox(91,-0.047,101.5,-0.035);
+  tickHider5->SetFillColor(kWhite);
+  tickHider5->SetLineColor(kWhite);
+  tickHider5->SetLineWidth(0);
+  tickHider5->Draw("same");
+  TBox * tickHider4 = new TBox(91,0.066,109.8,0.0696);
+  tickHider4->SetFillColor(kWhite);
+  tickHider4->SetLineColor(kWhite);
+  tickHider4->SetLineWidth(0);
+  tickHider4->Draw("same");
+  TBox * tickHider6 = new TBox(91,0.06,101.5,0.067);
+  tickHider6->SetFillColor(kWhite);
+  tickHider6->SetLineColor(kWhite);
+  tickHider6->SetLineWidth(0);
+  tickHider6->Draw("same");
+
  
   CMS_lumi(c2,0,10,1.5, true, true, false, false);
   c2->SaveAs("plots/v2/v2Summary_PRL.png");
@@ -485,8 +508,9 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   delete leg2;
   TLegend * leg3 = new TLegend(0.4,0.57,0.8,0.87);
   leg3->SetTextSize(0.06);
-  leg3->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "ep");
-  leg3->AddEntry(v2ComboGraph_noX,"Z #rightarrow l^{+}l^{-}", "ep");
+  leg3->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV", "");
+  leg3->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "");
+  leg3->AddEntry(v2ComboGraph_noX,"Z/#gamma* #rightarrow l^{+}l^{-}", "ep");
   leg3->AddEntry(ATLASg,"PRL 110, 022301 (2013)","ep");
   leg3->AddEntry(v2EGraph,"Z#rightarrow e^{+}e^{-}","ep");
   leg3->AddEntry(v2MuGraph,"Z#rightarrow #mu^{+}#mu^{-}","ep");

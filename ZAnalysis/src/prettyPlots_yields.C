@@ -349,10 +349,15 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   
   yieldPlot_mumu->Draw();
 
+  TBox * sigmaBox = new TBox(yieldPlot_mumu->GetXaxis()->GetBinLowEdge(1),sigmaNN*1.008,yieldPlot_mumu->GetXaxis()->GetBinUpEdge(yieldPlot_mumu->GetSize()-2),sigmaNN*0.992);
+  sigmaBox->SetLineWidth(0);
+  sigmaBox->SetFillColorAlpha(kMagenta+2,0.2);
   TLine * line1;
   line1 = new TLine(yieldPlot_mumu->GetXaxis()->GetBinLowEdge(1),sigmaNN,yieldPlot_mumu->GetXaxis()->GetBinUpEdge(yieldPlot_mumu->GetSize()-2),sigmaNN);
   line1->SetLineWidth(2);
   line1->SetLineStyle(2);
+  line1->SetLineColor(kMagenta+2);
+  sigmaBox->Draw("same");
   line1->Draw("same");
   //TLatex latex;
   //latex.SetTextSize(0.037);
@@ -373,12 +378,12 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   for(int i = 1; i<10; i++){
     //float inclusivePbPb = yieldCombo->GetBinContent(9);
     //float inclusivePbPb_e = TMath::Sqrt(yieldCombo->GetBinError(9) * yieldCombo->GetBinError(9) + TMath::Power( comboSyst[binMap[9-1]]->GetBinContent(1)* scaleFactor_Combo[9-1] , 2) + TMath::Power( yieldCombo->GetBinContent(9) * TAARelErr[9-1]  ,2));
-    float inclusivePbPb_e = TMath::Power(10,-7) * 0.025*unitScale;
+    //float inclusivePbPb_e = TMath::Power(10,-7) * 0.025*unitScale;
     //hgp->SetBinContent(i,hgPythia->GetBinContent(i) * inclusivePbPb );
     //hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
     hgp->SetBinContent(i,hgPythia->GetBinContent(i) * sigmaNN );
     hgpDiv->SetBinContent(i,hgPythia->GetBinContent(i) * sigmaNN );
-    hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
+    hgp->SetBinError(i,hgPythia->GetBinContent(i) * sigmaNN*0.008 );
     hgpDiv->SetBinError(i,0 );
   }
   hgp->SetFillColor(kGreen-6);
@@ -457,8 +462,8 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
     leg->AddEntry(yieldCombo,"Combined |#eta^{l}| < 2.1","p");
   } else {
     //leg->AddEntry(yieldPlot_mumu24,"#mu^{+}#mu^{-} |y_{Z}| < 2.4","p");
-    leg->AddEntry(yieldPlot_mumu,"Z#rightarrow #mu^{+}#mu^{-}","p");
-    leg->AddEntry(yieldPlot_ee,"Z#rightarrow e^{+}e^{-}","p");
+    leg->AddEntry(yieldPlot_mumu,"Z/#gamma*#rightarrow #mu^{+}#mu^{-}","p");
+    leg->AddEntry(yieldPlot_ee,"Z/gamma*#rightarrow e^{+}e^{-}","p");
     leg->AddEntry(yieldCombo,"Combined","p");
   }
   
@@ -481,7 +486,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   //std::cout << "Max deviation: " << maxDeviationPT << std::endl;
 
   leg->AddEntry(glauberDummy,"Glauber Uncertainties","f");
-  leg->AddEntry(line1,"#sigma^{Z}_{NN} aMC@NLO + EPPS16","l");
+  leg->AddEntry(line1,"#sigma^{Z}_{NN} aMC@NLO + CT14 + EPPS16","lf");
   if(!doAccept) leg->AddEntry(ATLAS,"ATLAS pp |#eta^{l}| < 2.5","p");
   leg->AddEntry(hgp,"Scaled HG-PYTHIA","f");
 
@@ -1028,10 +1033,14 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   cg->GetYaxis()->SetTitleSize(0.07);
   cg->GetYaxis()->SetTitleOffset(0.9);
   cg->GetYaxis()->SetLabelSize(0.055);
-  cg->GetYaxis()->SetRangeUser(0.201,0.65);
+  cg->GetYaxis()->SetRangeUser(0.201,0.6);
   cg->GetXaxis()->SetRangeUser(-1,110);
   cg->SetTitle("");
   cg->Draw("p a");  
+  
+  sigmaBox->SetX2(111);
+  sigmaBox->SetX1(-1);
+  sigmaBox->Draw("same");
 
   hgp_G->SetFillColor(kGreen-6);
   cg_TAA->SetFillColor(kGray+1);
@@ -1045,21 +1054,32 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   line1->SetX1(-1);
   line1->Draw("same");
   TLine * line4;
-  line4 = new TLine(90,0.201,90,0.65);
+  line4 = new TLine(90,0.201,90,0.6);
   line4->SetLineWidth(1);
   line4->SetLineStyle(1);
   line4->Draw("same");  
   
+  TH1D * dummyLine1 = new TH1D("dummyLine1","",1,0,1);
+  dummyLine1->SetFillColorAlpha(kMagenta+2,0.2);
+  dummyLine1->SetLineColor(kMagenta+2);
+  dummyLine1->SetLineStyle(2);
+  dummyLine1->SetLineWidth(2);
+
   cg->Draw("p same");  
- 
-  TLegend * leg2 = new TLegend(0.2,0.1,0.7,0.5);
+
+  TLegend * leg3 = new TLegend(0.3,0.7,0.79,0.85);
+  leg3->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV","");
+  leg3->AddEntry((TObject*)0,"|y_{Z}| < 2.1","");
+  leg3->SetBorderSize(0);
+  leg3->Draw("same");
+  
+  TLegend * leg2 = new TLegend(0.16,0.04,0.74,0.47);
   leg2->SetBorderSize(0);
   leg2->SetFillStyle(0);
   cg->SetFillColor(kGray+1);
   hgp_G->SetLineWidth(0);
-  leg2->AddEntry((TObject*)0,"|y_{Z}| < 2.1",""); 
-  leg2->AddEntry(cg,"Z #rightarrow l^{+}l^{-}","lpef"); 
-  leg2->AddEntry(line1,"#sigma^{Z}_{NN} aMC@NLO + EPPS16","l");
+  leg2->AddEntry(cg,"Z/#gamma* #rightarrow l^{+}l^{-}","lpef"); 
+  leg2->AddEntry(dummyLine1,"#sigma^{Z}_{NN} aMC@NLO + CT14 + EPPS16","fl");
   leg2->AddEntry(hgp_G,"Scaled HG-PYTHIA","f");
   leg2->Draw("same");
  
@@ -1116,6 +1136,38 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   line5->SetLineWidth(1);
   line5->SetLineStyle(1);
   line5->Draw("same");  
+
+  TBox * tickHider = new TBox(90.5,0.76,110.5,0.78);
+  tickHider->SetFillColor(kWhite);
+  tickHider->SetLineColor(kWhite);
+  tickHider->SetLineWidth(0);
+  tickHider->Draw("same");
+  TBox * tickHider2 = new TBox(90.5,1.201,110.5,1.242);
+  tickHider2->SetFillColor(kWhite);
+  tickHider2->SetLineColor(kWhite);
+  tickHider2->SetLineWidth(0);
+  tickHider2->Draw("same");
+  p1->cd();
+  TBox * tickHider3 = new TBox(90.5,0.202,110.5,0.209);
+  tickHider3->SetFillColor(kWhite);
+  tickHider3->SetLineColor(kWhite);
+  tickHider3->SetLineWidth(0);
+  tickHider3->Draw("same");
+  TBox * tickHider5 = new TBox(90.5,0.208,105.5,0.211);
+  tickHider5->SetFillColor(kWhite);
+  tickHider5->SetLineColor(kWhite);
+  tickHider5->SetLineWidth(0);
+  tickHider5->Draw("same");
+  TBox * tickHider4 = new TBox(90.5,0.591,110.5,0.599);
+  tickHider4->SetFillColor(kWhite);
+  tickHider4->SetLineColor(kWhite);
+  tickHider4->SetLineWidth(0);
+  tickHider4->Draw("same");
+  TBox * tickHider6 = new TBox(90.5,0.591,105.5,0.589);
+  tickHider6->SetFillColor(kWhite);
+  tickHider6->SetLineColor(kWhite);
+  tickHider6->SetLineWidth(0);
+  tickHider6->Draw("same");
 
   c2->cd();
   p1->cd();

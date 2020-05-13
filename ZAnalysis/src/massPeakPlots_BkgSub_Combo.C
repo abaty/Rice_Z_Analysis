@@ -491,7 +491,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
 
     p3->cd();
     TLegend *leg = new TLegend(0.65,0.625,0.95,0.85);
-    leg->AddEntry(bkg_tau[i][j][0],"Z #rightarrow #tau^{+}#tau^{-}","f");
+    leg->AddEntry(bkg_tau[i][j][0],"Z/#gamma*#rightarrow#tau^{+}#tau^{-}","f");
     leg->AddEntry(bkg_Wjet[i][j][0],"W^{#pm} + X","f");
     leg->AddEntry(bkg_ttbar[i][j][0],"t#bar{t}","f");
     leg->SetBorderSize(0);
@@ -511,7 +511,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     p1->cd();
     TLegend * leg2 = new TLegend(0.65,0.7,0.9,0.85);
     leg2->AddEntry(massPeakOS[i][j][0],Form("Data (%d-%d%%)",c.getCentBinLow(i),c.getCentBinHigh(i)),"p");
-    leg2->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z MC","f");
+    leg2->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z/#gamma* MC","f");
     leg2->SetBorderSize(0);
     leg2->SetFillStyle(0);
     leg2->SetTextSize(0.065);
