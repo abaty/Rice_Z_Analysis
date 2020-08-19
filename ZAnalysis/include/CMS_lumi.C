@@ -2,7 +2,7 @@
 #include <iostream>
 
 void 
-CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier, bool doCMS, bool doLumi, bool doExtraText, bool do090Lumi )
+CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier, bool doCMS, bool doLumi, bool doExtraText, bool do090Lumi, bool increaseExtraOffset )
 {            
   bool outOfFrame    = false;
   if( iPosX/10==0 ) 
@@ -17,7 +17,7 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier, bool doCMS, b
   if( iPosX/10==1 ) alignX_=1;
   if( iPosX/10==2 ) alignX_=2;
   if( iPosX/10==3 ) alignX_=3;
-  //if( iPosX == 0  ) relPosX = 0.12;
+  if( iPosX == 0  ) relPosX = 0.1;
   int align_ = 10*alignX_ + alignY_;
 
   float H = pad->GetWh();
@@ -144,7 +144,8 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX, float fontMultiplier, bool doCMS, b
 	      latex.SetTextFont(extraTextFont);
 	      latex.SetTextAlign(align_);
 	      latex.SetTextSize(extraTextSize*t*fontMultiplier);
-	      latex.DrawLatex(posX_, posY_- relExtraDY*cmsTextSize*t, extraText);
+	      if(increaseExtraOffset) latex.DrawLatex(posX_, posY_- relExtraDY*cmsTextSize*t*1.5, extraText);
+	      else latex.DrawLatex(posX_, posY_- relExtraDY*cmsTextSize*t, extraText);
 	    }
 	}
     }

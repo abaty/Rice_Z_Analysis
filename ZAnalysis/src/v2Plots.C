@@ -302,7 +302,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   leg->AddEntry(v2Plot,"#mu^{+}#mu^{-}, |#eta_{#mu}|<2.4","p");
   leg->AddEntry(v2EEPlot,"e^{+}e^{-}, |#eta_{e}|<2.1","p");
   leg->AddEntry(v2ComboPlot,"Combined","p");
-  leg->AddEntry(ATLAS,"PRL 110, 022301 (2013)","p");
+  leg->AddEntry(ATLAS,"ATLAS 2.76 TeV PbPb","p");
 
   v2Plot->Draw();
   l->Draw("same");
@@ -467,13 +467,13 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   leg2->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV", "");
   leg2->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "");
   leg2->AddEntry(v2ComboGraph,"Z/#gamma* #rightarrow l^{+}l^{-}", "ep");
-  leg2->AddEntry(ATLASg,"PRL 110, 022301 (2013)","ep");
+  leg2->AddEntry(ATLASg,"ATLAS 2.76 TeV PbPb","ep");
   leg2->Draw("same");
 
   aClone->Draw(); 
   aClone2->Draw(); 
  
-  CMS_lumi(c2,0,10,1.5, true, true, false, false);
+  CMS_lumi(c2,0,0,1.5, true, true, false, false);
   c2->SaveAs("plots/v2/v2Summary_PRL.png");
   c2->SaveAs("plots/v2/v2Summary_PRL.pdf");
   c2->SaveAs("plots/v2/v2Summary_PRL.C");
@@ -499,12 +499,12 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   leg3->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV", "");
   leg3->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "");
   leg3->AddEntry(v2ComboGraph_noX,"Z/#gamma* #rightarrow l^{+}l^{-}", "ep");
-  leg3->AddEntry(ATLASg,"PRL 110, 022301 (2013)","ep");
+  leg3->AddEntry(ATLASg,"ATLAS 2.76 TeV PbPb","ep");
   leg3->AddEntry(v2EGraph,"Z#rightarrow e^{+}e^{-}","ep");
   leg3->AddEntry(v2MuGraph,"Z#rightarrow #mu^{+}#mu^{-}","ep");
   leg3->SetFillStyle(0);
   leg3->Draw("same");
-  CMS_lumi(c2,0,10,1.5,true,true,true,false);
+  CMS_lumi(c2,0,10,1.5,true,true,false,false);
   c2->SaveAs("plots/v2/v2Summary_PRL_AllChannels.png");
   c2->SaveAs("plots/v2/v2Summary_PRL_AllChannels.pdf");
   c2->SaveAs("plots/v2/v2Summary_PRL_AllChannels.C");

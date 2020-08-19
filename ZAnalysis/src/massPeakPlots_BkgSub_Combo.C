@@ -135,10 +135,10 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
  
     //do normalizations for MC
     float DY_norm = MC_nEvents_DY->Integral();
-    massPeakOS_DYsignal[i][j]->Scale(s.DY_XS/DY_norm);
-    massPeakOS_DYphoton[i][j]->Scale(s.DY_XS/DY_norm);
-    massPeakOS_DYtautau[i][j]->Scale(s.DY_XS/DY_norm);
-    massPeakSS_DY[i][j]->Scale(s.DY_XS/DY_norm);
+    massPeakOS_DYsignal[i][j]->Scale(s.DY_XS*s.crossSectionModifier/DY_norm);
+    massPeakOS_DYphoton[i][j]->Scale(s.DY_XS*s.crossSectionModifier/DY_norm);
+    massPeakOS_DYtautau[i][j]->Scale(s.DY_XS*s.crossSectionModifier/DY_norm);
+    massPeakSS_DY[i][j]->Scale(s.DY_XS*s.crossSectionModifier/DY_norm);
 
     float Wjet_norm = MC_nEvents_Wjet->Integral();
     massPeakOS_Wjet[i][j]->Scale(s.Wjet_XS/Wjet_norm);
@@ -210,19 +210,19 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
       //bkg_tau[i][j][k] = (TH1D*) fraction_tau[i][j]->Clone(Form("%sBkg_tau%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
       //bkg_tau[i][j][k]->Multiply(massPeakOS_minusSSAndPhoton[i][j][k]);
       bkg_tau[i][j][k] = (TH1D*) massPeakOS_DYtautau[i][j]->Clone(Form("%sBkg_tau%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-      bkg_tau[i][j][k]->Scale(s.muLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9 * 67.6/70.0); //5.649 is 0-100% TAA, 7644 is the total MB xsection for PbPb in mb, last fraction is because we used older Ncol scaling values that had sigma of 70 for MB pp
+      bkg_tau[i][j][k]->Scale(s.muLumi / s.netLumi * s.Nmb / 0.9 * 5.649e-9 * 67.6/70.0); //5.649 is 0-100% TAA, 7644 is the total MB xsection for PbPb in mb, last fraction is because we used older Ncol scaling values that had sigma of 70 for MB pp
     
       //ttbar
       //bkg_ttbar[i][j][k] = (TH1D*) fraction_ttbar[i][j]->Clone(Form("%sBkg_ttbar%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
       //bkg_ttbar[i][j][k]->Multiply(massPeakOS_minusSSAndPhoton[i][j][k]);
       bkg_ttbar[i][j][k] = (TH1D*) massPeakOS_ttbar[i][j]->Clone(Form("%sBkg_ttbar%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-      bkg_ttbar[i][j][k]->Scale(s.muLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9 * 67.6/70.0);//see tau tau comment above
+      bkg_ttbar[i][j][k]->Scale(s.muLumi / s.netLumi * s.Nmb / 0.9 * 5.649e-9 * 67.6/70.0);//see tau tau comment above
 
       //Wjet
       //bkg_Wjet[i][j][k] = (TH1D*) fraction_Wjet[i][j]->Clone(Form("%sBkg_Wjet%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
       //bkg_Wjet[i][j][k]->Multiply(massPeakOS_minusSSAndPhoton[i][j][k]);
       bkg_Wjet[i][j][k] = (TH1D*) massPeakOS_Wjet[i][j]->Clone(Form("%sBkg_Wjet%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-      bkg_Wjet[i][j][k]->Scale(s.muLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9* 67.6/70.0);//see W jet comment
+      bkg_Wjet[i][j][k]->Scale(s.muLumi / s.netLumi * s.Nmb / 0.9 * 5.649e-9* 67.6/70.0);//see W jet comment
 
     //remove these backgrounds
       massPeakOS_minusAll[i][j][k] = (TH1D*) massPeakOS_minusSSAndPhoton[i][j][k]->Clone(Form("%sOS_minusAll%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
@@ -257,10 +257,10 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
  
     //do normalizations for MC
     float DY_norm = MC_nEvents_DYE->Integral();
-    massPeakOS_DYsignalE[i][j]->Scale(s.DY_XS/DY_norm);
-    massPeakOS_DYphotonE[i][j]->Scale(s.DY_XS/DY_norm);
-    massPeakOS_DYtautauE[i][j]->Scale(s.DY_XS/DY_norm);
-    massPeakSS_DYE[i][j]->Scale(s.DY_XS/DY_norm);
+    massPeakOS_DYsignalE[i][j]->Scale(s.DY_XS*s.crossSectionModifier/DY_norm);
+    massPeakOS_DYphotonE[i][j]->Scale(s.DY_XS*s.crossSectionModifier/DY_norm);
+    massPeakOS_DYtautauE[i][j]->Scale(s.DY_XS*s.crossSectionModifier/DY_norm);
+    massPeakSS_DYE[i][j]->Scale(s.DY_XS*s.crossSectionModifier/DY_norm);
 
     float Wjet_norm = MC_nEvents_WjetE->Integral();
     massPeakOS_WjetE[i][j]->Scale(s.Wjet_XS/Wjet_norm);
@@ -332,19 +332,19 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
       //bkg_tauE[i][j][k] = (TH1D*) fraction_tauE[i][j]->Clone(Form("%sBkg_tau%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
       //bkg_tauE[i][j][k]->Multiply(massPeakOS_minusSSAndPhotonE[i][j][k]);
       bkg_tauE[i][j][k] = (TH1D*) massPeakOS_DYtautauE[i][j]->Clone(Form("%sBkg_tau%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-      bkg_tauE[i][j][k]->Scale(s.eLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9* 67.6/70.0); //5.649 is 0-100% TAA, 7644 is the total MB xsection for PbPb in mb, last fraction is because we used older Ncol scaling values that had sigma of 70 for MB pp
+      bkg_tauE[i][j][k]->Scale(s.eLumi / s.netLumi * s.Nmb / 0.9 * 5.649e-9* 67.6/70.0); //5.649 is 0-100% TAA, 7644 is the total MB xsection for PbPb in mb, last fraction is because we used older Ncol scaling values that had sigma of 70 for MB pp
     
       //ttbar
       //bkg_ttbarE[i][j][k] = (TH1D*) fraction_ttbarE[i][j]->Clone(Form("%sBkg_ttbar%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
       //bkg_ttbarE[i][j][k]->Multiply(massPeakOS_minusSSAndPhotonE[i][j][k]);
       bkg_ttbarE[i][j][k] = (TH1D*) massPeakOS_ttbarE[i][j]->Clone(Form("%sBkg_ttbar%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-      bkg_ttbarE[i][j][k]->Scale(s.eLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9 * 67.6/70.0);//see tau tau comment above
+      bkg_ttbarE[i][j][k]->Scale(s.eLumi / s.netLumi * s.Nmb / 0.9 * 5.649e-9 * 67.6/70.0);//see tau tau comment above
 
       //Wjet
       //bkg_WjetE[i][j][k] = (TH1D*) fraction_WjetE[i][j]->Clone(Form("%sBkg_Wjet%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
       //bkg_WjetE[i][j][k]->Multiply(massPeakOS_minusSSAndPhotonE[i][j][k]);
       bkg_WjetE[i][j][k] = (TH1D*) massPeakOS_WjetE[i][j]->Clone(Form("%sBkg_Wjet%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
-      bkg_WjetE[i][j][k]->Scale(s.eLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9* 67.6/70.0);//see W jet comment
+      bkg_WjetE[i][j][k]->Scale(s.eLumi / s.netLumi * s.Nmb / 0.9 * 5.649e-9* 67.6/70.0);//see W jet comment
 
     //remove these backgrounds
       massPeakOS_minusAllE[i][j][k] = (TH1D*) massPeakOS_minusSSAndPhotonE[i][j][k]->Clone(Form("%sOS_minusAll%s_%d_%d",h.name.at(j).c_str(),h.variationName.at(k).c_str(),c.getCentBinLow(i),c.getCentBinHigh(i)));
@@ -468,7 +468,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     //float dataIntegral = massPeakOS[i][j][0]->Integral() - massPeakSS_ChargeFlipCorrected[i][j][0]->Integral();
     //massPeakOS_DYsignalMinusPhoton[i][j]->Scale(dataIntegral/integralDYSignal);
     
-    massPeakOS_DYsignalMinusPhoton[i][j]->Scale(s.muLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9 * 67.6/70.0);//see tau tau background comment for magic numbers;
+    massPeakOS_DYsignalMinusPhoton[i][j]->Scale(s.muLumi / s.netLumi * s.Nmb / 0.9 * 5.649e-9 * 67.6/70.0);//see tau tau background comment for magic numbers;
     massPeakOS_DYsignalMinusPhoton[i][j]->Add(massPeakSS_ChargeFlipCorrected[i][j][0]);
     massPeakOS_DYsignalMinusPhoton[i][j]->SetFillColor(kOrange+1);
     massPeakOS_DYsignalMinusPhoton[i][j]->SetLineColor(kBlack);
@@ -476,7 +476,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
     //float integralDYSignalE = massPeakOS_DYsignalMinusPhotonE[i][j]->Integral();
     //float dataIntegralE = massPeakOSE[i][j][0]->Integral() - massPeakSS_ChargeFlipCorrectedE[i][j][0]->Integral();
     //massPeakOS_DYsignalMinusPhotonE[i][j]->Scale(dataIntegralE/integralDYSignalE);
-    massPeakOS_DYsignalMinusPhotonE[i][j]->Scale(s.eLumi / s.netLumi * 11.536e9 / 0.9 * 5.649e-9* 67.6/70.0);//see tau tau background comment for magic numbers;
+    massPeakOS_DYsignalMinusPhotonE[i][j]->Scale(s.eLumi / s.netLumi * s.Nmb / 0.9 * 5.649e-9* 67.6/70.0);//see tau tau background comment for magic numbers;
     massPeakOS_DYsignalMinusPhotonE[i][j]->Add(massPeakSS_ChargeFlipCorrectedE[i][j][0]);
     massPeakOS_DYsignalMinusPhotonE[i][j]->SetFillColor(kOrange+1);
     massPeakOS_DYsignalMinusPhotonE[i][j]->SetLineColor(kBlack);
@@ -510,7 +510,7 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
    
     p1->cd();
     TLegend * leg2 = new TLegend(0.65,0.7,0.9,0.85);
-    leg2->AddEntry(massPeakOS[i][j][0],Form("Data (%d-%d%%)",c.getCentBinLow(i),c.getCentBinHigh(i)),"p");
+    leg2->AddEntry(massPeakOS[i][j][0],"Data","p");
     leg2->AddEntry(massPeakOS_DYsignalMinusPhoton[i][j],"Z/#gamma* MC","f");
     leg2->SetBorderSize(0);
     leg2->SetFillStyle(0);
@@ -588,8 +588,8 @@ void plotMassPeaks_BkgSub(std::string data_, std::string DY_, std::string ttbar_
 
     p1->SetLogy();
     p3->SetLogy();
-    CMS_lumi(p3,0,10,1.9,false,true);
-    CMS_lumi(p1,0,10,1.9,true,false);
+    CMS_lumi(p3,0,10,1.9,false,true,false, true, true);
+    CMS_lumi(p1,0,10,1.9,true,false,true, false, true);
 
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log_Combined.png",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)1, c.getCentBinLow(i),c.getCentBinHigh(i)));
     c1->SaveAs(Form("plots/%ss_withBkgSub/%s_withSub_isMu%d_%d_%d_log_Combined.pdf",h.name.at(j).c_str(),h.name.at(j).c_str(),(int)1, c.getCentBinLow(i),c.getCentBinHigh(i)));

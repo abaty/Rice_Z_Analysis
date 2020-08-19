@@ -23,6 +23,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   HistNameHelper helper = HistNameHelper();
 
   float unitScale  = 1.0;
+  float unitScaleTh  = 1000.0;
 
   //ptCorrector ptCorr = ptCorrector("resources/Z2mumu_Efficiencies.root","resources/Z2ee_EfficiencyMC_0.root");
 
@@ -79,27 +80,29 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
   EPPS16Pt->SetFillColor(kBlue);
   EPPS16Pt->SetLineColor(kBlue);
-  EPPS16Pt->SetMarkerColor(kBlue);
+  EPPS16Pt->SetMarkerColorAlpha(kBlue,0);
   EPPS16Pt->SetFillStyle(1001);
   EPPS16Pt->SetFillColorAlpha(kBlue,0.5);
   EPPS16Rap->SetFillColor(kBlue);
   EPPS16Rap->SetLineColor(kBlue);
-  EPPS16Rap->SetMarkerColor(kBlue);
+  EPPS16Rap->SetMarkerColorAlpha(kBlue,0);
   EPPS16Rap->SetFillStyle(1001);
   EPPS16Rap->SetFillColorAlpha(kBlue,0.5);
   nCTEQ15Pt->SetFillColor(kRed+1);
   nCTEQ15Pt->SetFillStyle(3354);
   nCTEQ15Pt->SetLineColor(kRed+1);
-  nCTEQ15Pt->SetMarkerSize(0);
+  nCTEQ15Pt->SetMarkerColorAlpha(kRed+1,0);
   nCTEQ15Rap->SetFillColor(kRed+1);
   nCTEQ15Rap->SetFillStyle(3354);
   nCTEQ15Rap->SetLineColor(kRed+1);
   nCTEQ15Rap->SetMarkerSize(0);
+  nCTEQ15Rap->SetMarkerColorAlpha(kRed+1,0);
   CT14Rap->SetMarkerSize(0);
+  CT14Rap->SetMarkerColorAlpha(kGreen+2,0);
   CT14Rap->SetFillColor(kGreen+2);
   CT14Rap->SetLineColor(kGreen+2);
   CT14Rap->SetFillStyle(3345); 
-  CT14Pt->SetMarkerSize(0);
+  CT14Pt->SetMarkerColorAlpha(kGreen+2,0);
   CT14Pt->SetFillColor(kGreen+2);
   CT14Pt->SetLineColor(kGreen+2);
   CT14Pt->SetFillStyle(3345); 
@@ -281,7 +284,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
 
   //make muon plot
-  y_e->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{dy} (#mub)");
+  y_e->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{d|y_{Z}|} (#mub)");
 
   TCanvas * c1 = new TCanvas("c1","c1",800,800);
   c1->SetLeftMargin(0.2);
@@ -317,11 +320,14 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
 
   TExec *setex2 = new TExec("setex2","gStyle->SetErrorX(0.5)");
   setex2->Draw();
-  float TAA090 = 6.274;
-  float TAA0100 = 5.649;
-  EPPS16Rap->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
-  nCTEQ15Rap->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
-  CT14Rap->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  //float TAA090 = 6.274;
+  //float TAA0100 = 5.649;
+  //EPPS16Rap->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  //nCTEQ15Rap->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  //CT14Rap->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  EPPS16Rap->Scale(unitScaleTh);//need to convert to ub
+  nCTEQ15Rap->Scale(unitScaleTh);//need to convert to ub
+  CT14Rap->Scale(unitScaleTh);//need to convert to ub
   EPPS16Rap->Draw("same E2");
   nCTEQ15Rap->Draw("same E2");
   TExec *setex1 = new TExec("setex1","gStyle->SetErrorX(0)");
@@ -368,8 +374,8 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     //ly->AddEntry(y_mu21,"Z #rightarrow #mu^{+}#mu^{-} (|y_{Z}|<2.1)","p");
     ly->AddEntry(y_e,"Z/#gamma* #rightarrow e^{+}e^{-}","p");
     ly->AddEntry(combo[2],"Combined","p");
-    ly->AddEntry(EPPS16Rap,"aMC@NLO + CT14 + EPPS16","F");
-    ly->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
+    ly->AddEntry(EPPS16Rap,"MG5_aMC@NLO + CT14 + EPPS16","F");
+    ly->AddEntry(nCTEQ15Rap,"MG5_aMC@NLO + nCTEQ15","F");
   }
   ly->Draw("same");
   
@@ -402,7 +408,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   y_e->GetXaxis()->SetTitleSize(0.08);
   y_e->GetXaxis()->SetLabelSize(0.08);
   y_e->GetYaxis()->SetNdivisions(5,5,0,true);
-  y_e->GetXaxis()->SetTitle("|y|");
+  y_e->GetXaxis()->SetTitle("|y_{Z}|");
   y_e->GetXaxis()->SetNdivisions(408,false);
   y_e->Draw("p");
 
@@ -423,11 +429,11 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   combo[2]->Draw("p same");
   y_mu24->Draw("p same");
   for(int i = combo[2]->GetSize()/2; i<combo[2]->GetSize()-1; i++){
-      helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.1,(Color_t)kBlack); 
+      helper.drawBoxAbsolute(combo[2], i , netBoxy[i], comboSyst[2]->GetBinContent(i),0.145,(Color_t)kBlack); 
   }
   for(int i = 1; i<y_mu24->GetSize()-1; i++){
       if(i==1 || i==y_mu24->GetSize()-2){
-        helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.1,(Color_t)kBlack); 
+        helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.145,(Color_t)kBlack); 
       }
   }
   TLegend *ly2 = new TLegend(0.165,0.225,0.765,0.625);
@@ -435,9 +441,9 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ly2->SetFillStyle(0);
   ly2->AddEntry(combo[2],"Z/#gamma* #rightarrow l^{+}l^{-}","ple");
   ly2->AddEntry(y_mu24,"Z/#gamma* #rightarrow #mu^{+}#mu^{-}","ple");
-  ly2->AddEntry(nCTEQ15Rap,"aMC@NLO + nCTEQ15","F");
-  ly2->AddEntry(CT14Rap,"aMC@NLO + CT14","F");
-  ly2->AddEntry(EPPS16Rap,"aMC@NLO + CT14 + EPPS16","F");
+  ly2->AddEntry(CT14Rap,"MG5_aMC@NLO + CT14","F");
+  ly2->AddEntry(nCTEQ15Rap,"MG5_aMC@NLO + nCTEQ15","F");
+  ly2->AddEntry(EPPS16Rap,"MG5_aMC@NLO + CT14 + EPPS16","F");
   ly2->Draw("same");
   TLegend * ly3 = new TLegend(0.5,0.8,0.9,0.875);
   ly3->SetBorderSize(0);
@@ -446,7 +452,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ly3->Draw("same");
   
   c2->RedrawAxis();
-  CMS_lumi(c2,0,10,1.5, true, true, false, true);
+  CMS_lumi(c2,0,0,1.5, true, true, false, true);
 
   std::cout << "Rapidity Compatibility" << std::endl;
   float maxDeviationY = -99;
@@ -493,7 +499,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   c1->SetBottomMargin(0.2);
  
   //make pt plot
-  pt_e->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{dp_{T}} (#mub/GeV)");
+  pt_e->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{dp_{T}^{Z}} (#mub/GeV)");
   
   pt_mu24->SetMarkerColor(kBlue);
   pt_mu24->SetMarkerStyle(21);
@@ -507,7 +513,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   pt_e->SetMarkerStyle(25);
   pt_e->SetLineColor(kRed+1);
     
-  TH1D * dummy = new TH1D("dummy",";p_{T} (GeV);#frac{d#sigma_{Z}}{dp_{T}} (#mub/GeV)",2,0.1,200);
+  TH1D * dummy = new TH1D("dummy",";p_{T}^{Z} (GeV);#frac{d#sigma_{Z}}{dp_{T}^{Z}} (#mub/GeV)",2,0.1,200);
   dummy->SetBinContent(1,pt_mu24->GetMaximum());
   dummy->SetBinContent(2,pt_e->GetMinimum());
   dummy->SetLineColor(kWhite);
@@ -523,9 +529,12 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
  
   setex2->Draw();
   
-  EPPS16Pt->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
-  nCTEQ15Pt->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
-  CT14Pt->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  //EPPS16Pt->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  //nCTEQ15Pt->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  //CT14Pt->Scale(unitScale * s.sigmaMBPbPb * TMath::Power(10,6) * TAA0100/TAA090);//need to convert to ub
+  EPPS16Pt->Scale(unitScaleTh);//need to convert to ub
+  nCTEQ15Pt->Scale(unitScaleTh);//need to convert to ub
+  CT14Pt->Scale(unitScaleTh);//need to convert to ub
   
   EPPS16Pt->Draw("same E2"); 
   nCTEQ15Pt->Draw("same E2"); 
@@ -576,8 +585,8 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     lpt->AddEntry(pt_mu21,"Z/#gamma* #rightarrow #mu^{+}#mu^{-}","p");
     lpt->AddEntry(pt_e,"Z/#gamma* #rightarrow e^{+}e^{-}","p");
     lpt->AddEntry(combo[1],"Combined","p");
-    lpt->AddEntry(EPPS16Pt,"aMC@NLO + CT14 + EPPS16","F");
-    lpt->AddEntry(nCTEQ15Pt,"aMC@NLO + nCTEQ15","F");
+    lpt->AddEntry(EPPS16Pt,"MG5_aMC@NLO + CT14 + EPPS16","F");
+    lpt->AddEntry(nCTEQ15Pt,"MG5_aMC@NLO + nCTEQ15","F");
   }
   lpt->Draw("same");
   
@@ -634,8 +643,8 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ratioNCTEQ15->Divide(combo[1]);
   ratioNCTEQ15->SetLineColor(kRed+1);
   ratioNCTEQ15->SetMarkerColor(kRed+1);
-  ratioNCTEQ15->SetMarkerStyle(25);
-  ratioNCTEQ15->SetMarkerSize(1);
+  ratioNCTEQ15->SetMarkerStyle(27);
+  ratioNCTEQ15->SetMarkerSize(1.2);
   ratioNCTEQ15->Draw("same p");
   TH1D * ratioCT14 = (TH1D*)CT14Pt->Clone("ratioCT14");
   ratioCT14->Divide(combo[1]);
@@ -736,7 +745,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   dummy->GetYaxis()->SetLabelSize(0.065);
   dummy->GetYaxis()->SetLabelOffset(0.00);
   dummy->GetYaxis()->SetRangeUser(0.0005*pt_mu24->GetMaximum() , pt_mu24->GetMaximum()*1.4 ); 
-  dummy->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{dp_{T}} (#mub/GeV)");
+  dummy->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{dp_{T}^{Z}} (#mub/GeV)");
   dummy->DrawCopy();
  
   setex2->Draw();
@@ -757,16 +766,16 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   TLegend *lpt2 = new TLegend(0.175,0.05,0.775,0.675);
   lpt2->SetBorderSize(0);
   lpt2->SetFillStyle(0);
-  lpt2->AddEntry((TObject*)0,"|y_{Z}| > 2.1","");
+  lpt2->AddEntry((TObject*)0,"|y_{Z}| < 2.1","");
   lpt2->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV","");
   lpt2->AddEntry(combo[1],"Z/#gamma* #rightarrow l^{+}l^{-}","lep");
-  lpt2->AddEntry(nCTEQ15Pt,"aMC@NLO + nCTEQ15","F");
-  lpt2->AddEntry(CT14Pt,"aMC@NLO + CT14","F");
-  lpt2->AddEntry(EPPS16Pt,"aMC@NLO + CT14 + EPPS16","F");
+  lpt2->AddEntry(CT14Pt,"MG5_aMC@NLO + CT14","F");
+  lpt2->AddEntry(nCTEQ15Pt,"MG5_aMC@NLO + nCTEQ15","F");
+  lpt2->AddEntry(EPPS16Pt,"MG5_aMC@NLO + CT14 + EPPS16","F");
   lpt2->Draw("same");
   
   p1->RedrawAxis();
-  CMS_lumi(p1,0,10,2.0, true, true, false, true);
+  CMS_lumi(p1,0,0,2.0, true, true, false, true,true);
   
   p2->cd();
   p2->SetLogx();
@@ -801,7 +810,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   lptR2->AddEntry(ratioCT14,"CT14","p");
   lptR2->AddEntry(ratioEPPS16,"CT14 + EPPS16","p");
   lptR2->AddEntry(ratioNCTEQ15,"nCTEQ15","p");
-  lptR2->AddEntry(datErr,"Syst. Uncertainty","f");
+  lptR2->AddEntry(datErr,"Syst. uncertainty","f");
   lptR2->Draw("same");
 
   c1->SaveAs("plots/prettyPlots/pt_Pretty_withAccept_PRL.png"); 

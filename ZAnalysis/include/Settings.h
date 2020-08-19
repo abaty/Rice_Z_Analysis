@@ -7,9 +7,9 @@ public:
 
   double sigmaMBPbPb = 7.644;
 
-  double Nmb = 11536000857;
-  double NmbUp = 1.012*11536000857;
-  double NmbDown = 0.988*11536000857;
+  double Nmb = 11775759052;
+  double NmbUp = 1.012*11775759052;
+  double NmbDown = 0.988*11775759052;
 
   double muLumi = 1682.8;
   double eLumi = 1670.7 ;
@@ -57,6 +57,8 @@ public:
   double Wjet_XS = 21159;
   double DY_XS = 2010;
 
+  //to convert from default DY_XS to EPPS16 one (used only in mass peaks)
+  float crossSectionModifier = 0.92623216;
   
 private:
 

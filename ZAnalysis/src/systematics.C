@@ -97,14 +97,21 @@ void systematics(std::string file, std::string hiBin1, std::string hiBin2, std::
       //result[i][j][0][1]->Scale(1.01);
       averageHists( result[i][j][0][1], result2[i][j][0][1], isMu21, isEE, j==2 );//j==2 is rapidity plots
       if(j==1 || j==2) addInQuad(result[i][j][0][1], 0.019); //adding lumi uncertainty
-      else addInQuad(result[i][j][0][1], 0.012); //adding Nmb uncertainty
-
+      else {
+        if(i==25)      addInQuad(result[i][j][0][1], 0.0126); //adding 0-90% Nmb uncertainty
+        else if(i==16) addInQuad(result[i][j][0][1], 0.05); //adding 70-90% Nmb uncertainty
+        else           addInQuad(result[i][j][0][1], 0.00611); //adding other Nmb uncertainty
+      }
       result[i][j][0][2]->Divide(result[i][j][0][0]);//cent down, include Nmb scaling here
       result2[i][j][0][2]->Divide(result2[i][j][0][0]);//cent down, include Nmb scaling here
       //result[i][j][0][2]->Scale(0.995);
       averageHists( result[i][j][0][2], result2[i][j][0][2], isMu21, isEE, j==2  );//j==2 is rapidity plots
       if(j==1 || j==2) addInQuad(result[i][j][0][2], 0.019); //adding lumi uncertainty
-      else  addInQuad(result[i][j][0][2], 0.012);//Nmb uncertainty
+      else{
+        if(i==25)      addInQuad(result[i][j][0][2], 0.0126); //adding 0-90% Nmb uncertainty
+        else if(i==16) addInQuad(result[i][j][0][2], 0.05); //adding 70-90% Nmb uncertainty
+        else           addInQuad(result[i][j][0][2], 0.00611); //adding other Nmb uncertainty
+      }
     }
   }
 

@@ -39,5 +39,5 @@ TString lumi_sqrtS090 = "1.7 nb^{-1} (5.02 TeV PbPb 0-100%)";
 
 bool drawLogo      = false;
 
-void CMS_lumi( TPad* pad, int iPeriod=3, int iPosX=10, float fontMultiplier = 1.0, bool doCMS = true, bool doLumi = true, bool doExtraText = false, bool do090Lumi = false );
+void CMS_lumi( TPad* pad, int iPeriod=3, int iPosX=10, float fontMultiplier = 1.0, bool doCMS = true, bool doLumi = true, bool doExtraText = false, bool do090Lumi = false, bool increaseExtraOffset = false );
 
