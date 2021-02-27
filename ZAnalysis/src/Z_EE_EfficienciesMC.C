@@ -320,6 +320,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
 
   unsigned int nFiles = files.size();
   if(isTest) nFiles = 662;
+  //if(isTest) nFiles = 20;
   for(unsigned int f = 0; f<nFiles; f++){
     timer.StartSplit("Opening Files");
 
@@ -1268,15 +1269,18 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
     theoryPtScaleVariations[w]->Scale(s.DY_XS*0.5*Asq/theoryEventWeights.at(0)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
     histHelper.makeDifferential( theoryPtScaleVariations[w] );
     theoryPtScaleVariations[w]->Write();
+    if(w>0) theoryPtScaleVariations[w]->Divide(theoryPtScaleVariations[0]);
   }
   for(int w = 0; w<=8; w++){
     theoryRapScaleVariations[w]->Scale(s.DY_XS*0.5*Asq/theoryEventWeights.at(0)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
     histHelper.makeDifferential( theoryRapScaleVariations[w] );
     theoryRapScaleVariations[w]->Write();
+    if(w>0) theoryRapScaleVariations[w]->Divide(theoryRapScaleVariations[0]);
   }
   for(int w = 0; w<=8; w++){
     theoryNetScaleVariations[w]->Scale(s.DY_XS*0.5/theoryEventWeights.at(0)/unitConversion); //add the factor of 0.5 because we use both the mu and e channel for this, but for comparison we only use one channel
     theoryNetScaleVariations[w]->Write();
+    if(w>0) theoryNetScaleVariations[w]->Divide(theoryNetScaleVariations[0]);
   }
 
   TH1D* theoryPtCT14_Band = new TH1D("theoryCT14_pt_Band","theoryCT14_pt_Band",s.nZPtBins-1,s.zPtBins);
@@ -1286,8 +1290,51 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   TH1D* theoryRapnCTEQ15_Band = new TH1D("theorynCTEQ15_rap_Band","theorynCTEQ15_rap_Band",s.nZRapBins,-s.maxZRap,s.maxZRap);
   TH1D* theoryRapEPPS16_Band = new TH1D("theoryEPPS16_rap_Band","theoryEPPS16_rap_Band",s.nZRapBins,-s.maxZRap,s.maxZRap);
   TH1D* theoryNetEPPS16_Band = new TH1D("theoryEPPS16_Net_Band","theoryEPPS16_Net_Band",1,0,1);
+  TH1D* theoryRapScales_Band = new TH1D("theoryScales_rap_Band","theoryScales_rap_Band",s.nZRapBins,-s.maxZRap,s.maxZRap);
+  TH1D* theoryNetScales_Band = new TH1D("theoryScales_Net_Band","theoryScales_Net_Band",1,0,1);
+  TH1D* theoryPtScales_Band = new TH1D("theoryScales_pt_Band","theoryScales_pt_Band",s.nZPtBins-1,s.zPtBins);
   float max[100];
   float min[100];
+  //Scales
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 1; w<=8; w++){
+    for(int i = 0; i<theoryPtScales_Band->GetSize(); i++){
+      if(theoryPtScaleVariations[w]->GetBinContent(i) < min[i]) min[i] = theoryPtScaleVariations[w]->GetBinContent(i);
+      if(theoryNetScaleVariations[w]->GetBinContent(i) > max[i]) max[i] = theoryPtScaleVariations[w]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryPtScales_Band->GetSize(); i++){
+    theoryPtScales_Band->SetBinContent(i,1);
+    theoryPtScales_Band->SetBinError(i,TMath::Max(max[i]-1,1-min[i]) );//scales envelope symmetrized
+  }
+  theoryPtScales_Band->Write();
+  
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 1; w<=8; w++){
+    for(int i = 0; i<theoryRapScales_Band->GetSize(); i++){
+      if(theoryRapScaleVariations[w]->GetBinContent(i) < min[i]) min[i] = theoryRapScaleVariations[w]->GetBinContent(i);
+      if(theoryNetScaleVariations[w]->GetBinContent(i) > max[i]) max[i] = theoryRapScaleVariations[w]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryRapScales_Band->GetSize(); i++){
+    theoryRapScales_Band->SetBinContent(i,1);
+    theoryRapScales_Band->SetBinError(i,TMath::Max(max[i]-1,1-min[i]) );//scales envelope symmetrized
+  }
+  theoryRapScales_Band->Write();
+  for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
+  for(int w = 1; w<=8; w++){
+    for(int i = 0; i<theoryNetScales_Band->GetSize(); i++){
+      if(theoryNetScaleVariations[w]->GetBinContent(i) < min[i]) min[i] = theoryNetScaleVariations[w]->GetBinContent(i);
+      if(theoryNetScaleVariations[w]->GetBinContent(i) > max[i]) max[i] = theoryNetScaleVariations[w]->GetBinContent(i);
+    }
+  }
+  for(int i = 0; i<theoryNetScales_Band->GetSize(); i++){
+    theoryNetScales_Band->SetBinContent(i,1);
+    theoryNetScales_Band->SetBinError(i,TMath::Max(max[i]-1,1-min[i]) );//scales envelope symmetrized
+  }
+  theoryNetScales_Band->Write();
+
+  //CT14
   for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
   for(int w = 282; w<=338; w++){
     for(int i = 0; i<theoryPtCT14_Band->GetSize(); i++){
@@ -1297,7 +1344,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   }
   for(int i = 0; i<theoryPtCT14_Band->GetSize(); i++){
     theoryPtCT14_Band->SetBinContent(i,((max[i]+min[i])/2.0));
-    theoryPtCT14_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) ) );//scaled down to 1 sigma level and add TAA
+    theoryPtCT14_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + theoryPtScales_Band->GetBinError(i)*theoryPtScales_Band->GetBinError(i)*theoryPtCT14_Band->GetBinContent(i)*theoryPtCT14_Band->GetBinContent(i) ) );//scaled down to 1 sigma level and add TAA
   }
   theoryPtCT14_Band->Write();
   for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
@@ -1309,7 +1356,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   }
   for(int i = 0; i<theoryRapCT14_Band->GetSize(); i++){
     theoryRapCT14_Band->SetBinContent(i,((max[i]+min[i])/2.0));
-    theoryRapCT14_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) ) );//scaled down to 1 sigma level and add TAA
+    theoryRapCT14_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2)  + theoryRapScales_Band->GetBinError(i)*theoryRapScales_Band->GetBinError(i)*theoryRapCT14_Band->GetBinContent(i)*theoryRapCT14_Band->GetBinContent(i) ) );//scaled down to 1 sigma level and add TAA
   }
   theoryRapCT14_Band->Write();
  
@@ -1323,7 +1370,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   }
   for(int i = 0; i<theoryPtnCTEQ15_Band->GetSize(); i++){
     theoryPtnCTEQ15_Band->SetBinContent(i,((max[i]+min[i])/2.0));
-    theoryPtnCTEQ15_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) ) );//scaled down to 1 sigma level and add TAA
+    theoryPtnCTEQ15_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + theoryPtScales_Band->GetBinError(i)*theoryPtScales_Band->GetBinError(i)*theoryPtnCTEQ15_Band->GetBinContent(i)*theoryPtnCTEQ15_Band->GetBinContent(i) ) );//scaled down to 1 sigma level and add TAA
   }
   theoryPtnCTEQ15_Band->Write();
   for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
@@ -1335,7 +1382,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   }
   for(int i = 0; i<theoryRapnCTEQ15_Band->GetSize(); i++){
     theoryRapnCTEQ15_Band->SetBinContent(i,((max[i]+min[i])/2.0));
-    theoryRapnCTEQ15_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) ) );//scaled down to 1 sigma level and add TAA
+    theoryRapnCTEQ15_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2)  + theoryRapScales_Band->GetBinError(i)*theoryRapScales_Band->GetBinError(i)*theoryRapnCTEQ15_Band->GetBinContent(i)*theoryRapnCTEQ15_Band->GetBinContent(i) ) );//scaled down to 1 sigma level and add TAA
   }
   theoryRapnCTEQ15_Band->Write();
 
@@ -1349,7 +1396,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   }
   for(int i = 0; i<theoryPtEPPS16_Band->GetSize(); i++){
     theoryPtEPPS16_Band->SetBinContent(i,((max[i]+min[i])/2.0));
-    theoryPtEPPS16_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) ) );//scaled down to 1 sigma level and add TAA
+    theoryPtEPPS16_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2) + theoryPtScales_Band->GetBinError(i)*theoryPtScales_Band->GetBinError(i)*theoryPtEPPS16_Band->GetBinContent(i)*theoryPtEPPS16_Band->GetBinContent(i) ) );//scaled down to 1 sigma level and add TAA
   }
   theoryPtEPPS16_Band->Write();
   for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
@@ -1361,7 +1408,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   }
   for(int i = 0; i<theoryRapEPPS16_Band->GetSize(); i++){
     theoryRapEPPS16_Band->SetBinContent(i,((max[i]+min[i])/2.0));
-    theoryRapEPPS16_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2)) );//scaled down to 1 sigma level and add TAA
+    theoryRapEPPS16_Band->SetBinError(i,TMath::Sqrt( TMath::Power( ((max[i]-min[i])/2.0/1.644854),2)  + theoryRapScales_Band->GetBinError(i)*theoryRapScales_Band->GetBinError(i)*theoryRapEPPS16_Band->GetBinContent(i)*theoryRapEPPS16_Band->GetBinContent(i) ) );//scaled down to 1 sigma level and add TAA
   }
   theoryRapEPPS16_Band->Write();
   for(int i = 0; i<100; i++){ max[i] = 0; min[i] = 9999999;}
@@ -1373,7 +1420,7 @@ void doZ2EE(std::vector< std::string > files, int jobNumber, bool isTest){
   }
   for(int i = 0; i<theoryNetEPPS16_Band->GetSize(); i++){
     theoryNetEPPS16_Band->SetBinContent(i,((max[i]+min[i])/2.0));
-    theoryNetEPPS16_Band->SetBinError(i,(max[i]-min[i])/2.0/1.644854) ;//scaled down to 1 sigma level and add TAA
+    theoryNetEPPS16_Band->SetBinError(i,TMath::Sqrt(TMath::Power((max[i]-min[i])/2.0/1.644854,2)  + theoryNetScales_Band->GetBinError(i)*theoryNetScales_Band->GetBinError(i)*theoryNetEPPS16_Band->GetBinContent(i)*theoryNetEPPS16_Band->GetBinContent(i) )) ;//scaled down to 1 sigma level and add TAA
   }
   theoryNetEPPS16_Band->Write();
 

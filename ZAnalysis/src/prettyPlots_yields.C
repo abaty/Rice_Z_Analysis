@@ -41,7 +41,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 
 	  float unitScale = TMath::Power(10,6);
 	  //float sigmaNN = 0.487585;
-	  float sigmaNN = 0.43789;
+	  //float sigmaNN = 0.43789;
 
 
 	  CentralityTool c = CentralityTool();
@@ -351,11 +351,16 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   
   yieldPlot_mumu->Draw();
 
-  TBox * sigmaBox = new TBox(yieldPlot_mumu->GetXaxis()->GetBinLowEdge(1),sigmaNN*1.008,yieldPlot_mumu->GetXaxis()->GetBinUpEdge(yieldPlot_mumu->GetSize()-2),sigmaNN*0.992);
+  //uncertainty on theory line
+  float theoryLine = yieldCombo->GetBinContent(9);
+  float theoryUncert = TMath::Sqrt(yieldCombo->GetBinError(9)*yieldCombo->GetBinError(9) + theoryLine*theoryLine* TAARelErr[9-1]*TAARelErr[9-1] + TMath::Power(comboSyst[binMap[9-1]]->GetBinContent(1)* scaleFactor_Combo[9-1]*unitScale,2) ) ; 
+  TBox * sigmaBox = new TBox(yieldPlot_mumu->GetXaxis()->GetBinLowEdge(1),theoryLine+theoryUncert,yieldPlot_mumu->GetXaxis()->GetBinUpEdge(yieldPlot_mumu->GetSize()-2),theoryLine-theoryUncert);
   sigmaBox->SetLineWidth(0);
   sigmaBox->SetFillColorAlpha(kMagenta+2,0.2);
   TLine * line1;
-  line1 = new TLine(yieldPlot_mumu->GetXaxis()->GetBinLowEdge(1),sigmaNN,yieldPlot_mumu->GetXaxis()->GetBinUpEdge(yieldPlot_mumu->GetSize()-2),sigmaNN);
+
+  //theory line
+  line1 = new TLine(yieldPlot_mumu->GetXaxis()->GetBinLowEdge(1),theoryLine,yieldPlot_mumu->GetXaxis()->GetBinUpEdge(yieldPlot_mumu->GetSize()-2),theoryLine);
   line1->SetLineWidth(2);
   line1->SetLineStyle(2);
   line1->SetLineColor(kMagenta+2);
@@ -384,9 +389,9 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
     //float inclusivePbPb_e = TMath::Power(10,-7) * 0.025*unitScale;
     //hgp->SetBinContent(i,hgPythia->GetBinContent(i) * inclusivePbPb );
     //hgp->SetBinError(i,hgPythia->GetBinContent(i) * inclusivePbPb_e );
-    hgp->SetBinContent(i,hgPythia->GetBinContent(i) * sigmaNN );
-    hgpDiv->SetBinContent(i,hgPythia->GetBinContent(i) * sigmaNN );
-    hgp->SetBinError(i,hgPythia->GetBinContent(i) * sigmaNN*0.008 );
+    hgp->SetBinContent(i,hgPythia->GetBinContent(i) * theoryLine );
+    hgpDiv->SetBinContent(i,hgPythia->GetBinContent(i) * theoryLine );
+    hgp->SetBinError(i,hgPythia->GetBinContent(i) * (theoryUncert) );
     hgpDiv->SetBinError(i,0 );
   }
   hgp->SetFillColor(kGreen-6);
@@ -491,7 +496,8 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   //std::cout << "Max deviation: " << maxDeviationPT << std::endl;
 
   leg->AddEntry(glauberDummy,"Glauber Uncertainties","f");
-  leg->AddEntry(line1,"#sigma^{Z}_{NN} MG5_aMC@NLO + CT14 + EPPS16","lf");
+  //leg->AddEntry(line1,"#sigma^{Z}_{NN} MG5_aMC@NLO + CT14 + EPPS16","lf");
+  leg->AddEntry(line1,"0--90% data","lf");
   if(!doAccept) leg->AddEntry(ATLAS,"ATLAS pp |#eta^{l}| < 2.5","p");
   leg->AddEntry(hgp,"T_{AA}-scaled HG-PYTHIA","f");
 
@@ -512,7 +518,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   //calculating probabilities
   
 
-  float fullyCorr = TMath::Sqrt(0.008*0.008 + 0.006*0.006);//0.8% for model, 0.6 for acceptance, 1.1 for Nmb
+  float fullyCorr = TMath::Sqrt(theoryUncert*theoryUncert/theoryLine/theoryLine + 0.006*0.006);//0.8% for model, 0.6 for acceptance, 1.1 for Nmb
 
   //add in the Nmb uncertainty to TAARelErr
   for(int i = 0; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
@@ -532,9 +538,9 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
       float statUncert = yieldCombo->GetBinError(i);
       float systUncert =  comboSyst[binMap[i-1]]->GetBinContent(1)* scaleFactor_Combo[i-1]*unitScale;
       float TAAUncert = yieldCombo->GetBinContent(i) * TAARelErr[i-1];
-      float totalUncert = TMath::Sqrt( statUncert * statUncert + systUncert * systUncert + TAAUncert * TAAUncert + fullyCorr*fullyCorr*TMath::Power(yieldCombo->GetBinContent(i),2) );//0.8% is model uncert
+      float totalUncert = TMath::Sqrt( statUncert * statUncert + systUncert * systUncert + TAAUncert * TAAUncert + fullyCorr*fullyCorr*TMath::Power(yieldCombo->GetBinContent(i) - 2*TAARelErr[i-1]*TAARelErr[9-1],2) );//last factor accounts for TAA correlations
       std::cout << i << " " << totalUncert << std::endl;
-      float theoryFlat = sigmaNN;
+      float theoryFlat = theoryLine;
       float theoryHGPythia = hgp->GetBinContent(i);
 
       if(i==8){
@@ -577,7 +583,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   //std::vector< float > obsHGPythia;
   for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
       float point = yieldCombo->GetBinContent(i);
-      float theoryFlat = sigmaNN;
+      float theoryFlat = theoryLine;
       float theoryHGPythia = hgp->GetBinContent(i);
       obsFlat[i-1][0] = (point-theoryFlat);
       obsHGPythia[i-1][0] = (point-theoryHGPythia);
@@ -646,7 +652,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
       float systUncert =  yieldPlot_ee->GetBinContent(i) * totalError[binMap[i-1]][0]->GetBinContent(1) ;
       float TAAUncert = yieldPlot_ee->GetBinContent(i) * TMath::Sqrt(TAARelErr[i-1] * TAARelErr[i-1] + fullyCorr*fullyCorr);//0.8% is model uncert
       float totalUncert = TMath::Sqrt( statUncert * statUncert + systUncert * systUncert + TAAUncert * TAAUncert );
-      float theoryFlat = sigmaNN;
+      float theoryFlat = theoryLine;
       float theoryHGPythia = hgp->GetBinContent(i);
       std::cout << i << " " << totalUncert << std::endl;
       chi2Flat += TMath::Power( (point-theoryFlat)/totalUncert , 2);
@@ -660,7 +666,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
       float systUncert =  yieldPlot_mumu->GetBinContent(i) * totalError[binMap[i-1]][1]->GetBinContent(1) ;
       float TAAUncert = yieldPlot_mumu->GetBinContent(i) * TMath::Sqrt( TAARelErr[i-1] * TAARelErr[i-1] + fullyCorr*fullyCorr);//0.8% is model uncert
       float totalUncert = TMath::Sqrt( statUncert * statUncert + systUncert * systUncert + TAAUncert * TAAUncert );
-      float theoryFlat = sigmaNN;
+      float theoryFlat = theoryLine;
       float theoryHGPythia = hgp->GetBinContent(i);
       std::cout << i+8 << " " << totalUncert << std::endl;
       chi2Flat += TMath::Power( (point-theoryFlat)/totalUncert , 2);
@@ -690,7 +696,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   //std::vector< float > obsHGPythia;
   for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
       float point = yieldPlot_ee->GetBinContent(i);
-      float theoryFlat = sigmaNN;
+      float theoryFlat = theoryLine;
       float theoryHGPythia = hgp->GetBinContent(i);
       obsFlat2[i-1][0] = (point-theoryFlat);
       obsHGPythia2[i-1][0] = (point-theoryHGPythia);
@@ -763,7 +769,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   TH2D * muCorr = (TH2D*) muCorrf->Get("correlation_TnP");
   for(int i = 1; i<yieldCombo->GetXaxis()->GetNbins()+2-3; i++){
       float point = yieldPlot_mumu->GetBinContent(i);
-      float theoryFlat = sigmaNN;
+      float theoryFlat = theoryLine;
       float theoryHGPythia = hgp->GetBinContent(i);
       obsFlat2[i-1+tempNDOF][0] = (point-theoryFlat);
       obsHGPythia2[i-1+tempNDOF][0] = (point-theoryHGPythia);
@@ -772,7 +778,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 
       float statUncert = yieldPlot_mumu->GetBinError(i);
       float systUncert =  yieldPlot_mumu->GetBinContent(i) * totalError[binMap[i-1]][1]->GetBinContent(1);
-      float TAAUncert = yieldPlot_mumu->GetBinContent(i) * TMath::Sqrt( TAARelErr[i-1] * TAARelErr[i-1] + fullyCorr*fullyCorr);//0.8% is model uncert
+      float TAAUncert = yieldPlot_mumu->GetBinContent(i) * TMath::Sqrt( TAARelErr[i-1] * TAARelErr[i-1] + fullyCorr*fullyCorr - 2*TAARelErr[9-1]*TAARelErr[i-1]);//removing correlated TAA component with minus sign
      
       //statistical diagnoal 
       covarStat2[i-1+tempNDOF][i-1+tempNDOF] = statUncert*statUncert;
@@ -809,7 +815,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
         covarSyst2[i-1+tempNDOF][j-1+tempNDOF] = covarSyst2[i-1+tempNDOF][j-1+tempNDOF] + HFuncert_i * HFuncert_j * yieldPlot_mumu->GetBinContent(i) * yieldPlot_mumu->GetBinContent(j);
    
         //TAA
-        covarTAA2[i-1+tempNDOF][j-1+tempNDOF] = TAAUncert * yieldPlot_mumu->GetBinContent(j) * TMath::Sqrt( TAARelErr[j-1] * TAARelErr[j-1] + fullyCorr*fullyCorr);//0.8% is model uncert
+        covarTAA2[i-1+tempNDOF][j-1+tempNDOF] = TAAUncert * yieldPlot_mumu->GetBinContent(j) * TMath::Sqrt( TAARelErr[j-1] * TAARelErr[j-1] - 2*TAARelErr[9-1]*TAARelErr[j-1] + fullyCorr*fullyCorr);//removing correlated fraction from 0-90% TAA with minus sign
         //extra for the e-mu cross correlation for TAA (already done in the previous iteration from symmetry)
         //covarTAA2[i-1+tempNDOF][j-1] = TAAUncert * yieldPlot_ee->GetBinContent(j) * TMath::Sqrt(TAARelErr[j-1] * TAARelErr[j-1] + fullyCorr*fullyCorr);//0.8% is model uncert
       }
@@ -914,7 +920,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
    TMatrixD ComboHGPythiaT2 = TMatrixD(1,8);
   for(int i = 1; i<9; i++){
     float point = yieldCombo->GetBinContent(i);
-    float theoryFlat = sigmaNN;
+    float theoryFlat = theoryLine;
     float theoryHGPythia = hgp->GetBinContent(i);
     ComboFlat2[i-1][0] = point-theoryFlat;
     ComboHGPythia2[i-1][0] =  point-theoryHGPythia;
@@ -945,7 +951,7 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   for(int i = 0; i<3; i++){
     float point = yieldCombo->GetBinContent(i+6);
     std::cout << point << std::endl;
-    float theoryFlat = sigmaNN;
+    float theoryFlat = theoryLine;
     float theoryHGPythia = hgp->GetBinContent(i+6);
     Combo3Flat2[i][0] = point-theoryFlat;
     Combo3HGPythia2[i][0] =  point-theoryHGPythia;
@@ -1011,12 +1017,12 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   c2->SetLineWidth(0);
   p1->SetBottomMargin(0);
   p1->SetLeftMargin(0.15);
-  p1->SetRightMargin(0.05);
+  p1->SetRightMargin(0.001);
   p1->SetBorderSize(0);
   p1->Draw();
   p2->SetTopMargin(0);
   p2->SetLeftMargin(0.15);
-  p2->SetRightMargin(0.05);
+  p2->SetRightMargin(0.001);
   p2->SetBottomMargin(0.5);
   p2->SetBorderSize(0);
   p2->Draw();
@@ -1077,8 +1083,10 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
   cg_TAA->SetFillColor(kGray+1);
   cg_Syst->SetLineColor(kBlack);
   cg_Syst->SetFillStyle(0);
-  cg_TAA->Draw("2 same");
+  gStyle->SetHatchesLineWidth(2);
+  hgp_G->SetFillStyle(3344);
   hgp_G->Draw("2 same");
+  cg_TAA->Draw("2 same");
   cg_Syst->Draw("5 same");
 
   line1->SetX2(110);
@@ -1098,20 +1106,24 @@ void plotMassPeaks(std::string Zee, std::string Zmumu21, std::string Zmumu24, st
 
   cg->Draw("p same");  
 
-  TLegend * leg3 = new TLegend(0.3,0.7,0.79,0.85);
+  TLegend * leg3 = new TLegend(0.08,0.7,0.57,0.85);
   leg3->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV","");
   leg3->AddEntry((TObject*)0,"|y_{Z}| < 2.1","");
   leg3->SetBorderSize(0);
+  leg3->SetFillStyle(0);
+  leg3->SetTextSize(0.075);
   leg3->Draw("same");
   
   TLegend * leg2 = new TLegend(0.16,0.04,0.74,0.47);
   leg2->SetBorderSize(0);
   leg2->SetFillStyle(0);
+  leg2->SetTextSize(0.075);
   cg->SetFillColor(kGray+1);
   hgp_G->SetLineWidth(0);
   leg2->AddEntry(cg,"Z/#gamma* #rightarrow l^{+}l^{-}","lpef"); 
-  leg2->AddEntry(dummyLine1,"#sigma^{Z}_{NN} MG5_aMC@NLO + CT14 + EPPS16","fl");
-  leg2->AddEntry(hgp_G,"T_{AA}-scaled HG-PYTHIA","f");
+  //leg2->AddEntry(dummyLine1,"#sigma^{Z}_{NN} MG5_aMC@NLO + CT14 + EPPS16","fl");
+  leg2->AddEntry(dummyLine1,"0-90% data","fl");
+  leg2->AddEntry(hgp_G,"HG-PYTHIA scaled by 0-90%","f");
   leg2->Draw("same");
  
   p2->cd();

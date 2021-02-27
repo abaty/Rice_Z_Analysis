@@ -395,21 +395,22 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
  
   TCanvas * c2 = new TCanvas("c2","c2",800,500);
   c2->SetLeftMargin(0.15);
-  c2->SetRightMargin(0.05);
-  c2->SetBottomMargin(0.2);  
+  c2->SetRightMargin(0.025);
+  c2->SetBottomMargin(0.16);  
   c2->SetTopMargin(0.1);  
   y_e->SetLineColor(kWhite);
   y_e->SetMarkerColor(kWhite);
-  y_e->GetXaxis()->SetRangeUser(0,2.4);
-  y_e->GetYaxis()->SetRangeUser(3.0,6.0);
-  y_e->GetYaxis()->SetTitleSize(0.06);
-  y_e->GetYaxis()->SetTitleOffset(1.01);
+  y_e->GetYaxis()->SetRangeUser(2.2,5.7);
+  y_e->GetYaxis()->SetTitleSize(0.075);
+  y_e->GetYaxis()->SetTitleOffset(0.75);
   y_e->GetYaxis()->SetLabelSize(0.07);
   y_e->GetXaxis()->SetTitleSize(0.08);
-  y_e->GetXaxis()->SetLabelSize(0.08);
+  y_e->GetXaxis()->SetTitleOffset(0.85);
+  y_e->GetXaxis()->SetLabelSize(0.07);
   y_e->GetYaxis()->SetNdivisions(5,5,0,true);
   y_e->GetXaxis()->SetTitle("|y_{Z}|");
   y_e->GetXaxis()->SetNdivisions(408,false);
+  y_e->GetXaxis()->SetRangeUser(0,2.5);
   y_e->Draw("p");
 
   for(int i = 0; i<y_mu24->GetSize(); i++){
@@ -436,16 +437,18 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
         helper.drawBoxAbsolute(y_mu24, i , mu24Boxy[i], y_mu24->GetBinContent(i) * totalError_0_90[2][2]->GetBinContent(i),0.145,(Color_t)kBlack); 
       }
   }
-  TLegend *ly2 = new TLegend(0.165,0.225,0.765,0.625);
+  TLegend *ly2 = new TLegend(0.165,0.19,0.765,0.565);
   ly2->SetBorderSize(0);
   ly2->SetFillStyle(0);
+  ly2->SetTextSize(0.065);
   ly2->AddEntry(combo[2],"Z/#gamma* #rightarrow l^{+}l^{-}","ple");
   ly2->AddEntry(y_mu24,"Z/#gamma* #rightarrow #mu^{+}#mu^{-}","ple");
   ly2->AddEntry(CT14Rap,"MG5_aMC@NLO + CT14","F");
   ly2->AddEntry(nCTEQ15Rap,"MG5_aMC@NLO + nCTEQ15","F");
   ly2->AddEntry(EPPS16Rap,"MG5_aMC@NLO + CT14 + EPPS16","F");
   ly2->Draw("same");
-  TLegend * ly3 = new TLegend(0.5,0.8,0.9,0.875);
+  TLegend * ly3 = new TLegend(0.58,0.8,0.88,0.875);
+  ly3->SetTextSize(0.065);
   ly3->SetBorderSize(0);
   ly3->SetFillStyle(0);
   ly3->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV","");
@@ -643,7 +646,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ratioNCTEQ15->Divide(combo[1]);
   ratioNCTEQ15->SetLineColor(kRed+1);
   ratioNCTEQ15->SetMarkerColor(kRed+1);
-  ratioNCTEQ15->SetMarkerStyle(27);
+  ratioNCTEQ15->SetMarkerStyle(32);
   ratioNCTEQ15->SetMarkerSize(1.2);
   ratioNCTEQ15->Draw("same p");
   TH1D * ratioCT14 = (TH1D*)CT14Pt->Clone("ratioCT14");
@@ -721,13 +724,13 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   c1->SetLineWidth(0);
   p1->SetBottomMargin(0);
   p1->SetLeftMargin(0.15);
-  p1->SetRightMargin(0.05);
+  p1->SetRightMargin(0.001);
   p1->SetTopMargin(0.09);
   p1->SetBorderSize(0);
   p1->Draw();
   p2->SetTopMargin(0);
   p2->SetLeftMargin(0.15);
-  p2->SetRightMargin(0.05);
+  p2->SetRightMargin(0.001);
   p2->SetBottomMargin(0.35);
   p2->SetBorderSize(0);
   p2->Draw();
@@ -740,11 +743,11 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   dummy->SetMarkerColor(kWhite);
   dummy->GetXaxis()->CenterTitle();
   dummy->GetYaxis()->CenterTitle();
-  dummy->GetYaxis()->SetTitleSize(0.07);
-  dummy->GetYaxis()->SetTitleOffset(0.95);
+  dummy->GetYaxis()->SetTitleSize(0.085);
+  dummy->GetYaxis()->SetTitleOffset(0.75);
   dummy->GetYaxis()->SetLabelSize(0.065);
   dummy->GetYaxis()->SetLabelOffset(0.00);
-  dummy->GetYaxis()->SetRangeUser(0.0005*pt_mu24->GetMaximum() , pt_mu24->GetMaximum()*1.4 ); 
+  dummy->GetYaxis()->SetRangeUser(0.0004*pt_mu24->GetMaximum() , pt_mu24->GetMaximum()*1.4 ); 
   dummy->GetYaxis()->SetTitle("#frac{d#sigma_{Z}}{dp_{T}^{Z}} (#mub/GeV)");
   dummy->DrawCopy();
  
@@ -762,12 +765,18 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   p1->SetLogy();
   p1->SetLogx();
 
+  TLegend *lpt4 = new TLegend(0.65,0.7,0.85,0.88);
+  lpt4->SetBorderSize(0);
+  lpt4->SetFillStyle(0);
+  lpt4->SetTextSize(0.08);
+  lpt4->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV","");
+  lpt4->AddEntry((TObject*)0,"               |y_{Z}| < 2.1","");
+  lpt4->Draw("same");
 
-  TLegend *lpt2 = new TLegend(0.175,0.05,0.775,0.675);
+  TLegend *lpt2 = new TLegend(0.175,0.04,0.775,0.665);
   lpt2->SetBorderSize(0);
   lpt2->SetFillStyle(0);
-  lpt2->AddEntry((TObject*)0,"|y_{Z}| < 2.1","");
-  lpt2->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV","");
+  lpt2->SetTextSize(0.09);
   lpt2->AddEntry(combo[1],"Z/#gamma* #rightarrow l^{+}l^{-}","lep");
   lpt2->AddEntry(CT14Pt,"MG5_aMC@NLO + CT14","F");
   lpt2->AddEntry(nCTEQ15Pt,"MG5_aMC@NLO + nCTEQ15","F");
@@ -783,7 +792,7 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   dummy->GetYaxis()->SetNdivisions(4,4,0,kTRUE);
   dummy->GetYaxis()->SetTitleOffset(0.4);
   dummy->GetYaxis()->SetRangeUser(0.15,1.65);
-  dummy->GetYaxis()->SetTitleSize(0.20);
+  dummy->GetYaxis()->SetTitleSize(0.22);
   dummy->GetYaxis()->SetTitleOffset(0.3);
   dummy->GetXaxis()->SetTitleSize(0.18);
   dummy->GetXaxis()->SetTitleOffset(0.8);
@@ -803,10 +812,11 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
   ratioCT14->Draw("same p");
   p2->RedrawAxis();
   
-  TLegend *lptR2 = new TLegend(0.175,0.35,0.95,0.6);
+  TLegend *lptR2 = new TLegend(0.16,0.35,0.99,0.6);
   lptR2->SetBorderSize(0);
   lptR2->SetFillStyle(0);
   lptR2->SetNColumns(4);
+  lptR2->SetTextSize(0.17);
   lptR2->AddEntry(ratioCT14,"CT14","p");
   lptR2->AddEntry(ratioEPPS16,"CT14 + EPPS16","p");
   lptR2->AddEntry(ratioNCTEQ15,"nCTEQ15","p");

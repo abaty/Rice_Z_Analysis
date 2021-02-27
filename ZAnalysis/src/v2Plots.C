@@ -334,7 +334,8 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
  
   TCanvas * c2 = new TCanvas("c2","c2",800,500);
   c2->SetLeftMargin(0.15);
-  c2->SetRightMargin(0.05);
+  //c2->SetRightMargin(0.05);
+  c2->SetRightMargin(0.001);
   c2->SetBottomMargin(0.15);
   float xOff = 0.5;
   //float xOffSyst = 1;
@@ -462,8 +463,9 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   ATLASg->Draw("same p");
 
   gStyle->SetLegendBorderSize(0);
-  TLegend * leg2 = new TLegend(0.3,0.57,0.7,0.89);
-  leg2->SetTextSize(0.06);
+  TLegend * leg2 = new TLegend(0.17,0.55,0.57,0.89);
+  leg2->SetFillStyle(0);
+  leg2->SetTextSize(0.07);
   leg2->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV", "");
   leg2->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "");
   leg2->AddEntry(v2ComboGraph,"Z/#gamma* #rightarrow l^{+}l^{-}", "ep");
