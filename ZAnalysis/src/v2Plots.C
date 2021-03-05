@@ -332,10 +332,10 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   c1->SaveAs("plots/v2/v2Summary.pdf");
   c1->SaveAs("plots/v2/v2Summary.C");
  
-  TCanvas * c2 = new TCanvas("c2","c2",800,500);
+  TCanvas * c2 = new TCanvas("c2","c2",800,800);
   c2->SetLeftMargin(0.15);
   //c2->SetRightMargin(0.05);
-  c2->SetRightMargin(0.001);
+  c2->SetRightMargin(0.03);
   c2->SetBottomMargin(0.15);
   float xOff = 0.5;
   //float xOffSyst = 1;
@@ -422,7 +422,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
 
   TH1D * d = new TH1D("d",";Centrality (%); v_{2}",1,0,110);
   d->SetLineColor(kWhite);
-  d->GetYaxis()->SetRangeUser(-0.05,0.07);
+  d->GetYaxis()->SetRangeUser(-0.05,0.05);
   d->SetStats(0);
   d->GetYaxis()->CenterTitle();
   d->GetXaxis()->CenterTitle();
@@ -433,7 +433,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   d->GetXaxis()->SetTitle("Centrality (%)");
   d->GetXaxis()->SetTitleOffset(1.0);
   d->GetXaxis()->SetTitleSize(0.065);
-  d->GetXaxis()->SetLabelSize(0.06);
+  d->GetXaxis()->SetLabelSize(0.055);
   d->GetXaxis()->SetLabelOffset(0.007);
   TAxis* a = d->GetXaxis();
   a->ChangeLabel(6,-1,-1,-1,-1,-1,"0-90%");
@@ -441,7 +441,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   TGaxis * aClone = new TGaxis(0,-0.05,90,-0.05,0,90,505,"");
   aClone->SetTickLength(0.02);
   aClone->SetLabelSize(0);
-  TGaxis * aClone2 = new TGaxis(0,0.07,90,0.07,0,90,505,"-");
+  TGaxis * aClone2 = new TGaxis(0,0.05,90,0.05,0,90,505,"-");
   aClone2->SetTickLength(0.02);
   aClone2->SetLabelSize(0);
 
@@ -454,7 +454,7 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   l2->SetLineColor(kBlack);
   l2->SetLineStyle(1);
   l2->Draw("same"); 
-  TLine * l3= new TLine(90,-0.05,90,0.07);
+  TLine * l3= new TLine(90,-0.05,90,0.05);
   l3->SetLineColor(kBlack);
   l3->SetLineStyle(7);
   l3->Draw("same"); 
@@ -463,14 +463,19 @@ void v2Plots(std::string Zmumu, std::string Zee, std::string Zmumu_syst, std::st
   ATLASg->Draw("same p");
 
   gStyle->SetLegendBorderSize(0);
-  TLegend * leg2 = new TLegend(0.17,0.55,0.57,0.89);
+  TLegend * leg2 = new TLegend(0.15,0.72,0.57,0.89);
   leg2->SetFillStyle(0);
-  leg2->SetTextSize(0.07);
-  leg2->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV", "");
-  leg2->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "");
+  leg2->SetTextSize(0.06);
   leg2->AddEntry(v2ComboGraph,"Z/#gamma* #rightarrow l^{+}l^{-}", "ep");
   leg2->AddEntry(ATLASg,"ATLAS 2.76 TeV PbPb","ep");
   leg2->Draw("same");
+  
+  TLegend * leg5 = new TLegend(0.09,0.17,0.57,0.34);
+  leg5->SetFillStyle(0);
+  leg5->SetTextSize(0.06);
+  leg5->AddEntry((TObject*)0,"|y_{Z}| < 2.1", "");
+  leg5->AddEntry((TObject*)0,"60 < m_{ll} < 120 GeV", "");
+  leg5->Draw("same");
 
   aClone->Draw(); 
   aClone2->Draw(); 

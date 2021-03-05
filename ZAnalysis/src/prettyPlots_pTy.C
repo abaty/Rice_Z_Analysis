@@ -393,9 +393,9 @@ void prettyPlots(std::string Zee, std::string Zmumu21, std::string Zmumu24, std:
     c1->SaveAs("plots/prettyPlots/rapidity_Pretty_withAccept.C"); 
   }
  
-  TCanvas * c2 = new TCanvas("c2","c2",800,500);
+  TCanvas * c2 = new TCanvas("c2","c2",800,800);
   c2->SetLeftMargin(0.15);
-  c2->SetRightMargin(0.025);
+  c2->SetRightMargin(0.03);
   c2->SetBottomMargin(0.16);  
   c2->SetTopMargin(0.1);  
   y_e->SetLineColor(kWhite);
